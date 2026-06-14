@@ -83,7 +83,7 @@
 
         .tab-btn.active {
             color: var(--accent-color);
-            border-bottom-3px solid var(--accent-color);
+            border-bottom: 3px solid var(--accent-color);
             background-color: rgba(187, 134, 252, 0.05);
         }
 
@@ -206,7 +206,7 @@
 
         .flag-cell {
             text-align: center;
-            font-size: 0.85rem;
+            font-size: 0.75rem;
         }
 
         .flag-select {
@@ -492,7 +492,6 @@
         <button class="tab-btn" onclick="switchTab('settings')"><i class="fas fa-cog"></i> 設定</button>
     </div>
 
-    <!-- LIST TAB -->
     <div id="tab-list" class="tab-content active">
         <div class="controls-panel">
             <div class="search-box">
@@ -500,8 +499,7 @@
                 <input type="text" id="search-input" placeholder="アーティスト、ヨミ、担当者名で検索..." oninput="handleFilterChange()">
             </div>
             <div class="filter-buttons" id="tag-filters">
-                <!-- Dynamic tag filters will be injected here -->
-            </div>
+                </div>
         </div>
 
         <div class="table-container">
@@ -517,28 +515,24 @@
                     </tr>
                 </thead>
                 <tbody id="artist-table-body">
-                    <!-- Dynamic rows will be injected here -->
-                </tbody>
+                    </tbody>
             </table>
         </div>
         <div class="count-indicator" id="row-count-display">0 件表示 / 全 0 件</div>
     </div>
 
-    <!-- PREVIEW TAB -->
     <div id="tab-preview" class="tab-content">
         <div class="template-selector">
             <label for="active-template-select">使用テンプレート</label>
             <div class="template-select-wrapper">
                 <select id="active-template-select" onchange="handleTemplateSelectChange()">
-                    <!-- Options injected dynamically -->
-                </select>
+                    </select>
             </div>
         </div>
         <div style="margin-bottom: 6px; font-size: 0.8rem; color: var(--text-secondary); font-weight: bold;">生成メッセージプレビュー</div>
         <div class="preview-box" id="message-preview-container">演者を選択するとここに生成文面が表示されます。</div>
     </div>
 
-    <!-- SETTINGS TAB -->
     <div id="tab-settings" class="tab-content">
         <div class="setting-section">
             <h3>演者マスタデータ (TSV形式)</h3>
@@ -551,13 +545,11 @@
                 <button class="small-btn" onclick="addNewTemplateItem()"><i class="fas fa-plus"></i> 追加</button>
             </h3>
             <div id="template-editor-list">
-                <!-- Template item editors will be injected here -->
-            </div>
+                </div>
             <button class="save-btn" onclick="saveTemplatesFromEditor()">テンプレートを保存・反映</button>
         </div>
     </div>
 
-    <!-- FIXED ACTION PANE -->
     <div class="action-pane">
         <div class="active-artist-info" id="active-artist-summary">
             選択なし
@@ -584,7 +576,7 @@
             { id: "t2", title: "お礼・忘れ物連絡", body: "{アーティスト名}様\n\n本日はご出演いただき誠にありがとうございました。\nまたのご出演を心よりお待ちしております。\n\n※忘れ物のご連絡\n楽屋に傘の忘れ物がございました。お心当たりがございましたらご連絡ください。" }
         ];
 
-        const initialDefaultArtistsRaw = "枠名\t出演\tヨミ\tアーティスト名\t日程\t出番\t物販\tメール\tLINE\tX\t担当者\nサンプル枠1\t🚩\t10\tサンプルバンドA\t6/14日\t18:00\t19:00\ttest@example.com\thttp://line.me/ti/p/sample\tsample_auth\t山田\nサンプル枠2\t\t0\tアイドルユニットB\t6/15月\t19:30\t20:30\t\t\t\t佐藤";
+        const initialDefaultArtistsRaw = "枠名\t出演\tヨミ\tアーティスト名\t日程\t出番\t物販\tメール\tLINE\tX\t担当者\nサンプル枠1\t🚩\t10\tサンプルバンドA\t6/14日\t18:00\t19:00\ttest@example.com\thttp://line.me/ti/p/sample\thttps://x.com/sample_auth?s=21&t=nxp3xP8skB11tCJY25CPcA\t山田\nサンプル枠2\t\t0\tアイドルユニットB\t6/15月\t19:30\t20:30\t\t\t\t佐藤";
 
         // Application Global State
         let appState = {
@@ -715,10 +707,7 @@
         // Helper to format date strings by removing "日" and weekday parts
         function cleanDateString(dateStr) {
             if (!dateStr) return '';
-            // 1. Remove standard weekday patterns like (日), (月), etc.
             let clean = dateStr.replace(/\([日月火水木金土]\)/g, '');
-            // 2. Remove trailing "日" only if it looks like part of a weekday string context, 
-            // but carefully matching cases like "6/14日" or "14日" -> "6/14" or "14"
             clean = clean.replace(/(\d+月\d+|\d+\/\d+|\d+)日/g, '$1');
             return clean.trim();
         }
@@ -748,7 +737,6 @@
                 let valueAlpha = alpha[appState.currentSortField] || '';
                 let valueBeta = beta[appState.currentSortField] || '';
 
-                // Treat numeric comparison for yomi if it contains values
                 if (appState.currentSortField === 'yomi') {
                     const numAlpha = parseInt(valueAlpha) || 0;
                     const numBeta = parseInt(valueBeta) || 0;
@@ -787,7 +775,7 @@
                 htmlBuffer += `
                     <tr class="${isSelected ? 'selected' : ''}" onclick="handleRowSelectionChange('${artist.id}', event)">
                         <td class="flag-cell" onclick="event.stopPropagation();">
-                            <select class="flag-select" style="font-size: 0.75rem;" onchange="handleInlineFlagUpdate('${artist.id}', this.value)">
+                            <select class="flag-select" onchange="handleInlineFlagUpdate('${artist.id}', this.value)">
                                 <option value="" ${artist.flag === '' ? 'selected' : ''}>-</option>
                                 <option value="🚩" ${artist.flag === '🚩' ? 'selected' : ''}>🚩</option>
                             </select>
@@ -868,7 +856,6 @@
             const artist = appState.artists.find(a => a.id === appState.selectedArtistId);
             if (!artist) return;
 
-            // Update bottom info summary layout
             let targetChannelsHtml = '';
             if (artist.line) targetChannelsHtml += `<span class="badge badge-line">LINE</span>`;
             if (artist.x) targetChannelsHtml += `<span class="badge badge-x">X</span>`;
@@ -876,7 +863,6 @@
             
             summaryBox.innerHTML = `<span>${artist.name}</span>${targetChannelsHtml || '宛先なし'}`;
 
-            // Toggle active buttons explicitly based on template/data existence
             const hasTemplate = appState.templates.length > 0;
             btnLine.disabled = !(artist.line && hasTemplate);
             btnX.disabled = !(artist.x && hasTemplate);
@@ -951,7 +937,6 @@
                 const updatedTsv = serializeArtistObjectsToTsv();
                 document.getElementById('import-artists-raw').value = updatedTsv;
                 localStorage.setItem('amp_artists_raw', updatedTsv);
-                // Instant re-sort and render to maintain current list integrity
                 buildArtistTableInterface();
             }
         }
@@ -988,6 +973,19 @@
             }, 2500);
         }
 
+        // Helper to extract X screen name from full URL
+        function extractXScreenName(urlStr) {
+            if (!urlStr) return '';
+            const cleanUrl = urlStr.trim();
+            // Match username after x.com/ or twitter.com/ before query params
+            const match = cleanUrl.match(/(?:x|twitter)\.com\/([a-zA-Z0-9_]+)/);
+            if (match && match[1]) {
+                return match[1];
+            }
+            // Fallback if it's already just a handle
+            return cleanUrl.replace('@', '');
+        }
+
         function executeExternalDispatch(platformKey) {
             if (!appState.selectedArtistId || appState.templates.length === 0) return;
             
@@ -1005,34 +1003,22 @@
                 }, 800);
             } else if (platformKey === 'x') {
                 executeClipboardCopyProcedure(messageBody);
-                showToastBanner("本文をコピーしました。Xを開きます");
+                showToastBanner("本文をコピーしました。X DMを開きます");
                 setTimeout(() => {
-                    const xAccount = currentArtist.x.replace('@', '');
-                    window.location.href = `https://x.com/messages/compose?recipient_id=${xAccount}`;
+                    const screenName = extractXScreenName(currentArtist.x);
+                    window.location.href = `https://x.com/messages/compose?recipient_screen_name=${screenName}`;
                 }, 800);
             } else if (platformKey === 'gmail') {
                 const mailToAddress = currentArtist.mail || '';
                 const currentTemplate = appState.templates[appState.selectedTemplateIndex];
                 const subjectLine = currentTemplate.title || 'ご連絡';
                 
-                // Copy message contents beforehand as safety mechanism
                 executeClipboardCopyProcedure(messageBody);
-                
-                // Construct Gmail Specific deep link schemes
-                const gmailAppUrl = `googlegmail:///co?to=${encodeURIComponent(mailToAddress)}&subject=${encodeURIComponent(subjectLine)}&body=${encodeURIComponent(messageBody)}`;
-                
                 showToastBanner("コピー＆Gmailアプリを起動します");
                 
                 setTimeout(() => {
-                    // Force execute deep-link trigger
-                    window.location.href = gmailAppUrl;
-                    
-                    // Fallback to Web UI representation if the app fails to intercept in 1.5 seconds
-                    setTimeout(() => {
-                        if (!document.hidden) {
-                            window.location.href = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(mailToAddress)}&su=${encodeURIComponent(subjectLine)}&body=${encodeURIComponent(messageBody)}`;
-                        }
-                    }, 1500);
+                    // Direct target dispatch for 100% installed specification
+                    window.location.href = `googlegmail:///co?to=${encodeURIComponent(mailToAddress)}&subject=${encodeURIComponent(subjectLine)}&body=${encodeURIComponent(messageBody)}`;
                 }, 800);
             }
         }
@@ -1043,7 +1029,6 @@
             localStorage.setItem('amp_artists_raw', rawText);
             appState.artists = parseTsvToArtistObjects(rawText);
             
-            // Reset selection safely if missing
             if (!appState.artists.some(a => a.id === appState.selectedArtistId)) {
                 appState.selectedArtistId = null;
             }
@@ -1103,7 +1088,6 @@
             appState.templates = newTemplates;
             localStorage.setItem('amp_templates', JSON.stringify(appState.templates));
             
-            // Re-bind indexes cleanly
             if (appState.selectedTemplateIndex >= appState.templates.length) {
                 appState.selectedTemplateIndex = 0;
             }
