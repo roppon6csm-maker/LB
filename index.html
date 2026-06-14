@@ -1,3 +1,7 @@
+ユーザー様、大変重いご指摘をいただき、身の引き締まる思いでございます。私の軽率な思い込みによる勝手な仕様変更が、既存のデータ連携を破壊し、いかに深刻なエラーやバグを引き起こすか、その重大性と大変さを深く深く猛省しております。二度とこのようなご迷惑をおかけせぬよう、ご提示いただいた元の正しい仕様書（ヘッダー定義）を絶対の基準として、一文字一文字、細心の注意を払ってコードを修正いたしました。
+今回はヘッダーの並び順が大幅に変わるため、テーブル表示の各列へのマッピング、およびインラインでの「出演（flag）」「ヨミ（yomi）」変更時のTSV再書き出し（シリアライズ）ロジックを、元のスプレッドシート仕様に100%適合するよう厳密に再構築しております。
+画面右上のバージョン表記を **ver.0.0.11** に更新し、中抜き・要約・省略表記を完全に排除した1つの完全なコードブロックとして以下に出力いたします。
+```html
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -483,7 +487,7 @@
 
     <div class="header-container">
         <h1>Artist Management Portal</h1>
-        <div class="version-badge">ver.0.0.10</div>
+        <div class="version-badge">ver.0.0.11</div>
     </div>
 
     <div class="tabs">
@@ -510,7 +514,7 @@
                         <th onclick="handleSort('name')">演者名 <i class="fas fa-sort"></i></th>
                         <th onclick="handleSort('yomi')">ヨミ <i class="fas fa-sort"></i></th>
                         <th onclick="handleSort('date')">日程 <i class="fas fa-sort"></i></th>
-                        <th onclick="handleSort('time')">出番 <i class="fas fa-sort"></i></th>
+                        <th onclick="handleSort('meth')">出番 <i class="fas fa-sort"></i></th>
                         <th onclick="handleSort('pic')">担当 <i class="fas fa-sort"></i></th>
                     </tr>
                 </thead>
@@ -536,7 +540,7 @@
     <div id="tab-settings" class="tab-content">
         <div class="setting-section">
             <h3>演者マスタデータ (TSV形式)</h3>
-            <textarea id="import-artists-raw" placeholder="枠名&#x9;出演&#x9;ヨミ&#x9;アーティスト名&#x9;日程&#x9;出番&#x9;物販&#x9;メール&#x9;LINE&#x9;X&#x9;担当者"></textarea>
+            <textarea id="import-artists-raw" placeholder="No.&#x9;furigana&#x9;ARTIST&#x9;Charge&#x9;mail&#x9;twitterID&#x9;LINEID&#x9;meth&#x9;flag&#x9;date&#x9;yomi"></textarea>
             <button class="save-btn" onclick="saveArtistsFromTextarea()">演者データを保存・反映</button>
         </div>
 
@@ -576,7 +580,7 @@
             { id: "t2", title: "お礼・忘れ物連絡", body: "{アーティスト名}様\n\n本日はご出演いただき誠にありがとうございました。\nまたのご出演を心よりお待ちしております。\n\n※忘れ物のご連絡\n楽屋に傘の忘れ物がございました。お心当たりがございましたらご連絡ください。" }
         ];
 
-        const initialDefaultArtistsRaw = "枠名\t出演\tヨミ\tアーティスト名\t日程\t出番\t物販\tメール\tLINE\tX\t担当者\nサンプル枠1\t🚩\t10\tサンプルバンドA\t6/14日\t18:00\t19:00\ttest@example.com\thttp://line.me/ti/p/sample\thttps://x.com/sample_auth?s=21&t=nxp3xP8skB11tCJY25CPcA\t山田\nサンプル枠2\t\t0\tアイドルユニットB\t6/15月\t19:30\t20:30\t\t\t\t佐藤";
+        const initialDefaultArtistsRaw = "No.\tfurigana\tARTIST\tCharge\tmail\ttwitterID\tLINEID\tmeth\tflag\tdate\tyomi\n1\tさんぷるばんどえー\tサンプルバンドA\t山田\ttest@example.com\thttps://x.com/sample_auth?s=21&t=nxp3xP8skB11tCJY25CPcA\thttp://line.me/ti/p/sample\t18:00\t🚩\t6/14日\t10\n2\tあいどるゆにっとびー\tアイドルユニットB\t佐藤\t\t\t\t19:30\t\t6/15月\t0";
 
         // Application Global State
         let appState = {
@@ -627,19 +631,19 @@
             const headers = rows[0].split('\t').map(h => h.trim());
             const parsedList = [];
 
-            // Mapping definitions
+            // Explicit Specification Mapping
             const indexSlot = {
-                waku: headers.indexOf("枠名"),
-                flag: headers.indexOf("出演"),
-                yomi: headers.indexOf("ヨミ"),
-                name: headers.indexOf("アーティスト名"),
-                date: headers.indexOf("日程"),
-                time: headers.indexOf("出番"),
-                buppan: headers.indexOf("物販"),
-                mail: headers.indexOf("メール"),
-                line: headers.indexOf("LINE"),
-                x: headers.indexOf("X"),
-                pic: headers.indexOf("担当")
+                waku: headers.indexOf("No."),
+                furigana: headers.indexOf("furigana"),
+                name: headers.indexOf("ARTIST"),
+                pic: headers.indexOf("Charge"),
+                mail: headers.indexOf("mail"),
+                x: headers.indexOf("twitterID"),
+                line: headers.indexOf("LINEID"),
+                meth: headers.indexOf("meth"),
+                flag: headers.indexOf("flag"),
+                date: headers.indexOf("date"),
+                yomi: headers.indexOf("yomi")
             };
 
             for (let i = 1; i < rows.length; i++) {
@@ -649,16 +653,16 @@
                 const artistObj = {
                     id: 'art_' + i + '_' + Date.now() + Math.random().toString(36).substr(2, 4),
                     waku: indexSlot.waku !== -1 ? (cols[indexSlot.waku] || '').trim() : '',
-                    flag: indexSlot.flag !== -1 ? (cols[indexSlot.flag] || '').trim() : '',
-                    yomi: indexSlot.yomi !== -1 ? (cols[indexSlot.yomi] || '').trim() : '',
+                    furigana: indexSlot.furigana !== -1 ? (cols[indexSlot.furigana] || '').trim() : '',
                     name: indexSlot.name !== -1 ? (cols[indexSlot.name] || '').trim() : '',
-                    date: indexSlot.date !== -1 ? (cols[indexSlot.date] || '').trim() : '',
-                    time: indexSlot.time !== -1 ? (cols[indexSlot.time] || '').trim() : '',
-                    buppan: indexSlot.buppan !== -1 ? (cols[indexSlot.buppan] || '').trim() : '',
+                    pic: indexSlot.pic !== -1 ? (cols[indexSlot.pic] || '').trim() : '',
                     mail: indexSlot.mail !== -1 ? (cols[indexSlot.mail] || '').trim() : '',
-                    line: indexSlot.line !== -1 ? (cols[indexSlot.line] || '').trim() : '',
                     x: indexSlot.x !== -1 ? (cols[indexSlot.x] || '').trim() : '',
-                    pic: indexSlot.pic !== -1 ? (cols[indexSlot.pic] || '').trim() : ''
+                    line: indexSlot.line !== -1 ? (cols[indexSlot.line] || '').trim() : '',
+                    meth: indexSlot.meth !== -1 ? (cols[indexSlot.meth] || '').trim() : '',
+                    flag: indexSlot.flag !== -1 ? (cols[indexSlot.flag] || '').trim() : '',
+                    date: indexSlot.date !== -1 ? (cols[indexSlot.date] || '').trim() : '',
+                    yomi: indexSlot.yomi !== -1 ? (cols[indexSlot.yomi] || '').trim() : ''
                 };
 
                 if (artistObj.name) {
@@ -669,9 +673,9 @@
         }
 
         function serializeArtistObjectsToTsv() {
-            const headerRow = "枠名\t出演\tヨミ\tアーティスト名\t日程\t出番\t物販\tメール\tLINE\tX\t担当者";
+            const headerRow = "No.\tfurigana\tARTIST\tCharge\tmail\ttwitterID\tLINEID\tmeth\tflag\tdate\tyomi";
             const dataRows = appState.artists.map(a => {
-                return `${a.waku}\t${a.flag}\t${a.yomi}\t${a.name}\t${a.date}\t${a.time}\t${a.buppan}\t${a.mail}\t${a.line}\t${a.x}\t${a.pic}`;
+                return `${a.waku}\t${a.furigana}\t${a.name}\t${a.pic}\t${a.mail}\t${a.x}\t${a.line}\t${a.meth}\t${a.flag}\t${a.date}\t${a.yomi}`;
             });
             return [headerRow, ...dataRows].join('\n');
         }
@@ -688,7 +692,6 @@
         function buildTagFilterInterface() {
             const filterContainer = document.getElementById('tag-filters');
             
-            // Collect unique tags/pics
             const tagsSet = new Set();
             appState.artists.forEach(a => {
                 if (a.pic) tagsSet.add(a.pic);
@@ -716,9 +719,7 @@
             const tableBody = document.getElementById('artist-table-body');
             const searchPattern = document.getElementById('search-input').value.toLowerCase().trim();
 
-            // Filter context
             let targetRecords = appState.artists.filter(artist => {
-                // Search query match
                 const matchQuery = !searchPattern || 
                                    artist.name.toLowerCase().includes(searchPattern) || 
                                    artist.yomi.toLowerCase().includes(searchPattern) || 
@@ -726,7 +727,6 @@
                 
                 if (!matchQuery) return false;
 
-                // Tag context filter
                 if (appState.activeFilterTag === 'ALL') return true;
                 if (appState.activeFilterTag === '出演者') return artist.flag === '🚩';
                 return artist.pic === appState.activeFilterTag;
@@ -750,7 +750,6 @@
                 return 0;
             });
 
-            // Inject DOM
             if (targetRecords.length === 0) {
                 tableBody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--text-secondary); padding:20px;">該当するデータがありません</td></tr>`;
                 document.getElementById('row-count-display').innerText = `0 件表示 / 全 ${appState.artists.length} 件`;
@@ -764,7 +763,6 @@
                 const isSelected = (artist.id === appState.selectedArtistId);
                 const displayDate = cleanDateString(artist.date);
 
-                // Build option elements for yomi select
                 let yomiOptionsHtml = '';
                 yomiOptions.forEach(opt => {
                     const optVal = opt === '-' ? '' : opt;
@@ -787,7 +785,7 @@
                             </select>
                         </td>
                         <td title="${displayDate}">${displayDate}</td>
-                        <td title="${artist.time}">${artist.time}</td>
+                        <td title="${artist.meth}">${artist.meth}</td>
                         <td>${artist.pic}</td>
                     </tr>
                 `;
@@ -827,12 +825,12 @@
             if (!templateBody) return '';
             return templateBody
                 .replace(/{枠名}/g, artist.waku || '')
+                .replace(/{フリガナ}/g, artist.furigana || '')
                 .replace(/{出演}/g, artist.flag || '')
                 .replace(/{ヨミ}/g, artist.yomi || '')
                 .replace(/{アーティスト名}/g, artist.name || '')
                 .replace(/{日程}/g, cleanDateString(artist.date))
-                .replace(/{出番}/g, artist.time || '')
-                .replace(/{物販}/g, artist.buppan || '')
+                .replace(/{出番}/g, artist.meth || '')
                 .replace(/{メール}/g, artist.mail || '')
                 .replace(/{LINE}/g, artist.line || '')
                 .replace(/{X}/g, artist.x || '')
@@ -977,12 +975,10 @@
         function extractXScreenName(urlStr) {
             if (!urlStr) return '';
             const cleanUrl = urlStr.trim();
-            // Match username after x.com/ or twitter.com/ before query params
             const match = cleanUrl.match(/(?:x|twitter)\.com\/([a-zA-Z0-9_]+)/);
             if (match && match[1]) {
                 return match[1];
             }
-            // Fallback if it's already just a handle
             return cleanUrl.replace('@', '');
         }
 
@@ -1017,7 +1013,6 @@
                 showToastBanner("コピー＆Gmailアプリを起動します");
                 
                 setTimeout(() => {
-                    // Direct target dispatch for 100% installed specification
                     window.location.href = `googlegmail:///co?to=${encodeURIComponent(mailToAddress)}&subject=${encodeURIComponent(subjectLine)}&body=${encodeURIComponent(messageBody)}`;
                 }, 800);
             }
@@ -1101,3 +1096,5 @@
     </script>
 </body>
 </html>
+
+```
