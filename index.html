@@ -356,10 +356,37 @@
             box-shadow: 0 0 0 1px var(--state-selected-border);
         }
 
+        .template-header-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 6px;
+        }
+
         .template-title {
             font-size: 13px;
             font-weight: 800;
             color: var(--text-main);
+            flex: 1;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* Smart App Identification Tag Badge styling */
+        .template-tag-badge {
+            font-size: 9px;
+            font-weight: 800;
+            color: #4f46e5;
+            background-color: #e0e7ff;
+            border: 1px solid #c7d2fe;
+            padding: 2px 6px;
+            border-radius: 4px;
+            white-space: nowrap;
+            flex-shrink: 0;
+            max-width: 90px;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .template-snippet {
@@ -461,7 +488,7 @@
             background: #f8fafc;
             border: 1px solid var(--border-color);
             border-radius: 8px;
-            padding: 8px;
+            padding: 10px;
             position: relative;
         }
 
@@ -469,10 +496,11 @@
             display: flex;
             gap: 6px;
             margin-bottom: 6px;
+            align-items: center;
         }
 
         .template-input-title {
-            flex-grow: 1;
+            flex-grow: 2;
             font-size: 11px;
             padding: 6px;
             border: 1px solid var(--border-color);
@@ -485,6 +513,25 @@
 
         .template-input-title:focus {
             border-color: var(--state-selected-border);
+        }
+
+        .template-input-tag {
+            flex-grow: 1;
+            width: 80px;
+            font-size: 11px;
+            padding: 6px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            outline: none;
+            font-weight: 700;
+            background-color: #fff;
+            color: #4f46e5;
+            transition: var(--transition-smooth);
+        }
+
+        .template-input-tag:focus {
+            border-color: #818cf8;
+            box-shadow: 0 0 0 2px rgba(129, 140, 248, 0.1);
         }
 
         .template-input-body {
@@ -806,7 +853,7 @@
                 <button id="tab-operation" class="nav-tab active" onclick="switchView('operation')">管理表</button>
                 <button id="tab-settings" class="nav-tab" onclick="switchView('settings')">設定</button>
             </div>
-            <div class="version-tag">ver.0.1.1</div>
+            <div class="version-tag">ver.0.1.2</div>
         </div>
     </header>
 
@@ -874,7 +921,7 @@
                 <span>■ テンプレート登録管理</span>
                 <button type="button" class="btn-mini-add" onclick="createNewTemplateRowInForm()">＋ テンプレートを追加</button>
             </div>
-            <span class="settings-desc">テンプレート名と本文（改行や空行もそのまま保持可能）を個別に設定・追加できます。</span>
+            <span class="settings-desc">テンプレート名、識別用タグ（最大10文字）、本文を個別に設定・追加できます。</span>
             
             <div id="template-builder-root-container" class="template-builder-list">
                 </div>
@@ -1041,14 +1088,15 @@
                 const extractedBody = blockLines.slice(1).join('\n').trim();
                 cleanTemplates.push({
                     title: extractedTitle,
+                    tag: '',
                     body: extractedBody ? extractedBody : extractedTitle
                 });
             });
             appState.templates = cleanTemplates;
         }
 
-        // Programmatic Form Construction Dynamic Node Spawner
-        function createNewTemplateRowInForm(titleValue = '', bodyValue = '') {
+        // Programmatic Form Construction Dynamic Node Spawner (Updated to include Identification Tag field)
+        function createNewTemplateRowInForm(titleValue = '', tagValue = '', bodyValue = '') {
             const container = document.getElementById('template-builder-root-container');
             const elementId = "tpl_row_" + Date.now() + "_" + Math.random().toString(36).substr(2, 5);
             
@@ -1059,6 +1107,7 @@
             card.innerHTML = `
                 <div class="template-card-header">
                     <input type="text" class="template-input-title" placeholder="テンプレート名 (例: お礼連絡)" value="${escapeHtml(titleValue)}">
+                    <input type="text" class="template-input-tag" placeholder="識別タグ (例: 既存案内)" value="${escapeHtml(tagValue)}" maxlength="10">
                     <button type="button" class="btn-mini-danger" onclick="triggerTemplateCardRemoval('${elementId}')">削除</button>
                 </div>
                 <textarea class="template-input-body" placeholder="送信メッセージの本文を入力してください（空行や改行もそのまま保存されます）">${escapeHtml(bodyValue)}</textarea>
@@ -1073,10 +1122,10 @@
             
             if (appState.templates && appState.templates.length > 0) {
                 appState.templates.forEach(tpl => {
-                    createNewTemplateRowInForm(tpl.title, tpl.body);
+                    createNewTemplateRowInForm(tpl.title, tpl.tag || '', tpl.body);
                 });
             } else {
-                createNewTemplateRowInForm('', '');
+                createNewTemplateRowInForm('', '', '');
             }
         }
 
@@ -1139,11 +1188,13 @@
             const formCards = document.querySelectorAll('.template-builder-card');
             formCards.forEach(card => {
                 const tTitle = card.querySelector('.template-input-title').value.trim();
+                const tTag = card.querySelector('.template-input-tag').value.trim();
                 const tBody = card.querySelector('.template-input-body').value;
                 
                 if (tTitle || tBody.trim()) {
                     cleanTemplates.push({
                         title: tTitle ? tTitle : "無題のテンプレート",
+                        tag: tTag,
                         body: tBody
                     });
                 }
@@ -1194,7 +1245,7 @@
             renderTemplatesGrid();
             recalculatePreviewAndControls();
             updateHeaderIndicators();
-            createNewTemplateRowInForm('', '');
+            createNewTemplateRowInForm('', '', '');
             
             closeConfirmationModal();
             showToastBanner("すべてのアプリデータを初期化リセットしました");
@@ -1213,6 +1264,7 @@
             document.getElementById('global-modal-overlay').classList.add('active');
         }
 
+        // Standard Confirmation Modal Closes Handler
         function closeConfirmationModal() {
             document.getElementById('global-modal-overlay').classList.remove('active');
             modalActionCallback = null;
@@ -1434,7 +1486,7 @@
             }
         }
 
-        // Render Templates Rows Interface
+        // Render Templates Rows Interface (Updated to include Identification Tag Badge)
         function renderTemplatesGrid() {
             const container = document.getElementById('template-list-target');
             container.innerHTML = '';
@@ -1450,8 +1502,16 @@
                 card.id = `template-card-${index}`;
                 card.onclick = () => selectTemplateUnit(index);
 
+                let tagBadgeHtml = '';
+                if (item.tag && item.tag.trim() !== '') {
+                    tagBadgeHtml = `<span class="template-tag-badge" title="${escapeHtml(item.tag)}">${escapeHtml(item.tag)}</span>`;
+                }
+
                 card.innerHTML = `
-                    <div class="template-title">${escapeHtml(item.title)}</div>
+                    <div class="template-header-row">
+                        <div class="template-title">${escapeHtml(item.title)}</div>
+                        ${tagBadgeHtml}
+                    </div>
                     <div class="template-snippet">${escapeHtml(item.body)}</div>
                 `;
                 container.appendChild(card);
@@ -1671,7 +1731,7 @@
             return src.replace(/@/g, '');
         }
 
-        // Native System Dispatcher Trigger Engine
+        // Native System Dispatcher Trigger Engine (Updated with simplify-mode for LINE and app schemas for Twitter)
         function executeExternalDispatch(platformKey) {
             if (appState.selectedArtistId === null || appState.selectedTemplateIndex === null) return;
 
@@ -1684,10 +1744,8 @@
 
             if (platformKey === 'line') {
                 executeClipboardCopyProcedure(messageBody);
-                let lineTargetUrl = "https://line.me/R/ti/p/@" + encodeURIComponent(currentArtist.lineId || '');
-                if (!currentArtist.lineId) {
-                    lineTargetUrl = "https://line.me/R/";
-                }
+                // Directly launch native LINE app home screen safely (since specific room linkage is disabled on iOS)
+                const lineTargetUrl = "line://";
                 showToastBanner("コピー＆LINEを起動します");
                 setTimeout(() => { window.location.href = lineTargetUrl; }, 800);
 
