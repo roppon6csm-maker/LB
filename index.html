@@ -622,6 +622,34 @@
             color: white;
         }
 
+        /* Artist Editor Modal Form Specification (Plan A) */
+        .edit-form-group {
+            margin-bottom: 10px;
+        }
+        .edit-form-label {
+            font-size: 11px;
+            font-weight: bold;
+            color: var(--text-muted);
+            margin-bottom: 2px;
+            display: block;
+        }
+        .edit-form-input {
+            width: 100%;
+            height: 32px;
+            padding: 4px 8px;
+            font-size: 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            outline: none;
+        }
+        .edit-form-input:focus {
+            border-color: var(--state-selected-border);
+        }
+        .btn-modal-save {
+            background-color: var(--state-selected-border);
+            color: white;
+        }
+
         @keyframes pulse {
             0% { transform: scale(1); }
             50% { transform: scale(1.02); }
@@ -638,7 +666,7 @@
                 <button id="tab-operation" class="nav-tab active" onclick="switchView('operation')">管理表</button>
                 <button id="tab-settings" class="nav-tab" onclick="switchView('settings')">設定</button>
             </div>
-            <div class="version-tag">ver.0.0.9</div>
+            <div class="version-tag">ver.0.1.0</div>
         </div>
     </header>
 
@@ -664,7 +692,7 @@
             </div>
         </div>
 
-        <div class="preview-title" style="margin-bottom: 2px;">1. 送信先（ヘッダータップで昇降順切替）</div>
+        <div class="preview-title" style="margin-bottom: 2px;">1. 送信先（行をタップで選択・ポップアップ編集 / ヘッダーで並び替え）</div>
         <div class="table-scroll-container">
             <table class="excel-table">
                 <thead>
@@ -736,6 +764,39 @@
             <div class="modal-footer">
                 <button type="button" class="btn-modal btn-modal-cancel" onclick="closeConfirmationModal()">キャンセル</button>
                 <button type="button" id="modal-confirm-btn" class="btn-modal btn-modal-confirm">実行</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="artist-editor-modal-overlay" class="modal-overlay">
+        <div class="modal-container" style="max-width: 310px;">
+            <div class="modal-title" id="edit-modal-header-title">アーティスト情報の編集</div>
+            <div class="modal-body" style="margin-bottom: 10px;">
+                <input type="hidden" id="edit-artist-uid">
+                <div class="edit-form-group">
+                    <label class="edit-form-label">アーティスト名</label>
+                    <input type="text" id="edit-artist-name" class="edit-form-input">
+                </div>
+                <div class="edit-form-group">
+                    <label class="edit-form-label">担当</label>
+                    <input type="text" id="edit-artist-charge" class="edit-form-input">
+                </div>
+                <div class="edit-form-group">
+                    <label class="edit-form-label">LINE ID</label>
+                    <input type="text" id="edit-artist-line" class="edit-form-input" placeholder="空欄時はボタン無効">
+                </div>
+                <div class="edit-form-group">
+                    <label class="edit-form-label">Twitter ID (@除く/URL可)</label>
+                    <input type="text" id="edit-artist-twitter" class="edit-form-input" placeholder="空欄時はボタン無効">
+                </div>
+                <div class="edit-form-group">
+                    <label class="edit-form-label">Gmail（メールアドレス）</label>
+                    <input type="text" id="edit-artist-mail" class="edit-form-input" placeholder="空欄時はボタン無効">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-modal btn-modal-cancel" onclick="closeArtistEditorModal()">閉じる</button>
+                <button type="button" class="btn-modal btn-modal-save" onclick="saveArtistEditorModalData()">変更を保存</button>
             </div>
         </div>
     </div>
@@ -995,6 +1056,50 @@
             modalActionCallback = null;
         }
 
+        // Plan A: Open/Close/Save Handlers for Interactive Inline Cell Editor Popup
+        function openArtistEditorModal(uid) {
+            const targetArtist = findArtistByUid(uid);
+            if (!targetArtist) return;
+
+            document.getElementById('edit-artist-uid').value = uid;
+            document.getElementById('edit-modal-header-title').innerText = `「${targetArtist.artist}」の情報を編集`;
+            document.getElementById('edit-artist-name').value = targetArtist.artist || '';
+            document.getElementById('edit-artist-charge').value = targetArtist.charge || '';
+            document.getElementById('edit-artist-line').value = targetArtist.lineId || '';
+            document.getElementById('edit-artist-twitter').value = targetArtist.twitterId || '';
+            document.getElementById('edit-artist-mail').value = targetArtist.mail || '';
+
+            document.getElementById('artist-editor-modal-overlay').classList.add('active');
+        }
+
+        function closeArtistEditorModal() {
+            document.getElementById('artist-editor-modal-overlay').classList.remove('active');
+        }
+
+        function saveArtistEditorModalData() {
+            const uid = document.getElementById('edit-artist-uid').value;
+            const targetArtist = findArtistByUid(uid);
+            if (!targetArtist) return;
+
+            // Mutate internal state variables directly
+            targetArtist.artist = document.getElementById('edit-artist-name').value.trim();
+            targetArtist.charge = document.getElementById('edit-artist-charge').value.trim();
+            targetArtist.lineId = document.getElementById('edit-artist-line').value.trim();
+            targetArtist.twitterId = document.getElementById('edit-artist-twitter').value.trim();
+            targetArtist.mail = document.getElementById('edit-artist-mail').value.trim();
+
+            // Synced save workflow across local caches and configurations textareas
+            localStorage.setItem('sd_matrix_artists', JSON.stringify(appState.artists));
+            reconstructRawArtistsTextAreaFromState();
+
+            // Refresh DOM Elements with mutated states
+            renderArtistsGrid();
+            recalculatePreviewAndControls();
+            
+            closeArtistEditorModal();
+            showToastBanner("アーティスト情報を更新保存しました");
+        }
+
         // Triggered upon Header Interactivity Actions
         function toggleSortPipeline(targetKey) {
             if (appState.currentSortKey === targetKey) {
@@ -1090,10 +1195,17 @@
                     row.classList.add('selected');
                 }
                 
-                // Allow row selection when tapping anywhere EXCEPT the inline select element
+                // Route interactions gracefully depending on targeted component node types
                 row.onclick = (e) => {
                     if (e.target.tagName.toLowerCase() === 'select') return;
-                    selectArtistUnit(item.uid);
+                    
+                    if (appState.selectedArtistId === item.uid) {
+                        // Plan A Integration: Second click triggers editing modal panel spawner 
+                        openArtistEditorModal(item.uid);
+                    } else {
+                        // First click executes standard selection workflow mechanics
+                        selectArtistUnit(item.uid);
+                    }
                 };
 
                 let badgeHtml = '';
