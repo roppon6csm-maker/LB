@@ -188,7 +188,7 @@
             background-color: var(--bg-card);
             margin-bottom: 8px;
             -webkit-overflow-scrolling: touch;
-            position: relative; /* Fixed Header Context container anchor */
+            position: relative;
         }
 
         .excel-table {
@@ -220,11 +220,11 @@
             font-weight: 700;
             cursor: pointer;
             position: sticky;
-            top: 0; /* Sticky Vertical Scroll Pin Locks first row items */
+            top: 0;
             z-index: 10;
             user-select: none;
             -webkit-user-select: none;
-            box-shadow: inset 0 -1px 0 var(--border-color); /* Prevents border bleeding during sticky scrolls */
+            box-shadow: inset 0 -1px 0 var(--border-color);
         }
 
         .excel-table th:active {
@@ -350,7 +350,7 @@
             padding: 6px;
             border-radius: 4px;
             border: 1px dashed var(--border-color);
-            max-height: 160px; /* Expanded vertical size for visibility */
+            max-height: 160px;
             overflow-y: auto;
         }
 
@@ -530,7 +530,7 @@
         }
 
         .btn-line { background-color: var(--brand-line); }
-        .btn-twitter { background-color: var(--brand-twitter); }
+        .btn-twitter { background-color: #1a1a1a; } /* Dark tone style for X platform */
         .btn-gmail { background-color: var(--brand-gmail); }
 
         /* Toast Alert Notification */
@@ -550,7 +550,7 @@
             box-shadow: 0 2px 5px rgba(0,0,0,0.15);
         }
 
-        /* Custom Modal Dialog for Critical Confirmations */
+        /* Custom Modal Dialog */
         .modal-overlay {
             position: fixed;
             top: 0; left: 0; right: 0; bottom: 0;
@@ -624,7 +624,7 @@
             color: white;
         }
 
-        /* Artist Editor Modal Form Specification (Plan A Popups) */
+        /* Artist Editor Modal Form Specification */
         .edit-form-group {
             margin-bottom: 8px;
         }
@@ -668,7 +668,7 @@
                 <button id="tab-operation" class="nav-tab active" onclick="switchView('operation')">管理表</button>
                 <button id="tab-settings" class="nav-tab" onclick="switchView('settings')">設定</button>
             </div>
-            <div class="version-tag">ver.0.1.1</div>
+            <div class="version-tag">ver.0.1.2</div>
         </div>
     </header>
 
@@ -708,13 +708,13 @@
                     </tr>
                 </thead>
                 <tbody id="artist-table-body-target">
-                    </tbody>
+                </tbody>
             </table>
         </div>
 
         <div class="preview-title">2. テンプレート</div>
         <div id="template-list-target" style="max-height: 110px; overflow-y: auto; margin-bottom: 8px;">
-            </div>
+        </div>
 
         <div class="preview-box">
             <div class="preview-title">メッセージプレビュー</div>
@@ -736,10 +736,10 @@
                 <span>■ テンプレート登録管理</span>
                 <button type="button" class="btn-mini-add" onclick="createNewTemplateRowInForm()">＋ テンプレートを追加</button>
             </div>
-            <span class="settings-desc">テンプレート名と本文（改行や空行もそのまま保持可能）を個別に設定・追加できます。</span>
+            <span class="settings-desc">テンプレート名と本文を個別に設定・追加できます。</span>
             
             <div id="template-builder-root-container" class="template-builder-list">
-                </div>
+            </div>
         </div>
 
         <button class="btn-action btn-save" onclick="processAndSaveRawData()">データを反映して保存</button>
@@ -749,10 +749,10 @@
 
     <div class="bottom-control-bar">
         <div class="action-cell">
-            <button id="action-trigger-line" class="dispatch-btn btn-line" onclick="executeExternalDispatch('line')">LINE<br>起動</button>
+            <button id="action-trigger-twitter" class="dispatch-btn btn-twitter" onclick="executeExternalDispatch('twitter')">X (Twitter)<br>起動</button>
         </div>
         <div class="action-cell">
-            <button id="action-trigger-twitter" class="dispatch-btn btn-twitter" onclick="executeExternalDispatch('twitter')">Twitter<br>DM</button>
+            <button id="action-trigger-line" class="dispatch-btn btn-line" onclick="executeExternalDispatch('line')">LINE<br>起動</button>
         </div>
         <div class="action-cell">
             <button id="action-trigger-gmail" class="dispatch-btn btn-gmail" onclick="executeExternalDispatch('gmail')">Gmail<br>下書き</button>
@@ -888,7 +888,7 @@
             appState.templates = cleanTemplates;
         }
 
-        // Programmatic Form Construction Dynamic Node Spawner
+        // Programmatic Form Construction
         function createNewTemplateRowInForm(titleValue = '', bodyValue = '') {
             const container = document.getElementById('template-builder-root-container');
             const elementId = "tpl_row_" + Date.now() + "_" + Math.random().toString(36).substr(2, 5);
@@ -902,7 +902,7 @@
                     <input type="text" class="template-input-title" placeholder="テンプレート名 (例: お礼連絡)" value="${escapeHtml(titleValue)}">
                     <button type="button" class="btn-mini-danger" onclick="triggerTemplateCardRemoval('${elementId}')">削除</button>
                 </div>
-                <textarea class="template-input-body" placeholder="送信メッセージの本文を入力してください（空行や改行もそのまま保存されます）">${escapeHtml(bodyValue)}</textarea>
+                <textarea class="template-input-body" placeholder="送信メッセージの本文を入力してください">${escapeHtml(bodyValue)}</textarea>
             `;
             container.appendChild(card);
         }
@@ -1006,7 +1006,7 @@
         function triggerAppResetWithModal() {
             openConfirmationModal(
                 "アプリ内データの完全リセット",
-                "本当にすべてのデータを削除しますか？<br>貼り付けた連絡先データおよび登録したテンプレートがすべて完全に消去されます。この操作は取り消せません。",
+                "本当にすべてのデータを削除しますか？貼り付けた連絡先データおよび登録したテンプレートがすべて完全に消去されます。",
                 () => {
                     executeCompleteStorageWipeLogic();
                 }
@@ -1048,7 +1048,6 @@
             modalActionCallback = null;
         }
 
-        // Plan A Popup: Added Furigana field input tracking framework
         function openArtistEditorModal(uid) {
             const targetArtist = findArtistByUid(uid);
             if (!targetArtist) return;
@@ -1056,7 +1055,7 @@
             document.getElementById('edit-artist-uid').value = uid;
             document.getElementById('edit-modal-header-title').innerText = `「${targetArtist.artist}」の情報を編集`;
             document.getElementById('edit-artist-name').value = targetArtist.artist || '';
-            document.getElementById('edit-artist-furi').value = targetArtist.furigana || ''; // Extracted furigana 
+            document.getElementById('edit-artist-furi').value = targetArtist.furigana || ''; 
             document.getElementById('edit-artist-charge').value = targetArtist.charge || '';
             document.getElementById('edit-artist-line').value = targetArtist.lineId || '';
             document.getElementById('edit-artist-twitter').value = targetArtist.twitterId || '';
@@ -1075,7 +1074,7 @@
             if (!targetArtist) return;
 
             targetArtist.artist = document.getElementById('edit-artist-name').value.trim();
-            targetArtist.furigana = document.getElementById('edit-artist-furi').value.trim(); // Save furigana field
+            targetArtist.furigana = document.getElementById('edit-artist-furi').value.trim(); 
             targetArtist.charge = document.getElementById('edit-artist-charge').value.trim();
             targetArtist.lineId = document.getElementById('edit-artist-line').value.trim();
             targetArtist.twitterId = document.getElementById('edit-artist-twitter').value.trim();
@@ -1084,7 +1083,6 @@
             localStorage.setItem('sd_matrix_artists', JSON.stringify(appState.artists));
             reconstructRawArtistsTextAreaFromState();
 
-            // Refresh UI grids with direct data binding
             renderArtistsGrid();
             recalculatePreviewAndControls();
             
@@ -1102,15 +1100,13 @@
             executeSortPipeline();
         }
 
-        // Core Sorting Framework logic processing: Refactored with Stable Sort logic mapping
+        // Stable Sort Algorithm (Preserving previous chronological sequence)
         function executeSortPipeline() {
             const key = appState.currentSortKey;
             const asc = appState.isAscending ? 1 : -1;
 
             if (!appState.artists || appState.artists.length === 0) return;
 
-            // Stable Sort Implementation: injects an explicit originalIndex index snapshot 
-            // before sorting to guarantee previous chronological arrays positions are fully preserved.
             const mappedWithIndex = appState.artists.map((el, i) => ({ index: i, value: el }));
 
             mappedWithIndex.sort((aPack, bPack) => {
@@ -1150,14 +1146,12 @@
                         break;
                 }
 
-                // If primary values evaluate identically, fallback onto preceding array ranks (preserves previous state)
                 if (comparison === 0) {
                     return aPack.index - bPack.index;
                 }
                 return comparison * asc;
             });
 
-            // Map standard unwrap back to original global reference tracker variables
             appState.artists = mappedWithIndex.map(pack => pack.value);
 
             updateHeaderIndicators();
@@ -1179,7 +1173,6 @@
             });
         }
 
-        // Render Excel Structure Grid Rows
         function renderArtistsGrid() {
             const container = document.getElementById('artist-table-body-target');
             container.innerHTML = '';
@@ -1285,16 +1278,13 @@
             });
         }
 
-        // 50on Sort and Jump Combo Pipeline (Refactored to force 'furigana' keys sort beforehand)
         function executeKanaSortAndJump(targetKanaCharacter) {
             if (appState.artists.length === 0) return;
             
-            // 1. Force state reconfiguration sorting arrays straight down by furigana field
             appState.currentSortKey = '50on';
             appState.isAscending = true; 
             executeSortPipeline();
 
-            // 2. Identify the target item offset inside newly modified data frames mapping bounds
             const charMap = {
                 'あ': /^[あぃいぅうぇえぉお]/,
                 'か': /^[かがきぎくぐけげこご]/,
@@ -1313,7 +1303,7 @@
 
             let targetUid = null;
             for (let i = 0; i < appState.artists.length; i++) {
-                const furi = appState.artists[i].furigana; // Map straight via 'furigana' metadata fields key
+                const furi = appState.artists[i].furigana;
                 if (furi && regex.test(furi)) {
                     targetUid = appState.artists[i].uid;
                     break;
@@ -1323,7 +1313,6 @@
             if (targetUid !== null) {
                 const targetElement = document.getElementById(`artist-card-${targetUid}`);
                 if (targetElement) {
-                    // Smoothly navigate container viewports focus tracking anchors
                     targetElement.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
                     
                     const originalBg = targetElement.style.backgroundColor;
@@ -1331,7 +1320,7 @@
                     setTimeout(() => { targetElement.style.backgroundColor = originalBg; }, 600);
                 }
             } else {
-                showToastBanner(`フリガナ基準で「${targetKanaCharacter}行」のアーティストは見つかりませんでした`);
+                showToastBanner(`フリガナ基準で「${targetKanaCharacter}行」は見つかりませんでした`);
             }
         }
 
