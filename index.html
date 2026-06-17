@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -12,15 +11,14 @@
             margin: 0;
             padding: 0;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans JP", sans-serif;
-            -webkit-tap-highlight-color: transparent;
         }
 
         :root {
-            --bg-primary: #f8fafc;
+            --bg-primary: #f4f6f9;
             --bg-card: #ffffff;
-            --text-main: #1e293b;
-            --text-muted: #64748b;
-            --accent-color: #475569;
+            --text-main: #2d3748;
+            --text-muted: #718096;
+            --accent-color: #4a5568;
             --border-color: #e2e8f0;
             
             /* Brand Colors */
@@ -28,35 +26,27 @@
             --brand-twitter: #1da1f2;
             --brand-gmail: #ea4335;
             
-            /* UI States & Sophisticated Glows */
-            --state-selected: #f0f7ff;
-            --state-selected-border: #3b82f6;
-            --state-danger: #ef4444;
-            --state-danger-hover: #dc2626;
-            --state-success: #10b981;
-            
-            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -1px rgba(0, 0, 0, 0.04);
-            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-            --transition-smooth: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            /* UI States */
+            --state-selected: #ebf8ff;
+            --state-selected-border: #3182ce;
+            --state-danger: #e53e3e;
         }
 
         body {
             background-color: var(--bg-primary);
             color: var(--text-main);
-            line-height: 1.5;
-            padding-bottom: 90px; /* Space for fixed bottom bar */
+            line-height: 1.4;
+            padding-bottom: 80px; /* Space for fixed bottom bar */
         }
 
         /* Inline Header Layout */
         header {
             background-color: var(--bg-card);
-            padding: 10px 16px;
+            padding: 8px 12px;
             border-bottom: 1px solid var(--border-color);
             position: sticky;
             top: 0;
             z-index: 50;
-            box-shadow: var(--shadow-sm);
         }
 
         .header-container {
@@ -67,65 +57,59 @@
         }
 
         .brand-title {
-            font-size: 16px;
-            font-weight: 800;
-            letter-spacing: -0.5px;
+            font-size: 15px;
+            font-weight: 700;
             color: var(--text-main);
             white-space: nowrap;
             margin-right: 8px;
-            background: linear-gradient(135deg, #1e293b, #3b82f6);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
         }
 
         /* Top Navigation Tabs Header Inline */
         .nav-inline-tabs {
             display: flex;
-            background: #f1f5f9;
-            border-radius: 8px;
-            padding: 3px;
+            background: #edf2f7;
+            border-radius: 6px;
+            padding: 2px;
             margin-right: 55px; /* Leave space for version tag */
             flex-grow: 1;
-            max-width: 170px;
+            max-width: 160px;
         }
 
         .nav-tab {
             flex: 1;
             text-align: center;
-            padding: 6px 0;
+            padding: 4px 0;
             font-size: 12px;
-            font-weight: 700;
+            font-weight: 600;
             color: var(--text-muted);
             cursor: pointer;
-            border-radius: 6px;
+            border-radius: 4px;
             border: none;
             background: transparent;
-            transition: var(--transition-smooth);
         }
 
         .nav-tab.active {
-            color: #2563eb;
+            color: var(--text-main);
             background-color: var(--bg-card);
-            box-shadow: var(--shadow-sm);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
 
         .version-tag {
             position: absolute;
             right: 0;
-            top: 4px;
+            top: 2px;
             font-size: 10px;
-            font-weight: 800;
-            color: #3b82f6;
-            background: #eff6ff;
-            padding: 2px 6px;
-            border-radius: 6px;
-            border: 1px solid #bfdbfe;
+            font-weight: bold;
+            color: var(--text-muted);
+            background: var(--bg-primary);
+            padding: 1px 4px;
+            border-radius: 4px;
         }
 
         /* Container Layouts */
         .view-section {
             display: none;
-            padding: 12px;
+            padding: 8px;
         }
 
         .view-section.active {
@@ -135,9 +119,9 @@
         /* Compact Integrated Utility Row Layout (Search & 50on Index Jumper) */
         .search-index-integration-row {
             display: flex;
-            gap: 8px;
+            gap: 6px;
             align-items: center;
-            margin-bottom: 10px;
+            margin-bottom: 6px;
         }
 
         .search-box-cell {
@@ -146,71 +130,65 @@
 
         .search-input {
             width: 100%;
-            height: 38px;
-            padding: 8px 12px;
-            font-size: 12px;
+            height: 34px;
+            padding: 6px 8px;
+            font-size: 11px;
             border: 1px solid var(--border-color);
-            border-radius: 8px;
+            border-radius: 6px;
             outline: none;
             background-color: var(--bg-card);
-            box-shadow: var(--shadow-sm);
-            transition: var(--transition-smooth);
         }
 
         .search-input:focus {
             border-color: var(--state-selected-border);
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
         }
 
         .index-nav-cell {
             flex-shrink: 0;
-            width: 165px;
+            width: 155px;
         }
 
         .index-nav-container {
             display: grid;
             grid-template-columns: repeat(5, 1fr);
-            gap: 3px;
+            gap: 2px;
             background-color: var(--bg-card);
-            padding: 3px;
-            border-radius: 8px;
+            padding: 2px;
+            border-radius: 6px;
             border: 1px solid var(--border-color);
-            box-shadow: var(--shadow-sm);
         }
 
         .index-btn {
-            background-color: #f8fafc;
-            border: 1px solid #f1f5f9;
-            border-radius: 4px;
+            background-color: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 3px;
             font-size: 10px;
-            font-weight: 700;
-            height: 16px;
-            line-height: 14px;
+            font-weight: 600;
+            height: 14px;
+            line-height: 12px;
             text-align: center;
             color: var(--text-main);
             cursor: pointer;
             -webkit-user-select: none;
             user-select: none;
-            transition: var(--transition-smooth);
         }
 
         .index-btn:active {
             background-color: #e2e8f0;
-            transform: scale(0.95);
         }
 
         /* Excel-like Table Layout Specifications */
         .table-scroll-container {
             width: 100%;
-            max-height: 240px;
+            max-height: 220px;
             overflow-y: auto;
             overflow-x: auto;
             border: 1px solid var(--border-color);
-            border-radius: 8px;
+            border-radius: 6px;
             background-color: var(--bg-card);
-            margin-bottom: 12px;
-            box-shadow: var(--shadow-sm);
+            margin-bottom: 8px;
             -webkit-overflow-scrolling: touch;
+            position: relative; /* Fixed Header Context container anchor */
         }
 
         .excel-table {
@@ -222,7 +200,7 @@
         }
 
         .excel-table th, .excel-table td {
-            padding: 8px 4px;
+            padding: 5px 3px;
             border-right: 1px solid var(--border-color);
             border-bottom: 1px solid var(--border-color);
             white-space: nowrap;
@@ -235,85 +213,44 @@
             border-right: none;
         }
 
-        /* Interactive Sorting Headers */
+        /* Interactive Sorting Headers & Sticky Fixed Position */
         .excel-table th {
-            background-color: #f1f5f9;
+            background-color: #edf2f7;
             color: var(--text-main);
-            font-weight: 800;
+            font-weight: 700;
             cursor: pointer;
             position: sticky;
-            top: 0;
+            top: 0; /* Sticky Vertical Scroll Pin Locks first row items */
             z-index: 10;
             user-select: none;
             -webkit-user-select: none;
-            transition: var(--transition-smooth);
+            box-shadow: inset 0 -1px 0 var(--border-color); /* Prevents border bleeding during sticky scrolls */
         }
 
-        .excel-table th:hover {
+        .excel-table th:active {
             background-color: #e2e8f0;
         }
 
         .sort-indicator {
             display: inline-block;
-            margin-left: 2px;
-            font-size: 9px;
-            color: #3b82f6;
+            margin-left: 1px;
+            font-size: 8px;
+            color: var(--state-selected-border);
         }
 
-        /* Highly Compact Columns Width Configuration (Added col-tw) */
-        .col-tw     { width: 32px; text-align: center; padding: 8px 2px !important; }
+        /* Highly Compact Columns Width Configuration */
         .col-artist { width: 95px; }
-        .col-charge { width: 50px; font-size: 9px; color: #475569; }
-        .col-flag   { width: 50px; text-align: center; }
-        .col-yomi   { width: 32px; text-align: center; font-size: 9px; color: #475569; }
+        .col-charge { width: 45px; font-size: 9px; color: #4a5568; }
+        .col-flag   { width: 55px; text-align: center; }
+        .col-yomi   { width: 32px; text-align: center; font-size: 9px; color: #4a5568; }
         .col-date   { width: 42px; text-align: center; font-size: 9px; }
-        .col-meth   { width: 40px; text-align: center; font-size: 9px; }
-
-        /* Clickable area indicator for quick edit */
-        .editable-cell {
-            cursor: pointer;
-            position: relative;
-            transition: var(--transition-smooth);
-        }
-        .editable-cell:hover {
-            background-color: #eff6ff !important;
-            color: #2563eb !important;
-        }
-
-        /* Twitter column cell icon stylings */
-        .tw-cell-link {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 100%;
-            height: 100%;
-            cursor: pointer;
-            transition: var(--transition-smooth);
-        }
-        .tw-cell-link svg {
-            width: 15px;
-            height: 15px;
-            fill: #1da1f2;
-            transition: var(--transition-smooth);
-        }
-        .tw-cell-link:hover svg {
-            transform: scale(1.15);
-            fill: #1a8cd8;
-        }
-        .tw-cell-link.disabled {
-            cursor: default;
-            pointer-events: none;
-        }
-        .tw-cell-link.disabled svg {
-            fill: #cbd5e1 !important; /* Elegant light slate gray */
-            opacity: 0.6;
-        }
+        .col-meth   { width: 38px; text-align: center; font-size: 9px; }
 
         /* Inline Dropdown Editor styling inside grid cell */
         .cell-select-editor {
             width: 100%;
             font-size: 11px;
-            padding: 2px 0;
+            padding: 1px 0;
             border: 1px solid transparent;
             background: transparent;
             color: var(--text-main);
@@ -321,24 +258,22 @@
             cursor: pointer;
             text-align: center;
             text-align-last: center;
-            border-radius: 4px;
-            transition: var(--transition-smooth);
+            border-radius: 3px;
         }
 
         .cell-select-editor:focus {
             background-color: #ffffff;
             border-color: var(--state-selected-border);
-            box-shadow: var(--shadow-sm);
+            box-shadow: 0 0 2px rgba(49, 130, 206, 0.3);
         }
 
         /* Excel-like Row States Mapping Selector rules */
         .excel-table tr.table-row-item {
             cursor: pointer;
-            transition: background-color 0.15s ease;
         }
 
         .excel-table tr.table-row-item:hover {
-            background-color: #f8fafc;
+            background-color: #f7fafc;
         }
 
         .excel-table tr.table-row-item.selected {
@@ -352,72 +287,35 @@
         /* Compact Mini Badge Pills inside Grid cells */
         .cell-badge {
             font-size: 8px;
-            padding: 2px 4px;
-            border-radius: 4px;
-            font-weight: 800;
+            padding: 1px 2px;
+            border-radius: 3px;
+            font-weight: bold;
             display: inline-block;
             line-height: 1;
-            letter-spacing: 0.2px;
         }
-        .cell-badge-line { background-color: #ecfdf5; color: var(--brand-line); border: 1px solid #d1fae5; }
-        .cell-badge-twitter { background-color: #f0f9ff; color: var(--brand-twitter); border: 1px solid #e0f2fe; }
-        .cell-badge-mail { background-color: #fef2f2; color: var(--brand-gmail); border: 1px solid #fee2e2; }
-        .cell-badge-default { background-color: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; }
+        .cell-badge-line { background-color: #e6f9ed; color: var(--brand-line); }
+        .cell-badge-twitter { background-color: #e8f5fe; color: var(--brand-twitter); }
+        .cell-badge-mail { background-color: #fdeaea; color: var(--brand-gmail); }
+        .cell-badge-default { background-color: #edf2f7; color: #4a5568; }
 
         /* Template Row Specifics */
         .template-row-item {
             background-color: var(--bg-card);
             border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 10px;
-            margin-bottom: 6px;
+            border-radius: 6px;
+            padding: 8px;
+            margin-bottom: 4px;
             cursor: pointer;
-            box-shadow: var(--shadow-sm);
-            transition: var(--transition-smooth);
-        }
-
-        .template-row-item:hover {
-            border-color: #cbd5e1;
-            transform: translateY(-1px);
         }
 
         .template-row-item.selected {
             background-color: var(--state-selected);
             border-color: var(--state-selected-border);
-            box-shadow: 0 0 0 1px var(--state-selected-border);
-        }
-
-        .template-header-row {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 6px;
         }
 
         .template-title {
             font-size: 13px;
-            font-weight: 800;
-            color: var(--text-main);
-            flex: 1;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        /* Smart App Identification Tag Badge styling */
-        .template-tag-badge {
-            font-size: 9px;
-            font-weight: 800;
-            color: #4f46e5;
-            background-color: #e0e7ff;
-            border: 1px solid #c7d2fe;
-            padding: 2px 6px;
-            border-radius: 4px;
-            white-space: nowrap;
-            flex-shrink: 0;
-            max-width: 90px;
-            overflow: hidden;
-            text-overflow: ellipsis;
+            font-weight: 700;
         }
 
         .template-snippet {
@@ -426,55 +324,49 @@
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            margin-top: 4px;
+            margin-top: 2px;
         }
 
         /* Preview Box Layout */
         .preview-box {
             background-color: #fff;
             border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 12px;
-            margin-top: 10px;
-            box-shadow: var(--shadow-sm);
+            border-radius: 6px;
+            padding: 8px;
+            margin-top: 8px;
         }
 
         .preview-title {
             font-size: 11px;
-            font-weight: 800;
+            font-weight: bold;
             color: var(--text-muted);
-            margin-bottom: 6px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
+            margin-bottom: 4px;
         }
 
         .preview-content {
             font-size: 12px;
             white-space: pre-wrap;
             background: #f8fafc;
-            padding: 10px;
-            border-radius: 6px;
+            padding: 6px;
+            border-radius: 4px;
             border: 1px dashed var(--border-color);
-            max-height: 180px; /* Expanded vertical size for visibility */
+            max-height: 160px; /* Expanded vertical size for visibility */
             overflow-y: auto;
-            color: #334155;
-            line-height: 1.6;
         }
 
         /* Settings Tab Configuration */
         .settings-group {
             background-color: var(--bg-card);
             border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 12px;
-            margin-bottom: 10px;
-            box-shadow: var(--shadow-sm);
+            border-radius: 6px;
+            padding: 10px;
+            margin-bottom: 8px;
         }
 
         .settings-label {
             font-size: 12px;
-            font-weight: 800;
-            margin-bottom: 6px;
+            font-weight: 700;
+            margin-bottom: 4px;
             color: var(--text-main);
             display: flex;
             justify-content: space-between;
@@ -484,171 +376,113 @@
         .settings-desc {
             font-size: 10px;
             color: var(--text-muted);
-            margin-bottom: 8px;
+            margin-bottom: 6px;
             display: block;
         }
 
         .paste-textarea {
             width: 100%;
-            height: 100px;
+            height: 90px;
             font-size: 11px;
-            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-            padding: 8px;
+            font-family: monospace;
+            padding: 6px;
             border: 1px solid var(--border-color);
-            border-radius: 6px;
+            border-radius: 4px;
             resize: none;
             outline: none;
-            background-color: #f8fafc;
-            transition: var(--transition-smooth);
         }
 
         .paste-textarea:focus {
             border-color: var(--state-selected-border);
-            background-color: #ffffff;
         }
 
         /* Dynamic Template Form List UI Styles */
         .template-builder-list {
             display: flex;
             flex-direction: column;
-            gap: 10px;
-            margin-top: 6px;
+            gap: 8px;
+            margin-top: 4px;
         }
 
         .template-builder-card {
             background: #f8fafc;
             border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 10px;
+            border-radius: 6px;
+            padding: 6px;
             position: relative;
         }
 
         .template-card-header {
             display: flex;
-            gap: 6px;
-            margin-bottom: 6px;
-            align-items: center;
+            gap: 4px;
+            margin-bottom: 4px;
         }
 
         .template-input-title {
-            flex-grow: 2;
-            font-size: 11px;
-            padding: 6px;
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            outline: none;
-            font-weight: 700;
-            background-color: #fff;
-            transition: var(--transition-smooth);
-        }
-
-        .template-input-title:focus {
-            border-color: var(--state-selected-border);
-        }
-
-        .template-input-tag {
             flex-grow: 1;
-            width: 80px;
             font-size: 11px;
-            padding: 6px;
+            padding: 4px;
             border: 1px solid var(--border-color);
-            border-radius: 6px;
+            border-radius: 4px;
             outline: none;
-            font-weight: 700;
-            background-color: #fff;
-            color: #4f46e5;
-            transition: var(--transition-smooth);
-        }
-
-        .template-input-tag:focus {
-            border-color: #818cf8;
-            box-shadow: 0 0 0 2px rgba(129, 140, 248, 0.1);
+            font-weight: bold;
         }
 
         .template-input-body {
             width: 100%;
-            height: 70px;
+            height: 60px;
             font-size: 11px;
-            padding: 6px;
+            padding: 4px;
             border: 1px solid var(--border-color);
-            border-radius: 6px;
+            border-radius: 4px;
             resize: vertical;
             outline: none;
-            background-color: #fff;
-            transition: var(--transition-smooth);
-        }
-
-        .template-input-body:focus {
-            border-color: var(--state-selected-border);
         }
 
         .btn-mini-danger {
-            background-color: #fff;
+            background-color: #fffafb;
             color: var(--state-danger);
-            border: 1px solid #fee2e2;
+            border: 1px solid #fed7d7;
             font-size: 10px;
-            padding: 4px 8px;
-            border-radius: 6px;
+            padding: 2px 6px;
+            border-radius: 4px;
             cursor: pointer;
-            font-weight: 700;
-            transition: var(--transition-smooth);
-        }
-
-        .btn-mini-danger:hover {
-            background-color: #fef2f2;
-            border-color: #fca5a5;
+            font-weight: bold;
         }
 
         .btn-mini-add {
-            background-color: #eff6ff;
-            color: #2563eb;
-            border: 1px solid #bfdbfe;
+            background-color: #ebf8ff;
+            color: var(--state-selected-border);
+            border: 1px solid #bee3f8;
             font-size: 10px;
-            padding: 4px 10px;
-            border-radius: 6px;
+            padding: 3px 8px;
+            border-radius: 4px;
             cursor: pointer;
-            font-weight: 800;
-            transition: var(--transition-smooth);
-        }
-
-        .btn-mini-add:hover {
-            background-color: #dbeafe;
+            font-weight: bold;
         }
 
         .btn-action {
             width: 100%;
-            padding: 12px;
+            padding: 10px;
             font-size: 13px;
-            font-weight: 800;
+            font-weight: 700;
             border: none;
-            border-radius: 8px;
+            border-radius: 6px;
             cursor: pointer;
             text-align: center;
-            box-shadow: var(--shadow-sm);
-            transition: var(--transition-smooth);
         }
 
         .btn-save {
-            background-color: #2563eb;
+            background-color: var(--state-selected-border);
             color: white;
         }
 
-        .btn-save:hover {
-            background-color: #1d4ed8;
-            box-shadow: var(--shadow-md);
-        }
-
         .btn-clear {
-            background-color: #f1f5f9;
-            color: #475569;
+            background-color: #edf2f7;
+            color: #4a5568;
             font-size: 11px;
-            padding: 6px;
-            margin-top: 8px;
-            border: 1px solid #cbd5e1;
-        }
-
-        .btn-clear:hover {
-            background-color: #e2e8f0;
+            padding: 4px;
+            margin-top: 6px;
         }
 
         /* Fixed Bottom Control Bar */
@@ -657,37 +491,32 @@
             bottom: 0;
             left: 0;
             right: 0;
-            background-color: rgba(255, 255, 255, 0.9);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
+            background-color: var(--bg-card);
             border-top: 1px solid var(--border-color);
-            padding: 10px 12px;
+            padding: 8px;
             z-index: 100;
             display: table;
             width: 100%;
-            box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.05);
         }
 
         .action-cell {
             display: table-cell;
             width: 33.333%;
-            padding: 0 4px;
+            padding: 0 3px;
         }
 
         .dispatch-btn {
             width: 100%;
-            padding: 12px 2px;
+            padding: 10px 2px;
             font-size: 12px;
-            font-weight: 800;
+            font-weight: bold;
             color: white;
             border: none;
-            border-radius: 8px;
+            border-radius: 6px;
             cursor: pointer;
             text-align: center;
             opacity: 0.25;
             pointer-events: none;
-            transition: var(--transition-smooth);
-            box-shadow: var(--shadow-sm);
         }
 
         .dispatch-btn.enabled {
@@ -695,47 +524,37 @@
             pointer-events: auto;
         }
 
-        .dispatch-btn:active {
-            transform: scale(0.97);
-        }
-
         .dispatch-btn.suggested {
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.4);
+            box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.5);
             animation: pulse 2s infinite;
         }
 
         .btn-line { background-color: var(--brand-line); }
-        .btn-line:hover { background-color: #05b04b; }
         .btn-twitter { background-color: var(--brand-twitter); }
-        .btn-twitter:hover { background-color: #1a8cd8; }
         .btn-gmail { background-color: var(--brand-gmail); }
-        .btn-gmail:hover { background-color: #d93025; }
 
         /* Toast Alert Notification */
         .toast {
             position: fixed;
-            top: 20px;
+            top: 15px;
             left: 50%;
             transform: translateX(-50%);
-            background-color: #0f172a;
+            background-color: rgba(45, 55, 72, 0.93);
             color: white;
-            padding: 10px 20px;
-            border-radius: 20px;
+            padding: 8px 16px;
+            border-radius: 16px;
             font-size: 12px;
-            font-weight: 700;
+            font-weight: 600;
             z-index: 200;
             display: none;
-            box-shadow: var(--shadow-lg);
-            animation: slideDown 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.15);
         }
 
-        /* Custom Modal Dialog for Critical Confirmations & Quick Edit */
+        /* Custom Modal Dialog for Critical Confirmations */
         .modal-overlay {
             position: fixed;
             top: 0; left: 0; right: 0; bottom: 0;
-            background-color: rgba(15, 23, 42, 0.6);
-            backdrop-filter: blur(4px);
-            -webkit-backdrop-filter: blur(4px);
+            background-color: rgba(0, 0, 0, 0.4);
             z-index: 500;
             display: flex;
             align-items: center;
@@ -753,13 +572,13 @@
 
         .modal-container {
             background-color: var(--bg-card);
-            border-radius: 12px;
+            border-radius: 8px;
             width: 100%;
-            max-width: 320px;
-            padding: 20px;
-            box-shadow: var(--shadow-lg);
-            transform: scale(0.95);
-            transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            max-width: 290px;
+            padding: 16px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            transform: scale(0.9);
+            transition: transform 0.2s ease;
         }
 
         .modal-overlay.active .modal-container {
@@ -767,19 +586,17 @@
         }
 
         .modal-title {
-            font-size: 14px;
-            font-weight: 800;
+            font-size: 13px;
+            font-weight: bold;
             color: var(--text-main);
-            margin-bottom: 8px;
-            border-bottom: 2px solid var(--border-color);
-            padding-bottom: 6px;
+            margin-bottom: 6px;
         }
 
         .modal-body {
             font-size: 12px;
-            color: #475569;
-            margin-bottom: 16px;
-            line-height: 1.5;
+            color: #4a5568;
+            margin-bottom: 14px;
+            line-height: 1.4;
         }
 
         .modal-footer {
@@ -789,89 +606,56 @@
         }
 
         .btn-modal {
-            padding: 8px 16px;
+            padding: 6px 12px;
             font-size: 11px;
-            font-weight: 800;
-            border-radius: 6px;
+            font-weight: bold;
+            border-radius: 4px;
             border: none;
             cursor: pointer;
-            transition: var(--transition-smooth);
         }
 
         .btn-modal-cancel {
-            background-color: #f1f5f9;
-            color: #475569;
-        }
-        .btn-modal-cancel:hover {
-            background-color: #e2e8f0;
+            background-color: #edf2f7;
+            color: #4a5568;
         }
 
         .btn-modal-confirm {
             background-color: var(--state-danger);
             color: white;
         }
-        .btn-modal-confirm:hover {
-            background-color: var(--state-danger-hover);
-        }
 
-        /* Quick Edit Modal Specific UI Layout */
-        .quick-edit-form {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            max-height: 380px;
-            overflow-y: auto;
-            padding: 2px;
+        /* Artist Editor Modal Form Specification (Plan A Popups) */
+        .edit-form-group {
+            margin-bottom: 8px;
         }
-
-        .form-row {
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-        }
-
-        .form-row label {
-            font-size: 10px;
-            font-weight: 800;
+        .edit-form-label {
+            font-size: 11px;
+            font-weight: bold;
             color: var(--text-muted);
-            text-transform: uppercase;
+            margin-bottom: 2px;
+            display: block;
         }
-
-        .form-row input, .form-row select {
+        .edit-form-input {
             width: 100%;
-            height: 34px;
-            padding: 6px 10px;
+            height: 30px;
+            padding: 4px 8px;
             font-size: 12px;
             border: 1px solid var(--border-color);
-            border-radius: 6px;
+            border-radius: 4px;
             outline: none;
-            background-color: #f8fafc;
-            transition: var(--transition-smooth);
         }
-
-        .form-row input:focus, .form-row select:focus {
+        .edit-form-input:focus {
             border-color: var(--state-selected-border);
-            background-color: #ffffff;
-            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
         }
-
         .btn-modal-save {
-            background-color: #2563eb;
+            background-color: var(--state-selected-border);
             color: white;
-        }
-        .btn-modal-save:hover {
-            background-color: #1d4ed8;
         }
 
         @keyframes pulse {
             0% { transform: scale(1); }
-            50% { transform: scale(1.015); }
+            50% { transform: scale(1.02); }
             100% { transform: scale(1); }
-        }
-
-        @keyframes slideDown {
-            from { transform: translate(-50%, -10px); opacity: 0; }
-            to { transform: translate(-50%, 0); opacity: 1; }
         }
     </style>
 </head>
@@ -884,7 +668,7 @@
                 <button id="tab-operation" class="nav-tab active" onclick="switchView('operation')">管理表</button>
                 <button id="tab-settings" class="nav-tab" onclick="switchView('settings')">設定</button>
             </div>
-            <div class="version-tag">ver.0.1.3</div>
+            <div class="version-tag">ver.0.1.1</div>
         </div>
     </header>
 
@@ -896,26 +680,25 @@
             </div>
             <div class="index-nav-cell">
                 <div class="index-nav-container">
-                    <div class="index-btn" onclick="scrollToIndexRow('あ')">あ</div>
-                    <div class="index-btn" onclick="scrollToIndexRow('か')">か</div>
-                    <div class="index-btn" onclick="scrollToIndexRow('さ')">さ</div>
-                    <div class="index-btn" onclick="scrollToIndexRow('た')">た</div>
-                    <div class="index-btn" onclick="scrollToIndexRow('な')">な</div>
-                    <div class="index-btn" onclick="scrollToIndexRow('は')">は</div>
-                    <div class="index-btn" onclick="scrollToIndexRow('ま')">ま</div>
-                    <div class="index-btn" onclick="scrollToIndexRow('や')">や</div>
-                    <div class="index-btn" onclick="scrollToIndexRow('ら')">ら</div>
-                    <div class="index-btn" onclick="scrollToIndexRow('わ')">わ</div>
+                    <div class="index-btn" onclick="executeKanaSortAndJump('あ')">あ</div>
+                    <div class="index-btn" onclick="executeKanaSortAndJump('か')">か</div>
+                    <div class="index-btn" onclick="executeKanaSortAndJump('さ')">さ</div>
+                    <div class="index-btn" onclick="executeKanaSortAndJump('た')">た</div>
+                    <div class="index-btn" onclick="executeKanaSortAndJump('な')">な</div>
+                    <div class="index-btn" onclick="executeKanaSortAndJump('は')">は</div>
+                    <div class="index-btn" onclick="executeKanaSortAndJump('ま')">ま</div>
+                    <div class="index-btn" onclick="executeKanaSortAndJump('や')">や</div>
+                    <div class="index-btn" onclick="executeKanaSortAndJump('ら')">ら</div>
+                    <div class="index-btn" onclick="executeKanaSortAndJump('わ')">わ</div>
                 </div>
             </div>
         </div>
 
-        <div class="preview-title" style="margin-bottom: 4px;">1. 送信先（ヘッダータップで昇降順切替）</div>
+        <div class="preview-title" style="margin-bottom: 2px;">1. 送信先（行タップで選択・編集 / ヘッダーで直前条件維持の並び替え）</div>
         <div class="table-scroll-container">
             <table class="excel-table">
                 <thead>
                     <tr>
-                        <th class="col-tw">X</th>
                         <th class="col-artist" onclick="toggleSortPipeline('50on')">アーティスト<span id="indicator-50on" class="sort-indicator">▲</span></th>
                         <th class="col-charge" onclick="toggleSortPipeline('charge')">担当<span id="indicator-charge" class="sort-indicator"></span></th>
                         <th class="col-flag" onclick="toggleSortPipeline('flag')">出演<span id="indicator-flag" class="sort-indicator"></span></th>
@@ -953,7 +736,7 @@
                 <span>■ テンプレート登録管理</span>
                 <button type="button" class="btn-mini-add" onclick="createNewTemplateRowInForm()">＋ テンプレートを追加</button>
             </div>
-            <span class="settings-desc">テンプレート名、識別用タグ（最大10文字）、本文を個別に設定・追加できます。</span>
+            <span class="settings-desc">テンプレート名と本文（改行や空行もそのまま保持可能）を個別に設定・追加できます。</span>
             
             <div id="template-builder-root-container" class="template-builder-list">
                 </div>
@@ -976,7 +759,6 @@
         </div>
     </div>
 
-    <!-- Confirm Modal -->
     <div id="global-modal-overlay" class="modal-overlay">
         <div class="modal-container">
             <div id="modal-title-node" class="modal-title">確認</div>
@@ -988,56 +770,39 @@
         </div>
     </div>
 
-    <!-- Quick Edit Modal -->
-    <div id="quick-edit-modal-overlay" class="modal-overlay">
-        <div class="modal-container" style="max-width: 340px;">
-            <div class="modal-title">送信先情報の直接編集</div>
-            <div class="modal-body" style="margin-bottom: 12px;">
-                <div class="quick-edit-form">
-                    <input type="hidden" id="edit-artist-uid">
-                    <div class="form-row">
-                        <label>アーティスト</label>
-                        <input type="text" id="edit-artist-name">
-                    </div>
-                    <div class="form-row">
-                        <label>担当</label>
-                        <input type="text" id="edit-artist-charge">
-                    </div>
-                    <div class="form-row">
-                        <label>出演</label>
-                        <select id="edit-artist-flag">
-                            <option value="">-</option>
-                            <option value="🚩">🚩</option>
-                            <option value="🙆🏼‍♀️">🙆🏼‍♀️</option>
-                            <option value="🤦‍♂️">🤦‍♂️</option>
-                            <option value="🙅‍♀️">🙅‍♀️</option>
-                        </select>
-                    </div>
-                    <div class="form-row">
-                        <label>ヨミ</label>
-                        <input type="text" id="edit-artist-yomi">
-                    </div>
-                    <div class="form-row">
-                        <label>日付</label>
-                        <input type="text" id="edit-artist-date">
-                    </div>
-                    <div class="form-row">
-                        <label>LINEID</label>
-                        <input type="text" id="edit-artist-lineid">
-                    </div>
-                    <div class="form-row">
-                        <label>twitterID (URLでも記述可)</label>
-                        <input type="text" id="edit-artist-twitterid">
-                    </div>
-                    <div class="form-row">
-                        <label>メアド (Gmail)</label>
-                        <input type="text" id="edit-artist-mail">
-                    </div>
+    <div id="artist-editor-modal-overlay" class="modal-overlay">
+        <div class="modal-container" style="max-width: 310px;">
+            <div class="modal-title" id="edit-modal-header-title">アーティスト情報の編集</div>
+            <div class="modal-body" style="margin-bottom: 10px;">
+                <input type="hidden" id="edit-artist-uid">
+                <div class="edit-form-group">
+                    <label class="edit-form-label">アーティスト名</label>
+                    <input type="text" id="edit-artist-name" class="edit-form-input">
+                </div>
+                <div class="edit-form-group">
+                    <label class="edit-form-label">フリガナ（furigana）</label>
+                    <input type="text" id="edit-artist-furi" class="edit-form-input" placeholder="あいうえお順判定用のひらがな/かたかな">
+                </div>
+                <div class="edit-form-group">
+                    <label class="edit-form-label">担当</label>
+                    <input type="text" id="edit-artist-charge" class="edit-form-input">
+                </div>
+                <div class="edit-form-group">
+                    <label class="edit-form-label">LINE ID</label>
+                    <input type="text" id="edit-artist-line" class="edit-form-input" placeholder="空欄時はボタン無効">
+                </div>
+                <div class="edit-form-group">
+                    <label class="edit-form-label">Twitter ID (@除く/URL可)</label>
+                    <input type="text" id="edit-artist-twitter" class="edit-form-input" placeholder="空欄時はボタン無効">
+                </div>
+                <div class="edit-form-group">
+                    <label class="edit-form-label">Gmail（メールアドレス）</label>
+                    <input type="text" id="edit-artist-mail" class="edit-form-input" placeholder="空欄時はボタン無効">
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn-modal btn-modal-cancel" onclick="closeQuickEditModal()">キャンセル</button>
-                <button type="button" class="btn-modal btn-modal-save" onclick="saveQuickEditData()">保存して同期</button>
+                <button type="button" class="btn-modal btn-modal-cancel" onclick="closeArtistEditorModal()">閉じる</button>
+                <button type="button" class="btn-modal btn-modal-save" onclick="saveArtistEditorModalData()">変更を保存</button>
             </div>
         </div>
     </div>
@@ -1055,9 +820,7 @@
             isAscending: true       
         };
 
-        // Modal context container pointer callback
         let modalActionCallback = null;
-
         const WEEK_DAYS = ["日", "月", "火", "水", "木", "金", "土"];
 
         // Execution Lifecycle Initializer
@@ -1108,7 +871,6 @@
             }
         }
 
-        // Backward compatibility fallback parser processing raw block texts string lines
         function parseLegacyTemplatesString(rawText) {
             let cleanTemplates = [];
             const blocks = rawText.split(/\n\s*\n|\n---+\n/);
@@ -1120,7 +882,6 @@
                 const extractedBody = blockLines.slice(1).join('\n').trim();
                 cleanTemplates.push({
                     title: extractedTitle,
-                    tag: '',
                     body: extractedBody ? extractedBody : extractedTitle
                 });
             });
@@ -1128,7 +889,7 @@
         }
 
         // Programmatic Form Construction Dynamic Node Spawner
-        function createNewTemplateRowInForm(titleValue = '', tagValue = '', bodyValue = '') {
+        function createNewTemplateRowInForm(titleValue = '', bodyValue = '') {
             const container = document.getElementById('template-builder-root-container');
             const elementId = "tpl_row_" + Date.now() + "_" + Math.random().toString(36).substr(2, 5);
             
@@ -1139,7 +900,6 @@
             card.innerHTML = `
                 <div class="template-card-header">
                     <input type="text" class="template-input-title" placeholder="テンプレート名 (例: お礼連絡)" value="${escapeHtml(titleValue)}">
-                    <input type="text" class="template-input-tag" placeholder="識別タグ (例: 既存案内)" value="${escapeHtml(tagValue)}" maxlength="10">
                     <button type="button" class="btn-mini-danger" onclick="triggerTemplateCardRemoval('${elementId}')">削除</button>
                 </div>
                 <textarea class="template-input-body" placeholder="送信メッセージの本文を入力してください（空行や改行もそのまま保存されます）">${escapeHtml(bodyValue)}</textarea>
@@ -1147,21 +907,19 @@
             container.appendChild(card);
         }
 
-        // Component Sync rendering actual template items from internal states array objects
         function syncFormStateFromTemplatesArray() {
             const container = document.getElementById('template-builder-root-container');
             container.innerHTML = '';
             
             if (appState.templates && appState.templates.length > 0) {
                 appState.templates.forEach(tpl => {
-                    createNewTemplateRowInForm(tpl.title, tpl.tag || '', tpl.body);
+                    createNewTemplateRowInForm(tpl.title, tpl.body);
                 });
             } else {
-                createNewTemplateRowInForm('', '', '');
+                createNewTemplateRowInForm('', '');
             }
         }
 
-        // Intercepts and prompts template removal action inside setup screen view via beautiful modal step
         function triggerTemplateCardRemoval(elementId) {
             const targetCard = document.getElementById(elementId);
             if (!targetCard) return;
@@ -1180,14 +938,13 @@
             );
         }
 
-        // Main Importer Pipeline compiling structured matrix array and dynamic form inputs layout states
+        // Main Importer Pipeline compiling structured matrix array
         function processAndSaveRawData() {
             const rawArtistsText = document.getElementById('import-artists-raw').value.trim();
 
             let cleanArtists = [];
             let cleanTemplates = [];
 
-            // 1. Process Artists Stream Pipeline
             if (rawArtistsText) {
                 const lines = rawArtistsText.split('\n');
                 lines.forEach((line, index) => {
@@ -1216,17 +973,14 @@
                 cleanArtists = appState.artists;
             }
 
-            // 2. Extrapolate Values directly from custom generated DOM Forms instead of fragile text tokenizers
             const formCards = document.querySelectorAll('.template-builder-card');
             formCards.forEach(card => {
                 const tTitle = card.querySelector('.template-input-title').value.trim();
-                const tTag = card.querySelector('.template-input-tag').value.trim();
                 const tBody = card.querySelector('.template-input-body').value;
                 
                 if (tTitle || tBody.trim()) {
                     cleanTemplates.push({
                         title: tTitle ? tTitle : "無題のテンプレート",
-                        tag: tTag,
                         body: tBody
                     });
                 }
@@ -1249,7 +1003,6 @@
             switchView('operation');
         }
 
-        // Safety verification controller spawning custom layout dialog overlay
         function triggerAppResetWithModal() {
             openConfirmationModal(
                 "アプリ内データの完全リセット",
@@ -1260,7 +1013,6 @@
             );
         }
 
-        // Implementation handler processing absolute database deletion metrics
         function executeCompleteStorageWipeLogic() {
             localStorage.clear();
             document.getElementById('import-artists-raw').value = '';
@@ -1277,32 +1029,69 @@
             renderTemplatesGrid();
             recalculatePreviewAndControls();
             updateHeaderIndicators();
-            createNewTemplateRowInForm('', '', '');
+            createNewTemplateRowInForm('', '');
             
             closeConfirmationModal();
             showToastBanner("すべてのアプリデータを初期化リセットしました");
         }
 
-        // Dynamic Modal Display Windows controller routers
         function openConfirmationModal(titleText, bodyHtml, confirmCallback) {
             document.getElementById('modal-title-node').innerText = titleText;
             document.getElementById('modal-body-node').innerHTML = bodyHtml;
-            
             modalActionCallback = confirmCallback;
-            
-            const btn = document.getElementById('modal-confirm-btn');
-            btn.onclick = modalActionCallback;
-            
+            document.getElementById('modal-confirm-btn').onclick = modalActionCallback;
             document.getElementById('global-modal-overlay').classList.add('active');
         }
 
-        // Standard Confirmation Modal Closes Handler
         function closeConfirmationModal() {
             document.getElementById('global-modal-overlay').classList.remove('active');
             modalActionCallback = null;
         }
 
-        // Triggered upon Header Interactivity Actions
+        // Plan A Popup: Added Furigana field input tracking framework
+        function openArtistEditorModal(uid) {
+            const targetArtist = findArtistByUid(uid);
+            if (!targetArtist) return;
+
+            document.getElementById('edit-artist-uid').value = uid;
+            document.getElementById('edit-modal-header-title').innerText = `「${targetArtist.artist}」の情報を編集`;
+            document.getElementById('edit-artist-name').value = targetArtist.artist || '';
+            document.getElementById('edit-artist-furi').value = targetArtist.furigana || ''; // Extracted furigana 
+            document.getElementById('edit-artist-charge').value = targetArtist.charge || '';
+            document.getElementById('edit-artist-line').value = targetArtist.lineId || '';
+            document.getElementById('edit-artist-twitter').value = targetArtist.twitterId || '';
+            document.getElementById('edit-artist-mail').value = targetArtist.mail || '';
+
+            document.getElementById('artist-editor-modal-overlay').classList.add('active');
+        }
+
+        function closeArtistEditorModal() {
+            document.getElementById('artist-editor-modal-overlay').classList.remove('active');
+        }
+
+        function saveArtistEditorModalData() {
+            const uid = document.getElementById('edit-artist-uid').value;
+            const targetArtist = findArtistByUid(uid);
+            if (!targetArtist) return;
+
+            targetArtist.artist = document.getElementById('edit-artist-name').value.trim();
+            targetArtist.furigana = document.getElementById('edit-artist-furi').value.trim(); // Save furigana field
+            targetArtist.charge = document.getElementById('edit-artist-charge').value.trim();
+            targetArtist.lineId = document.getElementById('edit-artist-line').value.trim();
+            targetArtist.twitterId = document.getElementById('edit-artist-twitter').value.trim();
+            targetArtist.mail = document.getElementById('edit-artist-mail').value.trim();
+
+            localStorage.setItem('sd_matrix_artists', JSON.stringify(appState.artists));
+            reconstructRawArtistsTextAreaFromState();
+
+            // Refresh UI grids with direct data binding
+            renderArtistsGrid();
+            recalculatePreviewAndControls();
+            
+            closeArtistEditorModal();
+            showToastBanner("アーティスト情報を更新保存しました");
+        }
+
         function toggleSortPipeline(targetKey) {
             if (appState.currentSortKey === targetKey) {
                 appState.isAscending = !appState.isAscending; 
@@ -1313,55 +1102,69 @@
             executeSortPipeline();
         }
 
-        // Core Sorting Framework logic processing direction changes
+        // Core Sorting Framework logic processing: Refactored with Stable Sort logic mapping
         function executeSortPipeline() {
             const key = appState.currentSortKey;
             const asc = appState.isAscending ? 1 : -1;
 
             if (!appState.artists || appState.artists.length === 0) return;
 
-            appState.artists.sort((a, b) => {
+            // Stable Sort Implementation: injects an explicit originalIndex index snapshot 
+            // before sorting to guarantee previous chronological arrays positions are fully preserved.
+            const mappedWithIndex = appState.artists.map((el, i) => ({ index: i, value: el }));
+
+            mappedWithIndex.sort((aPack, bPack) => {
+                const a = aPack.value;
+                const b = bPack.value;
                 let comparison = 0;
+
                 switch (key) {
                     case '50on':
                         comparison = (a.furigana || '').localeCompare(b.furigana || 'ー', 'ja');
                         break;
                     case 'charge':
-                        if (!a.charge && b.charge) return 1;
-                        if (a.charge && !b.charge) return -1;
-                        comparison = (a.charge || '').localeCompare(b.charge || '', 'ja');
+                        if (!a.charge && b.charge) comparison = 1;
+                        else if (a.charge && !b.charge) comparison = -1;
+                        else comparison = (a.charge || '').localeCompare(b.charge || '', 'ja');
                         break;
                     case 'flag':
-                        if (!a.flag && b.flag) return 1;
-                        if (a.flag && !b.flag) return -1;
-                        comparison = (a.flag || '').localeCompare(b.flag || '', 'ja');
+                        if (!a.flag && b.flag) comparison = 1;
+                        else if (a.flag && !b.flag) comparison = -1;
+                        else comparison = (a.flag || '').localeCompare(b.flag || '', 'ja');
                         break;
                     case 'yomi':
-                        if (!a.yomi && b.yomi) return 1;
-                        if (a.yomi && !b.yomi) return -1;
-                        comparison = (a.yomi || '').localeCompare(b.yomi || '', 'ja');
+                        if (!a.yomi && b.yomi) comparison = 1;
+                        else if (a.yomi && !b.yomi) comparison = -1;
+                        else comparison = (a.yomi || '').localeCompare(b.yomi || '', 'ja');
                         break;
                     case 'date':
-                        if (!a.date && b.date) return 1;
-                        if (a.date && !b.date) return -1;
-                        if (!a.date && !b.date) return 0;
-                        comparison = (a.date || '').localeCompare(b.date || '', 'ja');
+                        if (!a.date && b.date) comparison = 1;
+                        else if (a.date && !b.date) comparison = -1;
+                        else if (!a.date && !b.date) comparison = 0;
+                        else comparison = (a.date || '').localeCompare(b.date || '', 'ja');
                         break;
                     case 'meth':
-                        if (!a.meth && b.meth) return 1;
-                        if (a.meth && !b.meth) return -1;
-                        comparison = (a.meth || '').localeCompare(b.meth || '', 'ja');
+                        if (!a.meth && b.meth) comparison = 1;
+                        else if (a.meth && !b.meth) comparison = -1;
+                        else comparison = (a.meth || '').localeCompare(b.meth || '', 'ja');
                         break;
+                }
+
+                // If primary values evaluate identically, fallback onto preceding array ranks (preserves previous state)
+                if (comparison === 0) {
+                    return aPack.index - bPack.index;
                 }
                 return comparison * asc;
             });
+
+            // Map standard unwrap back to original global reference tracker variables
+            appState.artists = mappedWithIndex.map(pack => pack.value);
 
             updateHeaderIndicators();
             renderArtistsGrid();
             filterArtists(); 
         }
 
-        // Renders visual ▲/▼ sort badges straight onto the HTML headers safely
         function updateHeaderIndicators() {
             const keys = ['50on', 'charge', 'flag', 'yomi', 'date', 'meth'];
             keys.forEach(k => {
@@ -1376,46 +1179,13 @@
             });
         }
 
-        // Twitter Quick Launcher (Deep Links X Mobile App)
-        function launchDirectXProfile(uid, e) {
-            if (e) e.stopPropagation(); // Stop row click triggers
-            
-            const targetArtist = findArtistByUid(uid);
-            if (!targetArtist) return;
-
-            const rawTwitterId = targetArtist.twitterId || '';
-            const parsedId = extractTwitterId(rawTwitterId);
-            if (!parsedId) return;
-
-            const isNumericOnly = /^\d+$/.test(parsedId);
-            let appUrl = '';
-            
-            if (isNumericOnly) {
-                appUrl = `twitter://user?id=${encodeURIComponent(parsedId)}`;
-            } else {
-                appUrl = `twitter://user?screen_name=${encodeURIComponent(parsedId)}`;
-            }
-
-            showToastBanner("X プロフィールを起動します");
-            const startTimestamp = Date.now();
-            window.location.href = appUrl;
-
-            // Browser Fallback logic
-            setTimeout(() => {
-                if (Date.now() - startTimestamp < 1500) {
-                    const webUrl = `https://x.com/${encodeURIComponent(parsedId)}`;
-                    window.location.href = webUrl;
-                }
-            }, 1000);
-        }
-
-        // Render Excel Structure Grid Rows (Added left-most Twitter Column)
+        // Render Excel Structure Grid Rows
         function renderArtistsGrid() {
             const container = document.getElementById('artist-table-body-target');
             container.innerHTML = '';
 
             if (appState.artists.length === 0) {
-                container.innerHTML = '<tr><td colspan="7" style="padding:12px; text-align:center; color:var(--text-muted); font-size:11px;">設定タブから登録してください。</td></tr>';
+                container.innerHTML = '<tr><td colspan="6" style="padding:12px; text-align:center; color:var(--text-muted); font-size:11px;">設定タブから登録してください。</td></tr>';
                 return;
             }
 
@@ -1430,17 +1200,12 @@
                     row.classList.add('selected');
                 }
                 
-                // Click interaction handles
                 row.onclick = (e) => {
-                    const clickedTagName = e.target.tagName.toLowerCase();
-                    if (clickedTagName === 'select') return;
-                    
-                    // Trigger row selection as baseline
-                    selectArtistUnit(item.uid);
-                    
-                    // If target is artist or charge cell, launch the Quick Edit PopUp sheet
-                    if (e.target.classList.contains('editable-cell')) {
-                        openQuickEditModal(item.uid);
+                    if (e.target.tagName.toLowerCase() === 'select') return;
+                    if (appState.selectedArtistId === item.uid) {
+                        openArtistEditorModal(item.uid);
+                    } else {
+                        selectArtistUnit(item.uid);
                     }
                 };
 
@@ -1452,24 +1217,12 @@
                     else badgeHtml = `<span class="cell-badge cell-badge-default">${escapeHtml(item.meth)}</span>`;
                 }
 
-                // Check Twitter ID existence for Gray-out logic
-                const hasTwitter = (item.twitterId && item.twitterId.trim() !== '');
-                const twIconClass = hasTwitter ? 'tw-cell-link' : 'tw-cell-link disabled';
-
-                // Compile inline drop-down state options mapping requirements
                 const currentFlag = item.flag || '';
                 const selectId = `select-flag-${item.uid}`;
 
                 row.innerHTML = `
-                    <td class="col-tw">
-                        <div class="${twIconClass}" onclick="launchDirectXProfile('${item.uid}', event)">
-                            <svg viewBox="0 0 24 24" aria-hidden="true">
-                                <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"></path>
-                            </svg>
-                        </div>
-                    </td>
-                    <td class="col-artist editable-cell" style="font-weight:700; color:#2563eb;">${escapeHtml(item.artist)}</td>
-                    <td class="col-charge editable-cell">${escapeHtml(item.charge || '-')}</td>
+                    <td class="col-artist" style="font-weight:700; color:var(--text-main);">${escapeHtml(item.artist)}</td>
+                    <td class="col-charge">${escapeHtml(item.charge || '-')}</td>
                     <td class="col-flag">
                         <select id="${selectId}" class="cell-select-editor" onchange="updateInlineFlagState('${item.uid}', this.value)">
                             <option value="-" ${currentFlag === '-' || currentFlag === '' ? 'selected' : ''}>-</option>
@@ -1480,89 +1233,35 @@
                         </select>
                     </td>
                     <td class="col-yomi">${escapeHtml(item.yomi || '-')}</td>
-                    <td class="col-date" style="color:#2563eb; font-weight:700;">${escapeHtml(item.date || '-')}</td>
+                    <td class="col-date" style="color:#2b6cb0; font-weight:600;">${escapeHtml(item.date || '-')}</td>
                     <td class="col-meth">${badgeHtml}</td>
                 `;
                 container.appendChild(row);
             });
         }
 
-        // Quick Edit Modal Operations
-        function openQuickEditModal(uid) {
-            const targetArtist = findArtistByUid(uid);
-            if (!targetArtist) return;
-
-            document.getElementById('edit-artist-uid').value = targetArtist.uid;
-            document.getElementById('edit-artist-name').value = targetArtist.artist || '';
-            document.getElementById('edit-artist-charge').value = targetArtist.charge || '';
-            document.getElementById('edit-artist-flag').value = targetArtist.flag || '';
-            document.getElementById('edit-artist-yomi').value = targetArtist.yomi || '';
-            document.getElementById('edit-artist-date').value = targetArtist.date || '';
-            document.getElementById('edit-artist-lineid').value = targetArtist.lineId || '';
-            document.getElementById('edit-artist-twitterid').value = targetArtist.twitterId || '';
-            document.getElementById('edit-artist-mail').value = targetArtist.mail || '';
-
-            document.getElementById('quick-edit-modal-overlay').classList.add('active');
-        }
-
-        function closeQuickEditModal() {
-            document.getElementById('quick-edit-modal-overlay').classList.remove('active');
-        }
-
-        function saveQuickEditData() {
-            const uid = document.getElementById('edit-artist-uid').value;
-            const targetArtist = findArtistByUid(uid);
-            if (!targetArtist) return;
-
-            targetArtist.artist = document.getElementById('edit-artist-name').value.trim();
-            targetArtist.charge = document.getElementById('edit-artist-charge').value.trim();
-            targetArtist.flag = document.getElementById('edit-artist-flag').value;
-            targetArtist.yomi = document.getElementById('edit-artist-yomi').value.trim();
-            targetArtist.date = document.getElementById('edit-artist-date').value.trim();
-            targetArtist.lineId = document.getElementById('edit-artist-lineid').value.trim();
-            targetArtist.twitterId = document.getElementById('edit-artist-twitterid').value.trim();
-            targetArtist.mail = document.getElementById('edit-artist-mail').value.trim();
-
-            // Auto sync back to memory engine and update layouts
-            localStorage.setItem('sd_matrix_artists', JSON.stringify(appState.artists));
-            reconstructRawArtistsTextAreaFromState();
-
-            // Refresh layout grids
-            executeSortPipeline();
-            recalculatePreviewAndControls();
-
-            closeQuickEditModal();
-            showToastBanner("送信先情報を更新して保存同期しました");
-        }
-
-        // Inline Flag Dropdown Value Update Mutator Pipeline
         function updateInlineFlagState(uid, selectedValue) {
             const targetArtist = findArtistByUid(uid);
             if (!targetArtist) return;
 
-            // Map standard text representation if dash is chosen
             const cleanedValue = selectedValue === '-' ? '' : selectedValue;
             targetArtist.flag = cleanedValue;
 
-            // Persist mutation straight into storage matrices
             localStorage.setItem('sd_matrix_artists', JSON.stringify(appState.artists));
             reconstructRawArtistsTextAreaFromState();
 
-            // Re-trigger visual highlight feedback flash
             const dropdownElement = document.getElementById(`select-flag-${uid}`);
             if (dropdownElement) {
                 const prevBg = dropdownElement.style.backgroundColor;
-                dropdownElement.style.backgroundColor = '#e2f0fe';
+                dropdownElement.style.backgroundColor = '#e6f4ea';
                 setTimeout(() => { dropdownElement.style.backgroundColor = prevBg; }, 400);
             }
 
-            // If sorted by flag state execution trigger timeline resort shifts
             if (appState.currentSortKey === 'flag') {
                 executeSortPipeline();
             }
         }
 
-        // Render Templates Rows Interface
         function renderTemplatesGrid() {
             const container = document.getElementById('template-list-target');
             container.innerHTML = '';
@@ -1578,31 +1277,29 @@
                 card.id = `template-card-${index}`;
                 card.onclick = () => selectTemplateUnit(index);
 
-                let tagBadgeHtml = '';
-                if (item.tag && item.tag.trim() !== '') {
-                    tagBadgeHtml = `<span class="template-tag-badge" title="${escapeHtml(item.tag)}">${escapeHtml(item.tag)}</span>`;
-                }
-
                 card.innerHTML = `
-                    <div class="template-header-row">
-                        <div class="template-title">${escapeHtml(item.title)}</div>
-                        ${tagBadgeHtml}
-                    </div>
+                    <div class="template-title">${escapeHtml(item.title)}</div>
                     <div class="template-snippet">${escapeHtml(item.body)}</div>
                 `;
                 container.appendChild(card);
             });
         }
 
-        // 50on Table Row Jumper engine searching through currently sorted rows
-        function scrollToIndexRow(targetKanaCharacter) {
+        // 50on Sort and Jump Combo Pipeline (Refactored to force 'furigana' keys sort beforehand)
+        function executeKanaSortAndJump(targetKanaCharacter) {
             if (appState.artists.length === 0) return;
             
+            // 1. Force state reconfiguration sorting arrays straight down by furigana field
+            appState.currentSortKey = '50on';
+            appState.isAscending = true; 
+            executeSortPipeline();
+
+            // 2. Identify the target item offset inside newly modified data frames mapping bounds
             const charMap = {
                 'あ': /^[あぃいぅうぇえぉお]/,
                 'か': /^[かがきぎくぐけげこご]/,
                 'さ': /^[さざしじすずせぜそぞ]/,
-                'た': /^[ただchぢつづてでとど]/,
+                'た': /^[ただちぢつづてでとど]/,
                 'な': /^[なにぬねの]/,
                 'は': /^[はばぱひびぴふぶぷへべぺほぼぽ]/,
                 'ま': /^[まみむめも]/,
@@ -1616,7 +1313,7 @@
 
             let targetUid = null;
             for (let i = 0; i < appState.artists.length; i++) {
-                const furi = appState.artists[i].furigana;
+                const furi = appState.artists[i].furigana; // Map straight via 'furigana' metadata fields key
                 if (furi && regex.test(furi)) {
                     targetUid = appState.artists[i].uid;
                     break;
@@ -1626,20 +1323,18 @@
             if (targetUid !== null) {
                 const targetElement = document.getElementById(`artist-card-${targetUid}`);
                 if (targetElement) {
+                    // Smoothly navigate container viewports focus tracking anchors
                     targetElement.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
                     
                     const originalBg = targetElement.style.backgroundColor;
-                    targetElement.style.backgroundColor = '#fed7aa';
-                    setTimeout(() => {
-                        targetElement.style.backgroundColor = originalBg;
-                    }, 600);
+                    targetElement.style.backgroundColor = '#feebc8';
+                    setTimeout(() => { targetElement.style.backgroundColor = originalBg; }, 600);
                 }
             } else {
-                showToastBanner(`「${targetKanaCharacter}行」の対象アーティストは見つかりませんでした`);
+                showToastBanner(`フリガナ基準で「${targetKanaCharacter}行」のアーティストは見つかりませんでした`);
             }
         }
 
-        // Live Realtime Keyword Filter Logic across rows
         function filterArtists() {
             const query = document.getElementById('search-bar').value.toLowerCase().trim();
             const rows = document.querySelectorAll('.artist-card-element');
@@ -1655,10 +1350,8 @@
             });
         }
 
-        // Artist Selection Controller 
         function selectArtistUnit(uid) {
             document.querySelectorAll('.artist-card-element').forEach(el => el.classList.remove('selected'));
-            
             if (appState.selectedArtistId === uid) {
                 appState.selectedArtistId = null;
             } else {
@@ -1669,10 +1362,8 @@
             recalculatePreviewAndControls();
         }
 
-        // Template Selection Controller
         function selectTemplateUnit(index) {
             document.querySelectorAll('.template-row-item').forEach(el => el.classList.remove('selected'));
-
             if (appState.selectedTemplateIndex === index) {
                 appState.selectedTemplateIndex = null;
             } else {
@@ -1682,12 +1373,10 @@
             recalculatePreviewAndControls();
         }
 
-        // Helper tracking method isolating internal state object by UID
         function findArtistByUid(uid) {
             return appState.artists.find(item => item.uid === uid) || null;
         }
 
-        // Preview Formatter and Bottom Action State Machine
         function recalculatePreviewAndControls() {
             const previewWindow = document.getElementById('text-preview-window');
             const btnLine = document.getElementById('action-trigger-line');
@@ -1720,7 +1409,6 @@
 
             resetButtons();
             
-            // Strict non-empty checks for button state activations mapping
             if (currentArtist.lineId && currentArtist.lineId.trim() !== '') btnLine.classList.add('enabled');
             if (currentArtist.twitterId && currentArtist.twitterId.trim() !== '') btnTwitter.classList.add('enabled');
             if (currentArtist.mail && currentArtist.mail.trim() !== '') btnGmail.classList.add('enabled');
@@ -1735,7 +1423,6 @@
             }
         }
 
-        // Stamp and Write Today Current Date directly into Memory object state
         function injectTodayDateStampIntoSelectedArtist() {
             if (appState.selectedArtistId === null) return;
 
@@ -1743,13 +1430,11 @@
             const month = now.getMonth() + 1;
             const date = now.getDate();
             const dayName = WEEK_DAYS[now.getDay()];
-            
             const stampedString = `${month}/${date}${dayName}`; 
             
             const targetArtist = findArtistByUid(appState.selectedArtistId);
             if (targetArtist) {
                 targetArtist.date = stampedString;
-                
                 localStorage.setItem('sd_matrix_artists', JSON.stringify(appState.artists));
                 reconstructRawArtistsTextAreaFromState();
 
@@ -1761,7 +1446,6 @@
             }
         }
 
-        // Auxiliary encoder syncing state data mutations cleanly back to TSV representation
         function reconstructRawArtistsTextAreaFromState() {
             let outputs = [];
             appState.artists.forEach(item => {
@@ -1776,52 +1460,28 @@
             localStorage.setItem('sd_raw_artists_input', unifiedText);
         }
 
-        // RegEx parser stripping full shared profile URLs down to raw screenname handles
         function extractTwitterId(rawStr) {
             if (!rawStr) return '';
             let src = rawStr.trim();
-            
-            // If it is a full web URL link pattern
-            if (src.includes('http://') || src.includes('https://') || src.includes('x.com') || src.includes('twitter.com')) {
-                try {
-                    // Normalize protocol-relative paths if any
-                    if (!src.startsWith('http')) {
-                        src = 'https://' + src;
-                    }
-                    const urlObj = new URL(src);
-                    const pathSegments = urlObj.pathname.split('/').filter(s => s.length > 0);
-                    
-                    if (pathSegments.length > 0) {
-                        // The first path parameter right after host represents profile identifier handle
-                        let extractedHandle = pathSegments[0];
-                        // Extra protection cleaning downstream edge routing tokens
-                        extractedHandle = extractedHandle.replace(/@/g, '');
-                        return extractedHandle;
-                    }
-                } catch (err) {
-                    console.error('URL parse breakdown: ', err);
-                }
+            if (src.includes('x.com/') || src.includes('twitter.com/')) {
+                const parts = src.split(/[?#]/)[0].split('/');
+                return parts[parts.length - 1] || '';
             }
-            
-            // Regular fallback cleanup for plain string inputs
             return src.replace(/@/g, '');
         }
 
-        // Native System Dispatcher Trigger Engine
         function executeExternalDispatch(platformKey) {
             if (appState.selectedArtistId === null || appState.selectedTemplateIndex === null) return;
-
             const currentArtist = findArtistByUid(appState.selectedArtistId);
             if (!currentArtist) return;
 
             const messageBody = document.getElementById('text-preview-window').innerText;
-
             injectTodayDateStampIntoSelectedArtist();
 
             if (platformKey === 'line') {
                 executeClipboardCopyProcedure(messageBody);
-                // Directly launch native LINE app home screen safely
-                const lineTargetUrl = "line://";
+                let lineTargetUrl = "https://line.me/R/ti/p/@" + encodeURIComponent(currentArtist.lineId || '');
+                if (!currentArtist.lineId) lineTargetUrl = "https://line.me/R/";
                 showToastBanner("コピー＆LINEを起動します");
                 setTimeout(() => { window.location.href = lineTargetUrl; }, 800);
 
@@ -1830,66 +1490,27 @@
                 const parsedId = extractTwitterId(rawFieldData);
                 
                 let twitterUrl = '';
-                // Check if the parsed ID consists entirely of numeric values (Internal User Identification Metrics)
-                const isNumericOnly = /^\d+$/.test(parsedId);
-                
-                // Determine base URL scheme: support both web-based backup and direct app trigger schemas
-                if (isNumericOnly && parsedId.length > 0) {
-                    // Route directly to direct messaging endpoint console setup
-                    twitterUrl = `twitter://messages/compose?recipient_id=${encodeURIComponent(parsedId)}`;
-                } else if (parsedId.length > 0) {
-                    // Route using deep-linking for screen names
-                    twitterUrl = `twitter://messages/compose?screen_name=${encodeURIComponent(parsedId)}`;
+                if (parsedId.length > 0) {
+                    twitterUrl = `https://x.com/messages/compose?recipient_screen_name=${encodeURIComponent(parsedId)}`;
+                    showToastBanner("コピー＆X DM作成を起動します");
                 } else {
-                    twitterUrl = "twitter://messages";
+                    twitterUrl = "https://x.com/";
+                    showToastBanner("コピー＆Xを起動します");
                 }
                 
                 executeClipboardCopyProcedure(messageBody);
-                showToastBanner("コピー＆X DM作成を起動します");
-
-                // Launch using custom scheme with fallback handler
-                const startTimestamp = Date.now();
-                window.location.href = twitterUrl;
-
-                // Fallback to web link if X app is not opening or not installed
-                setTimeout(() => {
-                    if (Date.now() - startTimestamp < 1500) {
-                        let fallbackWebUrl = '';
-                        if (isNumericOnly && parsedId.length > 0) {
-                            fallbackWebUrl = `https://x.com/messages/compose?recipient_id=${encodeURIComponent(parsedId)}`;
-                        } else if (parsedId.length > 0) {
-                            fallbackWebUrl = `https://x.com/messages/compose?screen_name=${encodeURIComponent(parsedId)}`;
-                        } else {
-                            fallbackWebUrl = "https://x.com/messages";
-                        }
-                        window.location.href = fallbackWebUrl;
-                    }
-                }, 1000);
+                setTimeout(() => { window.location.href = twitterUrl; }, 800);
 
             } else if (platformKey === 'gmail') {
                 const mailToAddress = currentArtist.mail || '';
                 const currentTemplate = appState.templates[appState.selectedTemplateIndex];
                 const subjectLine = currentTemplate.title || 'ご連絡';
                 
-                // Build specific Gmail app schema for iOS
-                const gmailAppUrl = `googlegmail:///co?to=${encodeURIComponent(mailToAddress)}&subject=${encodeURIComponent(subjectLine)}&body=${encodeURIComponent(messageBody)}`;
-                
-                showToastBanner("Gmailアプリを起動します");
-                
-                const startTimestamp = Date.now();
-                window.location.href = gmailAppUrl;
-                
-                // Fallback to standard web/native mailto protocol if Gmail app launcher fails/not installed
-                setTimeout(() => {
-                    if (Date.now() - startTimestamp < 1500) {
-                        const standardMailto = `mailto:${encodeURIComponent(mailToAddress)}?subject=${encodeURIComponent(subjectLine)}&body=${encodeURIComponent(messageBody)}`;
-                        window.location.href = standardMailto;
-                    }
-                }, 1000);
+                const mailtoUrl = `googlegmail:///co?to=${encodeURIComponent(mailToAddress)}&subject=${encodeURIComponent(subjectLine)}&body=${encodeURIComponent(messageBody)}`;
+                window.location.href = mailtoUrl;
             }
         }
 
-        // Asynchronous Document Clipboard API Execution Box
         function executeClipboardCopyProcedure(textString) {
             const tempTextArea = document.createElement('textarea');
             tempTextArea.value = textString;
@@ -1905,7 +1526,6 @@
             document.body.removeChild(tempTextArea);
         }
 
-        // Notification Display Driver
         function showToastBanner(messageString) {
             const toast = document.getElementById('toast-message-banner');
             toast.innerText = messageString;
@@ -1913,7 +1533,6 @@
             setTimeout(() => { toast.style.display = 'none'; }, 2500);
         }
 
-        // HTML Sanitizer utility escaping malicious content injections
         function escapeHtml(unsafeString) {
             if (!unsafeString) return '';
             return unsafeString
