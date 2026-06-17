@@ -188,7 +188,6 @@
             background-color: var(--bg-card);
             margin-bottom: 8px;
             -webkit-overflow-scrolling: touch;
-            position: relative; /* Fixed Header Context container anchor */
         }
 
         .excel-table {
@@ -213,18 +212,17 @@
             border-right: none;
         }
 
-        /* Interactive Sorting Headers & Sticky Fixed Position */
+        /* Interactive Sorting Headers */
         .excel-table th {
             background-color: #edf2f7;
             color: var(--text-main);
             font-weight: 700;
             cursor: pointer;
             position: sticky;
-            top: 0; /* Sticky Vertical Scroll Pin Locks first row items */
+            top: 0;
             z-index: 10;
             user-select: none;
             -webkit-user-select: none;
-            box-shadow: inset 0 -1px 0 var(--border-color); /* Prevents border bleeding during sticky scrolls */
         }
 
         .excel-table th:active {
@@ -235,7 +233,7 @@
             display: inline-block;
             margin-left: 1px;
             font-size: 8px;
-            color: var(--state-selected-border);
+            color: var(--text-muted);
         }
 
         /* Highly Compact Columns Width Configuration */
@@ -624,9 +622,9 @@
             color: white;
         }
 
-        /* Artist Editor Modal Form Specification (Plan A Popups) */
+        /* Artist Editor Modal Form Specification (Plan A) */
         .edit-form-group {
-            margin-bottom: 8px;
+            margin-bottom: 10px;
         }
         .edit-form-label {
             font-size: 11px;
@@ -637,7 +635,7 @@
         }
         .edit-form-input {
             width: 100%;
-            height: 30px;
+            height: 32px;
             padding: 4px 8px;
             font-size: 12px;
             border: 1px solid var(--border-color);
@@ -668,7 +666,7 @@
                 <button id="tab-operation" class="nav-tab active" onclick="switchView('operation')">管理表</button>
                 <button id="tab-settings" class="nav-tab" onclick="switchView('settings')">設定</button>
             </div>
-            <div class="version-tag">ver.0.1.1</div>
+            <div class="version-tag">ver.0.1.0</div>
         </div>
     </header>
 
@@ -680,21 +678,21 @@
             </div>
             <div class="index-nav-cell">
                 <div class="index-nav-container">
-                    <div class="index-btn" onclick="executeKanaSortAndJump('あ')">あ</div>
-                    <div class="index-btn" onclick="executeKanaSortAndJump('か')">か</div>
-                    <div class="index-btn" onclick="executeKanaSortAndJump('さ')">さ</div>
-                    <div class="index-btn" onclick="executeKanaSortAndJump('た')">た</div>
-                    <div class="index-btn" onclick="executeKanaSortAndJump('な')">な</div>
-                    <div class="index-btn" onclick="executeKanaSortAndJump('は')">は</div>
-                    <div class="index-btn" onclick="executeKanaSortAndJump('ま')">ま</div>
-                    <div class="index-btn" onclick="executeKanaSortAndJump('や')">や</div>
-                    <div class="index-btn" onclick="executeKanaSortAndJump('ら')">ら</div>
-                    <div class="index-btn" onclick="executeKanaSortAndJump('わ')">わ</div>
+                    <div class="index-btn" onclick="scrollToIndexRow('あ')">あ</div>
+                    <div class="index-btn" onclick="scrollToIndexRow('か')">か</div>
+                    <div class="index-btn" onclick="scrollToIndexRow('さ')">さ</div>
+                    <div class="index-btn" onclick="scrollToIndexRow('た')">た</div>
+                    <div class="index-btn" onclick="scrollToIndexRow('な')">な</div>
+                    <div class="index-btn" onclick="scrollToIndexRow('は')">は</div>
+                    <div class="index-btn" onclick="scrollToIndexRow('ま')">ま</div>
+                    <div class="index-btn" onclick="scrollToIndexRow('や')">や</div>
+                    <div class="index-btn" onclick="scrollToIndexRow('ら')">ら</div>
+                    <div class="index-btn" onclick="scrollToIndexRow('わ')">わ</div>
                 </div>
             </div>
         </div>
 
-        <div class="preview-title" style="margin-bottom: 2px;">1. 送信先（行タップで選択・編集 / ヘッダーで直前条件維持の並び替え）</div>
+        <div class="preview-title" style="margin-bottom: 2px;">1. 送信先（行をタップで選択・ポップアップ編集 / ヘッダーで並び替え）</div>
         <div class="table-scroll-container">
             <table class="excel-table">
                 <thead>
@@ -780,10 +778,6 @@
                     <input type="text" id="edit-artist-name" class="edit-form-input">
                 </div>
                 <div class="edit-form-group">
-                    <label class="edit-form-label">フリガナ（furigana）</label>
-                    <input type="text" id="edit-artist-furi" class="edit-form-input" placeholder="あいうえお順判定用のひらがな/かたかな">
-                </div>
-                <div class="edit-form-group">
                     <label class="edit-form-label">担当</label>
                     <input type="text" id="edit-artist-charge" class="edit-form-input">
                 </div>
@@ -820,7 +814,9 @@
             isAscending: true       
         };
 
+        // Modal context container pointer callback
         let modalActionCallback = null;
+
         const WEEK_DAYS = ["日", "月", "火", "水", "木", "金", "土"];
 
         // Execution Lifecycle Initializer
@@ -871,6 +867,7 @@
             }
         }
 
+        // Backward compatibility fallback parser processing raw block texts string lines
         function parseLegacyTemplatesString(rawText) {
             let cleanTemplates = [];
             const blocks = rawText.split(/\n\s*\n|\n---+\n/);
@@ -907,6 +904,7 @@
             container.appendChild(card);
         }
 
+        // Component Sync rendering actual template items from internal states array objects
         function syncFormStateFromTemplatesArray() {
             const container = document.getElementById('template-builder-root-container');
             container.innerHTML = '';
@@ -920,6 +918,7 @@
             }
         }
 
+        // Intercepts and prompts template removal action inside setup screen view via beautiful modal step
         function triggerTemplateCardRemoval(elementId) {
             const targetCard = document.getElementById(elementId);
             if (!targetCard) return;
@@ -938,13 +937,14 @@
             );
         }
 
-        // Main Importer Pipeline compiling structured matrix array
+        // Main Importer Pipeline compiling structured matrix array and dynamic form inputs layout states
         function processAndSaveRawData() {
             const rawArtistsText = document.getElementById('import-artists-raw').value.trim();
 
             let cleanArtists = [];
             let cleanTemplates = [];
 
+            // 1. Process Artists Stream Pipeline
             if (rawArtistsText) {
                 const lines = rawArtistsText.split('\n');
                 lines.forEach((line, index) => {
@@ -973,6 +973,7 @@
                 cleanArtists = appState.artists;
             }
 
+            // 2. Extrapolate Values directly from custom generated DOM Forms instead of fragile text tokenizers
             const formCards = document.querySelectorAll('.template-builder-card');
             formCards.forEach(card => {
                 const tTitle = card.querySelector('.template-input-title').value.trim();
@@ -1003,6 +1004,7 @@
             switchView('operation');
         }
 
+        // Safety verification controller spawning custom layout dialog overlay
         function triggerAppResetWithModal() {
             openConfirmationModal(
                 "アプリ内データの完全リセット",
@@ -1013,6 +1015,7 @@
             );
         }
 
+        // Implementation handler processing absolute database deletion metrics
         function executeCompleteStorageWipeLogic() {
             localStorage.clear();
             document.getElementById('import-artists-raw').value = '';
@@ -1035,11 +1038,16 @@
             showToastBanner("すべてのアプリデータを初期化リセットしました");
         }
 
+        // Dynamic Modal Display Windows controller routers
         function openConfirmationModal(titleText, bodyHtml, confirmCallback) {
             document.getElementById('modal-title-node').innerText = titleText;
             document.getElementById('modal-body-node').innerHTML = bodyHtml;
+            
             modalActionCallback = confirmCallback;
-            document.getElementById('modal-confirm-btn').onclick = modalActionCallback;
+            
+            const btn = document.getElementById('modal-confirm-btn');
+            btn.onclick = modalActionCallback;
+            
             document.getElementById('global-modal-overlay').classList.add('active');
         }
 
@@ -1048,7 +1056,7 @@
             modalActionCallback = null;
         }
 
-        // Plan A Popup: Added Furigana field input tracking framework
+        // Plan A: Open/Close/Save Handlers for Interactive Inline Cell Editor Popup
         function openArtistEditorModal(uid) {
             const targetArtist = findArtistByUid(uid);
             if (!targetArtist) return;
@@ -1056,7 +1064,6 @@
             document.getElementById('edit-artist-uid').value = uid;
             document.getElementById('edit-modal-header-title').innerText = `「${targetArtist.artist}」の情報を編集`;
             document.getElementById('edit-artist-name').value = targetArtist.artist || '';
-            document.getElementById('edit-artist-furi').value = targetArtist.furigana || ''; // Extracted furigana 
             document.getElementById('edit-artist-charge').value = targetArtist.charge || '';
             document.getElementById('edit-artist-line').value = targetArtist.lineId || '';
             document.getElementById('edit-artist-twitter').value = targetArtist.twitterId || '';
@@ -1074,17 +1081,18 @@
             const targetArtist = findArtistByUid(uid);
             if (!targetArtist) return;
 
+            // Mutate internal state variables directly
             targetArtist.artist = document.getElementById('edit-artist-name').value.trim();
-            targetArtist.furigana = document.getElementById('edit-artist-furi').value.trim(); // Save furigana field
             targetArtist.charge = document.getElementById('edit-artist-charge').value.trim();
             targetArtist.lineId = document.getElementById('edit-artist-line').value.trim();
             targetArtist.twitterId = document.getElementById('edit-artist-twitter').value.trim();
             targetArtist.mail = document.getElementById('edit-artist-mail').value.trim();
 
+            // Synced save workflow across local caches and configurations textareas
             localStorage.setItem('sd_matrix_artists', JSON.stringify(appState.artists));
             reconstructRawArtistsTextAreaFromState();
 
-            // Refresh UI grids with direct data binding
+            // Refresh DOM Elements with mutated states
             renderArtistsGrid();
             recalculatePreviewAndControls();
             
@@ -1092,6 +1100,7 @@
             showToastBanner("アーティスト情報を更新保存しました");
         }
 
+        // Triggered upon Header Interactivity Actions
         function toggleSortPipeline(targetKey) {
             if (appState.currentSortKey === targetKey) {
                 appState.isAscending = !appState.isAscending; 
@@ -1102,69 +1111,55 @@
             executeSortPipeline();
         }
 
-        // Core Sorting Framework logic processing: Refactored with Stable Sort logic mapping
+        // Core Sorting Framework logic processing direction changes
         function executeSortPipeline() {
             const key = appState.currentSortKey;
             const asc = appState.isAscending ? 1 : -1;
 
             if (!appState.artists || appState.artists.length === 0) return;
 
-            // Stable Sort Implementation: injects an explicit originalIndex index snapshot 
-            // before sorting to guarantee previous chronological arrays positions are fully preserved.
-            const mappedWithIndex = appState.artists.map((el, i) => ({ index: i, value: el }));
-
-            mappedWithIndex.sort((aPack, bPack) => {
-                const a = aPack.value;
-                const b = bPack.value;
+            appState.artists.sort((a, b) => {
                 let comparison = 0;
-
                 switch (key) {
                     case '50on':
                         comparison = (a.furigana || '').localeCompare(b.furigana || 'ー', 'ja');
                         break;
                     case 'charge':
-                        if (!a.charge && b.charge) comparison = 1;
-                        else if (a.charge && !b.charge) comparison = -1;
-                        else comparison = (a.charge || '').localeCompare(b.charge || '', 'ja');
+                        if (!a.charge && b.charge) return 1;
+                        if (a.charge && !b.charge) return -1;
+                        comparison = (a.charge || '').localeCompare(b.charge || '', 'ja');
                         break;
                     case 'flag':
-                        if (!a.flag && b.flag) comparison = 1;
-                        else if (a.flag && !b.flag) comparison = -1;
-                        else comparison = (a.flag || '').localeCompare(b.flag || '', 'ja');
+                        if (!a.flag && b.flag) return 1;
+                        if (a.flag && !b.flag) return -1;
+                        comparison = (a.flag || '').localeCompare(b.flag || '', 'ja');
                         break;
                     case 'yomi':
-                        if (!a.yomi && b.yomi) comparison = 1;
-                        else if (a.yomi && !b.yomi) comparison = -1;
-                        else comparison = (a.yomi || '').localeCompare(b.yomi || '', 'ja');
+                        if (!a.yomi && b.yomi) return 1;
+                        if (a.yomi && !b.yomi) return -1;
+                        comparison = (a.yomi || '').localeCompare(b.yomi || '', 'ja');
                         break;
                     case 'date':
-                        if (!a.date && b.date) comparison = 1;
-                        else if (a.date && !b.date) comparison = -1;
-                        else if (!a.date && !b.date) comparison = 0;
-                        else comparison = (a.date || '').localeCompare(b.date || '', 'ja');
+                        if (!a.date && b.date) return 1;
+                        if (a.date && !b.date) return -1;
+                        if (!a.date && !b.date) return 0;
+                        comparison = (a.date || '').localeCompare(b.date || '', 'ja');
                         break;
                     case 'meth':
-                        if (!a.meth && b.meth) comparison = 1;
-                        else if (a.meth && !b.meth) comparison = -1;
-                        else comparison = (a.meth || '').localeCompare(b.meth || '', 'ja');
+                        if (!a.meth && b.meth) return 1;
+                        if (a.meth && !b.meth) return -1;
+                        comparison = (a.meth || '').localeCompare(b.meth || '', 'ja');
                         break;
-                }
-
-                // If primary values evaluate identically, fallback onto preceding array ranks (preserves previous state)
-                if (comparison === 0) {
-                    return aPack.index - bPack.index;
                 }
                 return comparison * asc;
             });
-
-            // Map standard unwrap back to original global reference tracker variables
-            appState.artists = mappedWithIndex.map(pack => pack.value);
 
             updateHeaderIndicators();
             renderArtistsGrid();
             filterArtists(); 
         }
 
+        // Renders visual ▲/▼ sort badges straight onto the HTML headers safely
         function updateHeaderIndicators() {
             const keys = ['50on', 'charge', 'flag', 'yomi', 'date', 'meth'];
             keys.forEach(k => {
@@ -1200,11 +1195,15 @@
                     row.classList.add('selected');
                 }
                 
+                // Route interactions gracefully depending on targeted component node types
                 row.onclick = (e) => {
                     if (e.target.tagName.toLowerCase() === 'select') return;
+                    
                     if (appState.selectedArtistId === item.uid) {
+                        // Plan A Integration: Second click triggers editing modal panel spawner 
                         openArtistEditorModal(item.uid);
                     } else {
+                        // First click executes standard selection workflow mechanics
                         selectArtistUnit(item.uid);
                     }
                 };
@@ -1217,6 +1216,7 @@
                     else badgeHtml = `<span class="cell-badge cell-badge-default">${escapeHtml(item.meth)}</span>`;
                 }
 
+                // Compile inline drop-down state options mapping requirements
                 const currentFlag = item.flag || '';
                 const selectId = `select-flag-${item.uid}`;
 
@@ -1240,16 +1240,20 @@
             });
         }
 
+        // Inline Flag Dropdown Value Update Mutator Pipeline
         function updateInlineFlagState(uid, selectedValue) {
             const targetArtist = findArtistByUid(uid);
             if (!targetArtist) return;
 
+            // Map standard text representation if dash is chosen
             const cleanedValue = selectedValue === '-' ? '' : selectedValue;
             targetArtist.flag = cleanedValue;
 
+            // Persist mutation straight into storage matrices
             localStorage.setItem('sd_matrix_artists', JSON.stringify(appState.artists));
             reconstructRawArtistsTextAreaFromState();
 
+            // Re-trigger visual highlight feedback flash
             const dropdownElement = document.getElementById(`select-flag-${uid}`);
             if (dropdownElement) {
                 const prevBg = dropdownElement.style.backgroundColor;
@@ -1257,11 +1261,13 @@
                 setTimeout(() => { dropdownElement.style.backgroundColor = prevBg; }, 400);
             }
 
+            // If sorted by flag state execution trigger timeline resort shifts
             if (appState.currentSortKey === 'flag') {
                 executeSortPipeline();
             }
         }
 
+        // Render Templates Rows Interface
         function renderTemplatesGrid() {
             const container = document.getElementById('template-list-target');
             container.innerHTML = '';
@@ -1285,16 +1291,10 @@
             });
         }
 
-        // 50on Sort and Jump Combo Pipeline (Refactored to force 'furigana' keys sort beforehand)
-        function executeKanaSortAndJump(targetKanaCharacter) {
+        // 50on Table Row Jumper engine searching through currently sorted rows
+        function scrollToIndexRow(targetKanaCharacter) {
             if (appState.artists.length === 0) return;
             
-            // 1. Force state reconfiguration sorting arrays straight down by furigana field
-            appState.currentSortKey = '50on';
-            appState.isAscending = true; 
-            executeSortPipeline();
-
-            // 2. Identify the target item offset inside newly modified data frames mapping bounds
             const charMap = {
                 'あ': /^[あぃいぅうぇえぉお]/,
                 'か': /^[かがきぎくぐけげこご]/,
@@ -1313,7 +1313,7 @@
 
             let targetUid = null;
             for (let i = 0; i < appState.artists.length; i++) {
-                const furi = appState.artists[i].furigana; // Map straight via 'furigana' metadata fields key
+                const furi = appState.artists[i].furigana;
                 if (furi && regex.test(furi)) {
                     targetUid = appState.artists[i].uid;
                     break;
@@ -1323,18 +1323,20 @@
             if (targetUid !== null) {
                 const targetElement = document.getElementById(`artist-card-${targetUid}`);
                 if (targetElement) {
-                    // Smoothly navigate container viewports focus tracking anchors
                     targetElement.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
                     
                     const originalBg = targetElement.style.backgroundColor;
                     targetElement.style.backgroundColor = '#feebc8';
-                    setTimeout(() => { targetElement.style.backgroundColor = originalBg; }, 600);
+                    setTimeout(() => {
+                        targetElement.style.backgroundColor = originalBg;
+                    }, 600);
                 }
             } else {
-                showToastBanner(`フリガナ基準で「${targetKanaCharacter}行」のアーティストは見つかりませんでした`);
+                showToastBanner(`「${targetKanaCharacter}行」の対象アーティストは見つかりませんでした`);
             }
         }
 
+        // Live Realtime Keyword Filter Logic across rows
         function filterArtists() {
             const query = document.getElementById('search-bar').value.toLowerCase().trim();
             const rows = document.querySelectorAll('.artist-card-element');
@@ -1350,8 +1352,10 @@
             });
         }
 
+        // Artist Selection Controller 
         function selectArtistUnit(uid) {
             document.querySelectorAll('.artist-card-element').forEach(el => el.classList.remove('selected'));
+            
             if (appState.selectedArtistId === uid) {
                 appState.selectedArtistId = null;
             } else {
@@ -1362,8 +1366,10 @@
             recalculatePreviewAndControls();
         }
 
+        // Template Selection Controller
         function selectTemplateUnit(index) {
             document.querySelectorAll('.template-row-item').forEach(el => el.classList.remove('selected'));
+
             if (appState.selectedTemplateIndex === index) {
                 appState.selectedTemplateIndex = null;
             } else {
@@ -1373,10 +1379,12 @@
             recalculatePreviewAndControls();
         }
 
+        // Helper tracking method isolating internal state object by UID
         function findArtistByUid(uid) {
             return appState.artists.find(item => item.uid === uid) || null;
         }
 
+        // Preview Formatter and Bottom Action State Machine
         function recalculatePreviewAndControls() {
             const previewWindow = document.getElementById('text-preview-window');
             const btnLine = document.getElementById('action-trigger-line');
@@ -1409,6 +1417,7 @@
 
             resetButtons();
             
+            // Strict non-empty checks for button state activations mapping
             if (currentArtist.lineId && currentArtist.lineId.trim() !== '') btnLine.classList.add('enabled');
             if (currentArtist.twitterId && currentArtist.twitterId.trim() !== '') btnTwitter.classList.add('enabled');
             if (currentArtist.mail && currentArtist.mail.trim() !== '') btnGmail.classList.add('enabled');
@@ -1423,6 +1432,7 @@
             }
         }
 
+        // Stamp and Write Today Current Date directly into Memory object state
         function injectTodayDateStampIntoSelectedArtist() {
             if (appState.selectedArtistId === null) return;
 
@@ -1430,11 +1440,13 @@
             const month = now.getMonth() + 1;
             const date = now.getDate();
             const dayName = WEEK_DAYS[now.getDay()];
+            
             const stampedString = `${month}/${date}${dayName}`; 
             
             const targetArtist = findArtistByUid(appState.selectedArtistId);
             if (targetArtist) {
                 targetArtist.date = stampedString;
+                
                 localStorage.setItem('sd_matrix_artists', JSON.stringify(appState.artists));
                 reconstructRawArtistsTextAreaFromState();
 
@@ -1446,6 +1458,7 @@
             }
         }
 
+        // Auxiliary encoder syncing state data mutations cleanly back to TSV representation
         function reconstructRawArtistsTextAreaFromState() {
             let outputs = [];
             appState.artists.forEach(item => {
@@ -1460,28 +1473,37 @@
             localStorage.setItem('sd_raw_artists_input', unifiedText);
         }
 
+        // RegEx parser stripping full shared profile URLs down to raw screenname handles
         function extractTwitterId(rawStr) {
             if (!rawStr) return '';
             let src = rawStr.trim();
+            
+            // https://x.com/ユーザー名?パラメータ の形式からユーザー名を抽出
             if (src.includes('x.com/') || src.includes('twitter.com/')) {
                 const parts = src.split(/[?#]/)[0].split('/');
                 return parts[parts.length - 1] || '';
             }
+            
             return src.replace(/@/g, '');
         }
 
+        // Native System Dispatcher Trigger Engine
         function executeExternalDispatch(platformKey) {
             if (appState.selectedArtistId === null || appState.selectedTemplateIndex === null) return;
+
             const currentArtist = findArtistByUid(appState.selectedArtistId);
             if (!currentArtist) return;
 
             const messageBody = document.getElementById('text-preview-window').innerText;
+
             injectTodayDateStampIntoSelectedArtist();
 
             if (platformKey === 'line') {
                 executeClipboardCopyProcedure(messageBody);
                 let lineTargetUrl = "https://line.me/R/ti/p/@" + encodeURIComponent(currentArtist.lineId || '');
-                if (!currentArtist.lineId) lineTargetUrl = "https://line.me/R/";
+                if (!currentArtist.lineId) {
+                    lineTargetUrl = "https://line.me/R/";
+                }
                 showToastBanner("コピー＆LINEを起動します");
                 setTimeout(() => { window.location.href = lineTargetUrl; }, 800);
 
@@ -1491,6 +1513,7 @@
                 
                 let twitterUrl = '';
                 if (parsedId.length > 0) {
+                    // スクリーンネーム（ユーザー名）を用いて直接DM作成画面を起動するURL
                     twitterUrl = `https://x.com/messages/compose?recipient_screen_name=${encodeURIComponent(parsedId)}`;
                     showToastBanner("コピー＆X DM作成を起動します");
                 } else {
@@ -1506,11 +1529,13 @@
                 const currentTemplate = appState.templates[appState.selectedTemplateIndex];
                 const subjectLine = currentTemplate.title || 'ご連絡';
                 
+                // iPhoneのGmailアプリを直接起動するURLスキーム
                 const mailtoUrl = `googlegmail:///co?to=${encodeURIComponent(mailToAddress)}&subject=${encodeURIComponent(subjectLine)}&body=${encodeURIComponent(messageBody)}`;
                 window.location.href = mailtoUrl;
             }
         }
 
+        // Asynchronous Document Clipboard API Execution Box
         function executeClipboardCopyProcedure(textString) {
             const tempTextArea = document.createElement('textarea');
             tempTextArea.value = textString;
@@ -1526,6 +1551,7 @@
             document.body.removeChild(tempTextArea);
         }
 
+        // Notification Display Driver
         function showToastBanner(messageString) {
             const toast = document.getElementById('toast-message-banner');
             toast.innerText = messageString;
@@ -1533,6 +1559,7 @@
             setTimeout(() => { toast.style.display = 'none'; }, 2500);
         }
 
+        // HTML Sanitizer utility escaping malicious content injections
         function escapeHtml(unsafeString) {
             if (!unsafeString) return '';
             return unsafeString
