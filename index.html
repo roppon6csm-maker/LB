@@ -36,7 +36,7 @@
             background-color: var(--bg-primary);
             color: var(--text-main);
             line-height: 1.4;
-            padding-bottom: 80px; /* Space for fixed bottom bar */
+            padding-bottom: 60px; /* Space for fixed bottom bar */
         }
 
         /* Inline Header Layout */
@@ -177,10 +177,19 @@
             background-color: #e2e8f0;
         }
 
+        /* Stats Bar */
+        .stats-bar {
+            font-size: 11px;
+            color: var(--text-muted);
+            padding: 2px 4px;
+            margin-bottom: 4px;
+            font-weight: bold;
+        }
+
         /* Excel-like Table Layout Specifications */
         .table-scroll-container {
             width: 100%;
-            max-height: 220px;
+            max-height: 320px; /* Expanded for more list visibility */
             overflow-y: auto;
             overflow-x: auto;
             border: 1px solid var(--border-color);
@@ -303,8 +312,8 @@
             background-color: var(--bg-card);
             border: 1px solid var(--border-color);
             border-radius: 6px;
-            padding: 8px;
-            margin-bottom: 4px;
+            padding: 6px;
+            margin-bottom: 2px;
             cursor: pointer;
         }
 
@@ -314,44 +323,17 @@
         }
 
         .template-title {
-            font-size: 13px;
+            font-size: 12px;
             font-weight: 700;
         }
 
         .template-snippet {
-            font-size: 11px;
+            font-size: 10px;
             color: var(--text-muted);
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            margin-top: 2px;
-        }
-
-        /* Preview Box Layout */
-        .preview-box {
-            background-color: #fff;
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            padding: 8px;
-            margin-top: 8px;
-        }
-
-        .preview-title {
-            font-size: 11px;
-            font-weight: bold;
-            color: var(--text-muted);
-            margin-bottom: 4px;
-        }
-
-        .preview-content {
-            font-size: 12px;
-            white-space: pre-wrap;
-            background: #f8fafc;
-            padding: 6px;
-            border-radius: 4px;
-            border: 1px dashed var(--border-color);
-            max-height: 160px;
-            overflow-y: auto;
+            margin-top: 1px;
         }
 
         /* Settings Tab Configuration */
@@ -493,7 +475,7 @@
             right: 0;
             background-color: var(--bg-card);
             border-top: 1px solid var(--border-color);
-            padding: 8px;
+            padding: 4px;
             z-index: 100;
             display: table;
             width: 100%;
@@ -507,8 +489,8 @@
 
         .dispatch-btn {
             width: 100%;
-            padding: 10px 2px;
-            font-size: 12px;
+            padding: 6px 2px;
+            font-size: 11px;
             font-weight: bold;
             color: white;
             border: none;
@@ -530,24 +512,26 @@
         }
 
         .btn-line { background-color: var(--brand-line); }
-        .btn-twitter { background-color: #1a1a1a; } /* Dark tone style for X platform */
+        .btn-twitter { background-color: #1a1a1a; }
         .btn-gmail { background-color: var(--brand-gmail); }
 
         /* Toast Alert Notification */
         .toast {
             position: fixed;
-            top: 15px;
+            top: 50%;
             left: 50%;
-            transform: translateX(-50%);
-            background-color: rgba(45, 55, 72, 0.93);
+            transform: translate(-50%, -50%);
+            background-color: rgba(45, 55, 72, 0.95);
             color: white;
-            padding: 8px 16px;
-            border-radius: 16px;
-            font-size: 12px;
+            padding: 20px;
+            border-radius: 8px;
+            font-size: 14px;
             font-weight: 600;
-            z-index: 200;
+            z-index: 1000;
             display: none;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            text-align: center;
+            white-space: pre-wrap;
         }
 
         /* Custom Modal Dialog */
@@ -668,7 +652,7 @@
                 <button id="tab-operation" class="nav-tab active" onclick="switchView('operation')">管理表</button>
                 <button id="tab-settings" class="nav-tab" onclick="switchView('settings')">設定</button>
             </div>
-            <div class="version-tag">ver.0.1.4</div>
+            <div class="version-tag">ver.0.1.5</div>
         </div>
     </header>
 
@@ -694,7 +678,8 @@
             </div>
         </div>
 
-        <div class="preview-title" style="margin-bottom: 2px;">1. 送信先（行タップで選択・編集 / ヘッダーで直前条件維持の並び替え）</div>
+        <div id="stats-panel" class="stats-bar">出演者数：0組   合計ヨミ：0人</div>
+
         <div class="table-scroll-container">
             <table class="excel-table">
                 <thead>
@@ -712,13 +697,8 @@
             </table>
         </div>
 
-        <div class="preview-title">2. テンプレート</div>
-        <div id="template-list-target" style="max-height: 110px; overflow-y: auto; margin-bottom: 8px;">
-        </div>
-
-        <div class="preview-box">
-            <div class="preview-title">メッセージプレビュー</div>
-            <div id="text-preview-window" class="preview-content">アーティストとテンプレートを選択するとここに表示されます。</div>
+        <div class="preview-title" style="font-size:10px; color:#718096; margin-bottom:4px;">テンプレート</div>
+        <div id="template-list-target" style="max-height: 120px; overflow-y: auto;">
         </div>
 
     </div>
@@ -747,10 +727,9 @@
 
     </div>
 
-    <!-- Fixed Bottom Control Bar -->
     <div class="bottom-control-bar">
         <div class="action-cell">
-            <button id="action-trigger-twitter" class="dispatch-btn btn-twitter" onclick="executeExternalDispatch('twitter')">X (Twitter)<br>起動</button>
+            <button id="action-trigger-twitter" class="dispatch-btn btn-twitter" onclick="executeExternalDispatch('twitter')">X<br>起動</button>
         </div>
         <div class="action-cell">
             <button id="action-trigger-line" class="dispatch-btn btn-line" onclick="executeExternalDispatch('line')">LINE<br>起動</button>
@@ -771,7 +750,6 @@
         </div>
     </div>
 
-    <!-- Artist Interactive Editor Modal (Plan A Popup) -->
     <div id="artist-editor-modal-overlay" class="modal-overlay">
         <div class="modal-container" style="max-width: 310px;">
             <div class="modal-title" id="edit-modal-header-title">アーティスト情報の編集</div>
@@ -809,10 +787,9 @@
         </div>
     </div>
 
-    <div id="toast-message-banner" class="toast">コピーしました</div>
+    <div id="toast-message-banner" class="toast"></div>
 
     <script>
-        // Global State Objects
         let appState = {
             artists: [],
             templates: [],
@@ -825,7 +802,6 @@
         let modalActionCallback = null;
         const WEEK_DAYS = ["日", "月", "火", "水", "木", "金", "土"];
 
-        // Execution Lifecycle Initializer
         window.addEventListener('DOMContentLoaded', () => {
             loadPersistedData();
             executeSortPipeline(); 
@@ -833,78 +809,40 @@
             syncFormStateFromTemplatesArray();
         });
 
-        // Screen Management Router
         function switchView(targetTabName) {
             document.querySelectorAll('.nav-tab').forEach(el => el.classList.remove('active'));
             document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
-            
             document.getElementById(`tab-${targetTabName}`).classList.add('active');
             document.getElementById(`view-${targetTabName}`).classList.add('active');
-            
-            if (targetTabName === 'settings') {
-                syncFormStateFromTemplatesArray();
-            }
+            if (targetTabName === 'settings') syncFormStateFromTemplatesArray();
         }
 
-        // Read LocalStorage state
         function loadPersistedData() {
             try {
                 const savedArtists = localStorage.getItem('sd_matrix_artists');
                 const savedTemplates = localStorage.getItem('sd_matrix_templates');
                 const rawArtistsInput = localStorage.getItem('sd_raw_artists_input');
-
                 if (savedArtists) appState.artists = JSON.parse(savedArtists);
                 if (savedTemplates) appState.templates = JSON.parse(savedTemplates);
-                
                 appState.artists.forEach((item, idx) => {
                     if (!item.uid) item.uid = "art_" + Date.now() + "_" + Math.random().toString(36).substr(2, 9) + "_" + idx;
                 });
-
                 if (rawArtistsInput) document.getElementById('import-artists-raw').value = rawArtistsInput;
-                
-                if (!savedTemplates || appState.templates.length === 0) {
-                    const legacyRawTemplates = localStorage.getItem('sd_raw_templates_input');
-                    if (legacyRawTemplates) {
-                        parseLegacyTemplatesString(legacyRawTemplates);
-                    }
-                }
-            } catch (e) {
-                console.error("Storage read exception: ", e);
-            }
+            } catch (e) { console.error(e); }
         }
 
-        function parseLegacyTemplatesString(rawText) {
-            let cleanTemplates = [];
-            const blocks = rawText.split(/\n\s*\n|\n---+\n/);
-            blocks.forEach(block => {
-                const trimmedBlock = block.trim();
-                if (!trimmedBlock) return;
-                const blockLines = trimmedBlock.split('\n');
-                const extractedTitle = blockLines[0].trim();
-                const extractedBody = blockLines.slice(1).join('\n').trim();
-                cleanTemplates.push({
-                    title: extractedTitle,
-                    body: extractedBody ? extractedBody : extractedTitle
-                });
-            });
-            appState.templates = cleanTemplates;
-        }
-
-        // Programmatic Form Construction
         function createNewTemplateRowInForm(titleValue = '', bodyValue = '') {
             const container = document.getElementById('template-builder-root-container');
             const elementId = "tpl_row_" + Date.now() + "_" + Math.random().toString(36).substr(2, 5);
-            
             const card = document.createElement('div');
             card.className = 'template-builder-card';
             card.id = elementId;
-            
             card.innerHTML = `
                 <div class="template-card-header">
-                    <input type="text" class="template-input-title" placeholder="テンプレート名 (例: お礼連絡)" value="${escapeHtml(titleValue)}">
+                    <input type="text" class="template-input-title" placeholder="テンプレート名" value="${escapeHtml(titleValue)}">
                     <button type="button" class="btn-mini-danger" onclick="triggerTemplateCardRemoval('${elementId}')">削除</button>
                 </div>
-                <textarea class="template-input-body" placeholder="送信メッセージの本文を入力してください">${escapeHtml(bodyValue)}</textarea>
+                <textarea class="template-input-body" placeholder="本文">${escapeHtml(bodyValue)}</textarea>
             `;
             container.appendChild(card);
         }
@@ -912,638 +850,214 @@
         function syncFormStateFromTemplatesArray() {
             const container = document.getElementById('template-builder-root-container');
             container.innerHTML = '';
-            
-            if (appState.templates && appState.templates.length > 0) {
-                appState.templates.forEach(tpl => {
-                    createNewTemplateRowInForm(tpl.title, tpl.body);
-                });
+            if (appState.templates.length > 0) {
+                appState.templates.forEach(tpl => createNewTemplateRowInForm(tpl.title, tpl.body));
             } else {
                 createNewTemplateRowInForm('', '');
             }
         }
 
         function triggerTemplateCardRemoval(elementId) {
-            const targetCard = document.getElementById(elementId);
-            if (!targetCard) return;
-            
-            const titleInput = targetCard.querySelector('.template-input-title').value.trim();
-            const safeDisplayName = titleInput ? `「${titleInput}」` : "このテンプレート";
-            
-            openConfirmationModal(
-                "テンプレートの削除確認",
-                `${safeDisplayName}を削除してもよろしいですか？<br><br>※変更を確定させるには、最後に下部の「データを反映して保存」ボタンを押してください。`,
-                () => {
-                    targetCard.remove();
-                    closeConfirmationModal();
-                    showToastBanner("テンプレート項目を画面から取り除きました");
-                }
-            );
+            document.getElementById(elementId).remove();
         }
 
-        // Main Importer Pipeline compiling structured matrix array
         function processAndSaveRawData() {
             const rawArtistsText = document.getElementById('import-artists-raw').value.trim();
-
             let cleanArtists = [];
-            let cleanTemplates = [];
-
-            if (rawArtistsText) {
-                const lines = rawArtistsText.split('\n');
-                lines.forEach((line, index) => {
-                    const cols = line.split('\t');
-                    if (index === 0 && (cols[0].includes('No') || (cols[2] && cols[2].includes('ARTIST')))) {
-                        return; 
-                    }
-                    if (cols.length >= 3) {
-                        cleanArtists.push({
-                            uid: "art_" + Date.now() + "_" + Math.random().toString(36).substr(2, 9) + "_" + index,
-                            no: (cols[0] || '').trim(),
-                            furigana: (cols[1] || '').trim(),
-                            artist: (cols[2] || '').trim(),
-                            charge: (cols[3] || '').trim(),
-                            mail: (cols[4] || '').trim(),
-                            twitterId: (cols[5] || '').trim(),
-                            lineId: (cols[6] || '').trim(),
-                            meth: (cols[7] || '').trim().toLowerCase(),
-                            flag: (cols[8] || '').trim(),
-                            date: (cols[9] || '').trim(),
-                            yomi: (cols[10] || '').trim()
-                        });
-                    }
-                });
-            } else {
-                cleanArtists = appState.artists;
-            }
-
-            const formCards = document.querySelectorAll('.template-builder-card');
-            formCards.forEach(card => {
-                const tTitle = card.querySelector('.template-input-title').value.trim();
-                const tBody = card.querySelector('.template-input-body').value;
-                
-                if (tTitle || tBody.trim()) {
-                    cleanTemplates.push({
-                        title: tTitle ? tTitle : "無題のテンプレート",
-                        body: tBody
+            const lines = rawArtistsText.split('\n');
+            lines.forEach((line, index) => {
+                const cols = line.split('\t');
+                if (cols.length >= 3 && !cols[0].includes('No')) {
+                    cleanArtists.push({
+                        uid: "art_" + Date.now() + "_" + index,
+                        no: cols[0], furigana: cols[1], artist: cols[2], charge: cols[3], 
+                        mail: cols[4], twitterId: cols[5], lineId: cols[6], meth: cols[7].toLowerCase(), 
+                        flag: cols[8], date: cols[9], yomi: cols[10]
                     });
                 }
             });
-
             appState.artists = cleanArtists;
-            appState.templates = cleanTemplates;
-            appState.selectedArtistId = null;
-            appState.selectedTemplateIndex = null;
-
+            const formCards = document.querySelectorAll('.template-builder-card');
+            appState.templates = Array.from(formCards).map(c => ({
+                title: c.querySelector('.template-input-title').value,
+                body: c.querySelector('.template-input-body').value
+            }));
             localStorage.setItem('sd_matrix_artists', JSON.stringify(cleanArtists));
-            localStorage.setItem('sd_matrix_templates', JSON.stringify(cleanTemplates));
-            localStorage.setItem('sd_raw_artists_input', rawArtistsText);
-
+            localStorage.setItem('sd_matrix_templates', JSON.stringify(appState.templates));
             executeSortPipeline();
             renderTemplatesGrid();
-            recalculatePreviewAndControls();
-            
-            showToastBanner("データを完全に同期保存しました");
             switchView('operation');
+            showToastBanner("保存しました");
         }
 
         function triggerAppResetWithModal() {
-            openConfirmationModal(
-                "アプリ内データの完全リセット",
-                "本当にすべてのデータを削除しますか？貼り付けた連絡先データおよび登録したテンプレートがすべて完全に消去されます。",
-                () => {
-                    executeCompleteStorageWipeLogic();
-                }
-            );
+            openConfirmationModal("リセット", "すべて消去しますか？", () => {
+                localStorage.clear();
+                location.reload();
+            });
         }
 
-        function executeCompleteStorageWipeLogic() {
-            localStorage.clear();
-            document.getElementById('import-artists-raw').value = '';
-            document.getElementById('template-builder-root-container').innerHTML = '';
-            
-            appState.artists = [];
-            appState.templates = [];
-            appState.selectedArtistId = null;
-            appState.selectedTemplateIndex = null;
-            appState.currentSortKey = '50on';
-            appState.isAscending = true;
-            
-            renderArtistsGrid();
-            renderTemplatesGrid();
-            recalculatePreviewAndControls();
-            updateHeaderIndicators();
-            createNewTemplateRowInForm('', '');
-            
-            closeConfirmationModal();
-            showToastBanner("すべてのアプリデータを初期化リセットしました");
-        }
-
-        function openConfirmationModal(titleText, bodyHtml, confirmCallback) {
-            document.getElementById('modal-title-node').innerText = titleText;
-            document.getElementById('modal-body-node').innerHTML = bodyHtml;
-            modalActionCallback = confirmCallback;
-            document.getElementById('modal-confirm-btn').onclick = modalActionCallback;
+        function openConfirmationModal(title, body, cb) {
+            document.getElementById('modal-title-node').innerText = title;
+            document.getElementById('modal-body-node').innerHTML = body;
+            document.getElementById('modal-confirm-btn').onclick = () => { cb(); closeConfirmationModal(); };
             document.getElementById('global-modal-overlay').classList.add('active');
         }
 
-        function closeConfirmationModal() {
-            document.getElementById('global-modal-overlay').classList.remove('active');
-            modalActionCallback = null;
-        }
+        function closeConfirmationModal() { document.getElementById('global-modal-overlay').classList.remove('active'); }
 
         function openArtistEditorModal(uid) {
-            const targetArtist = findArtistByUid(uid);
-            if (!targetArtist) return;
-
+            const art = appState.artists.find(a => a.uid === uid);
             document.getElementById('edit-artist-uid').value = uid;
-            document.getElementById('edit-modal-header-title').innerText = `「${targetArtist.artist}」の情報を編集`;
-            document.getElementById('edit-artist-name').value = targetArtist.artist || '';
-            document.getElementById('edit-artist-furi').value = targetArtist.furigana || ''; 
-            document.getElementById('edit-artist-charge').value = targetArtist.charge || '';
-            document.getElementById('edit-artist-line').value = targetArtist.lineId || '';
-            document.getElementById('edit-artist-twitter').value = targetArtist.twitterId || '';
-            document.getElementById('edit-artist-mail').value = targetArtist.mail || '';
-
+            document.getElementById('edit-artist-name').value = art.artist;
+            document.getElementById('edit-artist-furi').value = art.furigana;
+            document.getElementById('edit-artist-charge').value = art.charge;
+            document.getElementById('edit-artist-line').value = art.lineId;
+            document.getElementById('edit-artist-twitter').value = art.twitterId;
+            document.getElementById('edit-artist-mail').value = art.mail;
             document.getElementById('artist-editor-modal-overlay').classList.add('active');
         }
 
-        function closeArtistEditorModal() {
-            document.getElementById('artist-editor-modal-overlay').classList.remove('active');
-        }
+        function closeArtistEditorModal() { document.getElementById('artist-editor-modal-overlay').classList.remove('active'); }
 
         function saveArtistEditorModalData() {
             const uid = document.getElementById('edit-artist-uid').value;
-            const targetArtist = findArtistByUid(uid);
-            if (!targetArtist) return;
-
-            targetArtist.artist = document.getElementById('edit-artist-name').value.trim();
-            targetArtist.furigana = document.getElementById('edit-artist-furi').value.trim(); 
-            targetArtist.charge = document.getElementById('edit-artist-charge').value.trim();
-            targetArtist.lineId = document.getElementById('edit-artist-line').value.trim();
-            targetArtist.twitterId = document.getElementById('edit-artist-twitter').value.trim();
-            targetArtist.mail = document.getElementById('edit-artist-mail').value.trim();
-
+            const art = appState.artists.find(a => a.uid === uid);
+            art.artist = document.getElementById('edit-artist-name').value;
+            art.furigana = document.getElementById('edit-artist-furi').value;
+            art.charge = document.getElementById('edit-artist-charge').value;
+            art.lineId = document.getElementById('edit-artist-line').value;
+            art.twitterId = document.getElementById('edit-artist-twitter').value;
+            art.mail = document.getElementById('edit-artist-mail').value;
             localStorage.setItem('sd_matrix_artists', JSON.stringify(appState.artists));
-            reconstructRawArtistsTextAreaFromState();
-
             renderArtistsGrid();
-            recalculatePreviewAndControls();
-            
             closeArtistEditorModal();
-            showToastBanner("アーティスト情報を更新保存しました");
         }
 
-        function toggleSortPipeline(targetKey) {
-            if (appState.currentSortKey === targetKey) {
-                appState.isAscending = !appState.isAscending; 
-            } else {
-                appState.currentSortKey = targetKey;
-                appState.isAscending = (targetKey !== 'date' && targetKey !== 'yomi');
-            }
+        function toggleSortPipeline(key) {
+            if (appState.currentSortKey === key) appState.isAscending = !appState.isAscending;
+            else { appState.currentSortKey = key; appState.isAscending = true; }
             executeSortPipeline();
         }
 
-        // Stable Sort Algorithm (Preserving previous chronological sequence)
         function executeSortPipeline() {
             const key = appState.currentSortKey;
             const asc = appState.isAscending ? 1 : -1;
-
-            if (!appState.artists || appState.artists.length === 0) return;
-
-            const mappedWithIndex = appState.artists.map((el, i) => ({ index: i, value: el }));
-
-            mappedWithIndex.sort((aPack, bPack) => {
-                const a = aPack.value;
-                const b = bPack.value;
-                let comparison = 0;
-
-                switch (key) {
-                    case '50on':
-                        comparison = (a.furigana || '').localeCompare(b.furigana || 'ー', 'ja');
-                        break;
-                    case 'charge':
-                        if (!a.charge && b.charge) comparison = 1;
-                        else if (a.charge && !b.charge) comparison = -1;
-                        else comparison = (a.charge || '').localeCompare(b.charge || '', 'ja');
-                        break;
-                    case 'flag':
-                        if (!a.flag && b.flag) comparison = 1;
-                        else if (a.flag && !b.flag) comparison = -1;
-                        else comparison = (a.flag || '').localeCompare(b.flag || '', 'ja');
-                        break;
-                    case 'yomi':
-                        if (!a.yomi && b.yomi) comparison = 1;
-                        else if (a.yomi && !b.yomi) comparison = -1;
-                        else comparison = (a.yomi || '').localeCompare(b.yomi || '', 'ja');
-                        break;
-                    case 'date':
-                        if (!a.date && b.date) comparison = 1;
-                        else if (a.date && !b.date) comparison = -1;
-                        else if (!a.date && !b.date) comparison = 0;
-                        else comparison = (a.date || '').localeCompare(b.date || '', 'ja');
-                        break;
-                    case 'meth':
-                        if (!a.meth && b.meth) comparison = 1;
-                        else if (a.meth && !b.meth) comparison = -1;
-                        else comparison = (a.meth || '').localeCompare(b.meth || '', 'ja');
-                        break;
-                }
-
-                if (comparison === 0) {
-                    return aPack.index - bPack.index;
-                }
-                return comparison * asc;
+            appState.artists.sort((a, b) => {
+                let valA = a[key] || '', valB = b[key] || '';
+                return valA.localeCompare(valB, 'ja') * asc;
             });
-
-            appState.artists = mappedWithIndex.map(pack => pack.value);
-
             updateHeaderIndicators();
             renderArtistsGrid();
-            filterArtists(); 
         }
 
         function updateHeaderIndicators() {
-            const keys = ['50on', 'charge', 'flag', 'yomi', 'date', 'meth'];
-            keys.forEach(k => {
+            ['50on', 'charge', 'flag', 'yomi', 'date', 'meth'].forEach(k => {
                 const el = document.getElementById(`indicator-${k}`);
-                if (!el) return;
-                if (appState.currentSortKey === k) {
-                    el.innerText = appState.isAscending ? "▲" : "▼";
-                    el.style.color = "var(--state-selected-border)";
-                } else {
-                    el.innerText = "";
-                }
+                if (el) el.innerText = appState.currentSortKey === k ? (appState.isAscending ? "▲" : "▼") : "";
             });
         }
 
         function renderArtistsGrid() {
             const container = document.getElementById('artist-table-body-target');
             container.innerHTML = '';
-
-            if (appState.artists.length === 0) {
-                container.innerHTML = '<tr><td colspan="6" style="padding:12px; text-align:center; color:var(--text-muted); font-size:11px;">設定タブから登録してください。</td></tr>';
-                return;
-            }
-
-            appState.artists.forEach((item) => {
+            let totalYomi = 0, totalCount = 0;
+            appState.artists.forEach(item => {
+                if (item.flag === '🙆🏼‍♀️') {
+                    totalCount++;
+                    totalYomi += parseInt(item.yomi || 0);
+                }
                 const row = document.createElement('tr');
-                row.className = `table-row-item artist-card-element`;
-                row.id = `artist-card-${item.uid}`;
-                row.setAttribute('data-name', item.artist);
-                row.setAttribute('data-furi', item.furigana);
-                
-                if (appState.selectedArtistId === item.uid) {
-                    row.classList.add('selected');
-                }
-                
-                row.onclick = (e) => {
-                    if (e.target.tagName.toLowerCase() === 'select') return;
-                    if (appState.selectedArtistId === item.uid) {
-                        openArtistEditorModal(item.uid);
-                    } else {
-                        selectArtistUnit(item.uid);
-                    }
-                };
-
-                let badgeHtml = '';
-                if (item.meth) {
-                    if (item.meth.includes('line')) badgeHtml = `<span class="cell-badge cell-badge-line">LINE</span>`;
-                    else if (item.meth.includes('twitter') || item.meth.includes('x')) badgeHtml = `<span class="cell-badge cell-badge-twitter">X</span>`;
-                    else if (item.meth.includes('mail') || item.meth.includes('gmail')) badgeHtml = `<span class="cell-badge cell-badge-mail">Mail</span>`;
-                    else badgeHtml = `<span class="cell-badge cell-badge-default">${escapeHtml(item.meth)}</span>`;
-                }
-
-                const currentFlag = item.flag || '';
-                const selectId = `select-flag-${item.uid}`;
-
+                row.className = 'table-row-item';
+                row.onclick = () => { appState.selectedArtistId = item.uid; renderArtistsGrid(); recalculateControls(); };
+                if (appState.selectedArtistId === item.uid) row.classList.add('selected');
                 row.innerHTML = `
-                    <td class="col-artist" style="font-weight:700; color:var(--text-main);">${escapeHtml(item.artist)}</td>
-                    <td class="col-charge">${escapeHtml(item.charge || '-')}</td>
+                    <td class="col-artist">${escapeHtml(item.artist)}</td>
+                    <td class="col-charge">${escapeHtml(item.charge)}</td>
                     <td class="col-flag">
-                        <select id="${selectId}" class="cell-select-editor" onchange="updateInlineFlagState('${item.uid}', this.value)">
-                            <option value="-" ${currentFlag === '-' || currentFlag === '' ? 'selected' : ''}>-</option>
-                            <option value="🚩" ${currentFlag === '🚩' ? 'selected' : ''}>🚩</option>
-                            <option value="🙆🏼‍♀️" ${currentFlag === '🙆🏼‍♀️' ? 'selected' : ''}>🙆🏼‍♀️</option>
-                            <option value="🤦‍♂️" ${currentFlag === '🤦‍♂️' ? 'selected' : ''}>🤦‍♂️</option>
-                            <option value="🙅‍♀️" ${currentFlag === '🙅‍♀️' ? 'selected' : ''}>🙅‍♀️</option>
+                        <select class="cell-select-editor" onchange="updateFlag('${item.uid}', this.value)">
+                            <option value="-" ${item.flag === '-' ? 'selected' : ''}>-</option>
+                            <option value="🚩" ${item.flag === '🚩' ? 'selected' : ''}>🚩</option>
+                            <option value="🙆🏼‍♀️" ${item.flag === '🙆🏼‍♀️' ? 'selected' : ''}>🙆🏼‍♀️</option>
+                            <option value="📤" ${item.flag === '📤' ? 'selected' : ''}>📤</option>
+                            <option value="🤦‍♂️" ${item.flag === '🤦‍♂️' ? 'selected' : ''}>🤦‍♂️</option>
+                            <option value="🙅‍♀️" ${item.flag === '🙅‍♀️' ? 'selected' : ''}>🙅‍♀️</option>
                         </select>
                     </td>
-                    <td class="col-yomi">${escapeHtml(item.yomi || '-')}</td>
-                    <td class="col-date" style="color:#2b6cb0; font-weight:600;">${escapeHtml(item.date || '-')}</td>
-                    <td class="col-meth">${badgeHtml}</td>
+                    <td class="col-yomi">${escapeHtml(item.yomi)}</td>
+                    <td class="col-date">${escapeHtml(item.date)}</td>
+                    <td class="col-meth">${item.meth}</td>
                 `;
                 container.appendChild(row);
             });
+            document.getElementById('stats-panel').innerText = `出演者数：${totalCount}組   合計ヨミ：${totalYomi}人`;
         }
 
-        function updateInlineFlagState(uid, selectedValue) {
-            const targetArtist = findArtistByUid(uid);
-            if (!targetArtist) return;
-
-            const cleanedValue = selectedValue === '-' ? '' : selectedValue;
-            targetArtist.flag = cleanedValue;
-
+        function updateFlag(uid, val) {
+            const art = appState.artists.find(a => a.uid === uid);
+            art.flag = val;
             localStorage.setItem('sd_matrix_artists', JSON.stringify(appState.artists));
-            reconstructRawArtistsTextAreaFromState();
-
-            const dropdownElement = document.getElementById(`select-flag-${uid}`);
-            if (dropdownElement) {
-                const prevBg = dropdownElement.style.backgroundColor;
-                dropdownElement.style.backgroundColor = '#e6f4ea';
-                setTimeout(() => { dropdownElement.style.backgroundColor = prevBg; }, 400);
-            }
-
-            if (appState.currentSortKey === 'flag') {
-                executeSortPipeline();
-            }
+            renderArtistsGrid();
         }
 
         function renderTemplatesGrid() {
             const container = document.getElementById('template-list-target');
             container.innerHTML = '';
-
-            if (appState.templates.length === 0) {
-                container.innerHTML = '<div style="padding:12px; text-align:center; color:var(--text-muted); font-size:12px;">設定タブから登録してください。</div>';
-                return;
-            }
-
-            appState.templates.forEach((item, index) => {
-                const card = document.createElement('div');
-                card.className = 'template-row-item';
-                card.id = `template-card-${index}`;
-                card.onclick = () => selectTemplateUnit(index);
-
-                card.innerHTML = `
-                    <div class="template-title">${escapeHtml(item.title)}</div>
-                    <div class="template-snippet">${escapeHtml(item.body)}</div>
-                `;
-                container.appendChild(card);
+            appState.templates.forEach((t, i) => {
+                const div = document.createElement('div');
+                div.className = 'template-row-item';
+                if (appState.selectedTemplateIndex === i) div.classList.add('selected');
+                div.onclick = () => { appState.selectedTemplateIndex = i; renderTemplatesGrid(); recalculateControls(); };
+                div.innerHTML = `<div class="template-title">${escapeHtml(t.title)}</div><div class="template-snippet">${escapeHtml(t.body)}</div>`;
+                container.appendChild(div);
             });
         }
 
-        function executeKanaSortAndJump(targetKanaCharacter) {
-            if (appState.artists.length === 0) return;
+        function recalculateControls() {
+            const btns = document.querySelectorAll('.dispatch-btn');
+            btns.forEach(b => b.classList.remove('enabled'));
+            if (appState.selectedArtistId && appState.selectedTemplateIndex !== null) {
+                const art = appState.artists.find(a => a.uid === appState.selectedArtistId);
+                if (art.lineId) document.getElementById('action-trigger-line').classList.add('enabled');
+                if (art.twitterId) document.getElementById('action-trigger-twitter').classList.add('enabled');
+                if (art.mail) document.getElementById('action-trigger-gmail').classList.add('enabled');
+            }
+        }
+
+        function executeExternalDispatch(platform) {
+            const art = appState.artists.find(a => a.uid === appState.selectedArtistId);
+            const tpl = appState.templates[appState.selectedTemplateIndex];
+            const msg = `${art.artist}\n${art.charge}\n${tpl.body}`;
             
-            appState.currentSortKey = '50on';
-            appState.isAscending = true; 
-            executeSortPipeline();
+            navigator.clipboard.writeText(msg).then(() => {
+                showToastBanner(`コピーしました！\n\n${msg}`);
+                if (platform === 'line') window.location.href = `https://line.me/R/ti/p/@${art.lineId}`;
+                if (platform === 'twitter') window.location.href = `twitter://messages/compose?recipient_screen_name=${art.twitterId}`;
+                if (platform === 'gmail') window.location.href = `googlegmail:///co?to=${art.mail}&subject=${tpl.title}&body=${encodeURIComponent(msg)}`;
+            });
+        }
 
-            const charMap = {
-                'あ': /^[あぃいぅうぇえぉお]/,
-                'か': /^[かがきぎくぐけげこご]/,
-                'さ': /^[さざしじすずせぜそぞ]/,
-                'た': /^[ただちぢつづてでとど]/,
-                'な': /^[なにぬねの]/,
-                'は': /^[はばぱひびぴふぶぷへべぺほぼぽ]/,
-                'ま': /^[まみむめも]/,
-                'や': /^[やゅゆょよ]/,
-                'ら': /^[らりるれろ]/,
-                'わ': /^[わをん]/
-            };
+        function showToastBanner(msg) {
+            const t = document.getElementById('toast-message-banner');
+            t.innerText = msg;
+            t.style.display = 'block';
+            setTimeout(() => t.style.display = 'none', 3000);
+        }
 
-            const regex = charMap[targetKanaCharacter];
-            if (!regex) return;
-
-            let targetUid = null;
-            for (let i = 0; i < appState.artists.length; i++) {
-                const furi = appState.artists[i].furigana;
-                if (furi && regex.test(furi)) {
-                    targetUid = appState.artists[i].uid;
-                    break;
-                }
-            }
-
-            if (targetUid !== null) {
-                const targetElement = document.getElementById(`artist-card-${targetUid}`);
-                if (targetElement) {
-                    targetElement.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-                    
-                    const originalBg = targetElement.style.backgroundColor;
-                    targetElement.style.backgroundColor = '#feebc8';
-                    setTimeout(() => { targetElement.style.backgroundColor = originalBg; }, 600);
-                }
-            } else {
-                showToastBanner(`フリガナ基準で「${targetKanaCharacter}行」は見つかりませんでした`);
-            }
+        function executeKanaSortAndJump(k) {
+            const target = appState.artists.find(a => a.furigana.startsWith(k));
+            if (target) document.getElementById(`artist-card-${target.uid}`)?.scrollIntoView();
         }
 
         function filterArtists() {
-            const query = document.getElementById('search-bar').value.toLowerCase().trim();
-            const rows = document.querySelectorAll('.artist-card-element');
-
-            rows.forEach(row => {
-                const name = row.getAttribute('data-name').toLowerCase();
-                const furi = row.getAttribute('data-furi').toLowerCase();
-                if (name.includes(query) || furi.includes(query)) {
-                    row.style.display = 'table-row';
-                } else {
-                    row.style.display = 'none';
-                }
+            const q = document.getElementById('search-bar').value.toLowerCase();
+            document.querySelectorAll('.table-row-item').forEach(r => {
+                r.style.display = r.innerText.toLowerCase().includes(q) ? '' : 'none';
             });
         }
 
-        function selectArtistUnit(uid) {
-            document.querySelectorAll('.artist-card-element').forEach(el => el.classList.remove('selected'));
-            if (appState.selectedArtistId === uid) {
-                appState.selectedArtistId = null;
-            } else {
-                appState.selectedArtistId = uid;
-                const targetEl = document.getElementById(`artist-card-${uid}`);
-                if (targetEl) targetEl.classList.add('selected');
-            }
-            recalculatePreviewAndControls();
-        }
-
-        function selectTemplateUnit(index) {
-            document.querySelectorAll('.template-row-item').forEach(el => el.classList.remove('selected'));
-            if (appState.selectedTemplateIndex === index) {
-                appState.selectedTemplateIndex = null;
-            } else {
-                appState.selectedTemplateIndex = index;
-                document.getElementById(`template-card-${index}`).classList.add('selected');
-            }
-            recalculatePreviewAndControls();
-        }
-
-        function findArtistByUid(uid) {
-            return appState.artists.find(item => item.uid === uid) || null;
-        }
-
-        function recalculatePreviewAndControls() {
-            const previewWindow = document.getElementById('text-preview-window');
-            const btnLine = document.getElementById('action-trigger-line');
-            const btnTwitter = document.getElementById('action-trigger-twitter');
-            const btnGmail = document.getElementById('action-trigger-gmail');
-
-            const resetButtons = () => {
-                [btnLine, btnTwitter, btnGmail].forEach(btn => {
-                    btn.classList.remove('enabled', 'suggested');
-                });
-            };
-
-            if (appState.selectedArtistId === null || appState.selectedTemplateIndex === null) {
-                previewWindow.innerText = "アーティストとテンプレートを選択するとここに表示されます。";
-                resetButtons();
-                return;
-            }
-
-            const currentArtist = findArtistByUid(appState.selectedArtistId);
-            const currentTemplate = appState.templates[appState.selectedTemplateIndex];
-
-            if (!currentArtist) {
-                previewWindow.innerText = "アーティストとテンプレートを選択するとここに表示されます。";
-                resetButtons();
-                return;
-            }
-
-            const calculatedMessageText = `${currentArtist.artist}\n${currentArtist.charge}\n${currentTemplate.body}`;
-            previewWindow.innerText = calculatedMessageText;
-
-            resetButtons();
-            
-            if (currentArtist.lineId && currentArtist.lineId.trim() !== '') btnLine.classList.add('enabled');
-            if (currentArtist.twitterId && currentArtist.twitterId.trim() !== '') btnTwitter.classList.add('enabled');
-            if (currentArtist.mail && currentArtist.mail.trim() !== '') btnGmail.classList.add('enabled');
-
-            const methMode = currentArtist.meth || '';
-            if (methMode.includes('line') && currentArtist.lineId && currentArtist.lineId.trim() !== '') {
-                btnLine.classList.add('suggested');
-            } else if ((methMode.includes('twitter') || methMode.includes('x')) && currentArtist.twitterId && currentArtist.twitterId.trim() !== '') {
-                btnTwitter.classList.add('suggested');
-            } else if ((methMode.includes('mail') || methMode.includes('gmail')) && currentArtist.mail && currentArtist.mail.trim() !== '') {
-                btnGmail.classList.add('suggested');
-            }
-        }
-
-        function injectTodayDateStampIntoSelectedArtist() {
-            if (appState.selectedArtistId === null) return;
-
-            const now = new Date();
-            const month = now.getMonth() + 1;
-            const date = now.getDate();
-            const dayName = WEEK_DAYS[now.getDay()];
-            const stampedString = `${month}/${date}${dayName}`; 
-            
-            const targetArtist = findArtistByUid(appState.selectedArtistId);
-            if (targetArtist) {
-                targetArtist.date = stampedString;
-                localStorage.setItem('sd_matrix_artists', JSON.stringify(appState.artists));
-                reconstructRawArtistsTextAreaFromState();
-
-                if (appState.currentSortKey === 'date') {
-                    executeSortPipeline();
-                } else {
-                    renderArtistsGrid();
-                }
-            }
-        }
-
-        function reconstructRawArtistsTextAreaFromState() {
-            let outputs = [];
-            appState.artists.forEach(item => {
-                const rowLine = [
-                    item.no, item.furigana, item.artist, item.charge, item.mail,
-                    item.twitterId, item.lineId, item.meth, item.flag, item.date, item.yomi
-                ].join('\t');
-                outputs.push(rowLine);
-            });
-            const unifiedText = outputs.join('\n');
-            document.getElementById('import-artists-raw').value = unifiedText;
-            localStorage.setItem('sd_raw_artists_input', unifiedText);
-        }
-
-        function extractTwitterId(rawStr) {
-            if (!rawStr) return '';
-            let src = rawStr.trim();
-            if (src.includes('x.com/') || src.includes('twitter.com/')) {
-                const parts = src.split(/[?#]/)[0].split('/');
-                return parts[parts.length - 1] || '';
-            }
-            return src.replace(/@/g, '');
-        }
-
-        function executeExternalDispatch(platformKey) {
-            if (appState.selectedArtistId === null || appState.selectedTemplateIndex === null) return;
-            const currentArtist = findArtistByUid(appState.selectedArtistId);
-            if (!currentArtist) return;
-
-            const messageBody = document.getElementById('text-preview-window').innerText;
-            injectTodayDateStampIntoSelectedArtist();
-
-            if (platformKey === 'line') {
-                executeClipboardCopyProcedure(messageBody);
-                let lineTargetUrl = "https://line.me/R/ti/p/@" + encodeURIComponent(currentArtist.lineId || '');
-                if (!currentArtist.lineId) lineTargetUrl = "https://line.me/R/";
-                showToastBanner("コピー＆LINEを起動します");
-                setTimeout(() => { window.location.href = lineTargetUrl; }, 800);
-
-            } else if (platformKey === 'twitter') {
-                const rawFieldData = currentArtist.twitterId || '';
-                const parsedId = extractTwitterId(rawFieldData);
-                
-                let twitterUrl = '';
-                if (parsedId.length > 0) {
-                    // スマホの公式X（Twitter）アプリを直接起動するためのディープリンク(URLスキーム)を使用
-                    twitterUrl = `twitter://messages/compose?recipient_screen_name=${encodeURIComponent(parsedId)}`;
-                    showToastBanner("コピー＆XアプリのDM画面を起動します");
-                } else {
-                    twitterUrl = "twitter://timeline";
-                    showToastBanner("コピー＆Xアプリを起動します");
-                }
-                
-                executeClipboardCopyProcedure(messageBody);
-                setTimeout(() => { 
-                    window.location.href = twitterUrl;
-                    
-                    // フォールバック対応（万が一アプリが起動しなかった場合のWeb用リンク遷移）
-                    setTimeout(() => {
-                        if (parsedId.length > 0) {
-                            window.location.href = `https://x.com/messages/compose?recipient_screen_name=${encodeURIComponent(parsedId)}`;
-                        } else {
-                            window.location.href = "https://x.com/";
-                        }
-                    }, 400);
-                }, 800);
-
-            } else if (platformKey === 'gmail') {
-                const mailToAddress = currentArtist.mail || '';
-                const currentTemplate = appState.templates[appState.selectedTemplateIndex];
-                const subjectLine = currentTemplate.title || 'ご連絡';
-                
-                const mailtoUrl = `googlegmail:///co?to=${encodeURIComponent(mailToAddress)}&subject=${encodeURIComponent(subjectLine)}&body=${encodeURIComponent(messageBody)}`;
-                window.location.href = mailtoUrl;
-            }
-        }
-
-        function executeClipboardCopyProcedure(textString) {
-            const tempTextArea = document.createElement('textarea');
-            tempTextArea.value = textString;
-            tempTextArea.style.position = 'fixed';
-            document.body.appendChild(tempTextArea);
-            tempTextArea.focus();
-            tempTextArea.select();
-            try {
-                document.execCommand('copy');
-            } catch (err) {
-                console.error('Clipboard injection failure: ', err);
-            }
-            document.body.removeChild(tempTextArea);
-        }
-
-        function showToastBanner(messageString) {
-            const toast = document.getElementById('toast-message-banner');
-            toast.innerText = messageString;
-            toast.style.display = 'block';
-            setTimeout(() => { toast.style.display = 'none'; }, 2500);
-        }
-
-        function escapeHtml(unsafeString) {
-            if (!unsafeString) return '';
-            return unsafeString
-                .replace(/&/g, "&amp;")
-                .replace(/</g, "&lt;")
-                .replace(/>/g, "&gt;")
-                .replace(/"/g, "&quot;")
-                .replace(/'/g, "&#039;");
+        function escapeHtml(s) {
+            return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
         }
     </script>
 </body>
