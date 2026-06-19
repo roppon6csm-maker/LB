@@ -652,7 +652,7 @@
                 <button id="tab-operation" class="nav-tab active" onclick="switchView('operation')">管理表</button>
                 <button id="tab-settings" class="nav-tab" onclick="switchView('settings')">設定</button>
             </div>
-            <div class="version-tag">ver.0.1.5</div>
+            <div class="version-tag">ver.0.1.6</div>
         </div>
     </header>
 
@@ -799,9 +799,6 @@
             isAscending: true       
         };
 
-        let modalActionCallback = null;
-        const WEEK_DAYS = ["日", "月", "火", "水", "木", "金", "土"];
-
         window.addEventListener('DOMContentLoaded', () => {
             loadPersistedData();
             executeSortPipeline(); 
@@ -821,12 +818,12 @@
             try {
                 const savedArtists = localStorage.getItem('sd_matrix_artists');
                 const savedTemplates = localStorage.getItem('sd_matrix_templates');
-                const rawArtistsInput = localStorage.getItem('sd_raw_artists_input');
                 if (savedArtists) appState.artists = JSON.parse(savedArtists);
                 if (savedTemplates) appState.templates = JSON.parse(savedTemplates);
                 appState.artists.forEach((item, idx) => {
-                    if (!item.uid) item.uid = "art_" + Date.now() + "_" + Math.random().toString(36).substr(2, 9) + "_" + idx;
+                    if (!item.uid) item.uid = "art_" + Date.now() + "_" + idx;
                 });
+                const rawArtistsInput = localStorage.getItem('sd_raw_artists_input');
                 if (rawArtistsInput) document.getElementById('import-artists-raw').value = rawArtistsInput;
             } catch (e) { console.error(e); }
         }
@@ -840,7 +837,7 @@
             card.innerHTML = `
                 <div class="template-card-header">
                     <input type="text" class="template-input-title" placeholder="テンプレート名" value="${escapeHtml(titleValue)}">
-                    <button type="button" class="btn-mini-danger" onclick="triggerTemplateCardRemoval('${elementId}')">削除</button>
+                    <button type="button" class="btn-mini-danger" onclick="document.getElementById('${elementId}').remove()">削除</button>
                 </div>
                 <textarea class="template-input-body" placeholder="本文">${escapeHtml(bodyValue)}</textarea>
             `;
@@ -855,10 +852,6 @@
             } else {
                 createNewTemplateRowInForm('', '');
             }
-        }
-
-        function triggerTemplateCardRemoval(elementId) {
-            document.getElementById(elementId).remove();
         }
 
         function processAndSaveRawData() {
@@ -884,6 +877,7 @@
             }));
             localStorage.setItem('sd_matrix_artists', JSON.stringify(cleanArtists));
             localStorage.setItem('sd_matrix_templates', JSON.stringify(appState.templates));
+            localStorage.setItem('sd_raw_artists_input', rawArtistsText);
             executeSortPipeline();
             renderTemplatesGrid();
             switchView('operation');
@@ -891,16 +885,9 @@
         }
 
         function triggerAppResetWithModal() {
-            openConfirmationModal("リセット", "すべて消去しますか？", () => {
-                localStorage.clear();
-                location.reload();
-            });
-        }
-
-        function openConfirmationModal(title, body, cb) {
-            document.getElementById('modal-title-node').innerText = title;
-            document.getElementById('modal-body-node').innerHTML = body;
-            document.getElementById('modal-confirm-btn').onclick = () => { cb(); closeConfirmationModal(); };
+            document.getElementById('modal-title-node').innerText = "リセット";
+            document.getElementById('modal-body-node').innerHTML = "全データを消去しますか？";
+            document.getElementById('modal-confirm-btn').onclick = () => { localStorage.clear(); location.reload(); };
             document.getElementById('global-modal-overlay').classList.add('active');
         }
 
@@ -969,12 +956,15 @@
                 }
                 const row = document.createElement('tr');
                 row.className = 'table-row-item';
-                row.onclick = () => { appState.selectedArtistId = item.uid; renderArtistsGrid(); recalculateControls(); };
+                row.onclick = () => {
+                    if (appState.selectedArtistId === item.uid) openArtistEditorModal(item.uid);
+                    else { appState.selectedArtistId = item.uid; renderArtistsGrid(); recalculateControls(); }
+                };
                 if (appState.selectedArtistId === item.uid) row.classList.add('selected');
                 row.innerHTML = `
                     <td class="col-artist">${escapeHtml(item.artist)}</td>
                     <td class="col-charge">${escapeHtml(item.charge)}</td>
-                    <td class="col-flag">
+                    <td class="col-flag" onclick="event.stopPropagation()">
                         <select class="cell-select-editor" onchange="updateFlag('${item.uid}', this.value)">
                             <option value="-" ${item.flag === '-' ? 'selected' : ''}>-</option>
                             <option value="🚩" ${item.flag === '🚩' ? 'selected' : ''}>🚩</option>
@@ -1046,7 +1036,7 @@
 
         function executeKanaSortAndJump(k) {
             const target = appState.artists.find(a => a.furigana.startsWith(k));
-            if (target) document.getElementById(`artist-card-${target.uid}`)?.scrollIntoView();
+            if (target) document.querySelector(`[data-uid="${target.uid}"]`)?.scrollIntoView();
         }
 
         function filterArtists() {
