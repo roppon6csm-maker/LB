@@ -36,9 +36,10 @@
             background-color: var(--bg-primary);
             color: var(--text-main);
             line-height: 1.4;
-            padding-bottom: 60px;
+            padding-bottom: 60px; /* Space for fixed bottom bar */
         }
 
+        /* Inline Header Layout */
         header {
             background-color: var(--bg-card);
             padding: 8px 12px;
@@ -63,12 +64,13 @@
             margin-right: 8px;
         }
 
+        /* Top Navigation Tabs Header Inline */
         .nav-inline-tabs {
             display: flex;
             background: #edf2f7;
             border-radius: 6px;
             padding: 2px;
-            margin-right: 55px;
+            margin-right: 55px; /* Leave space for version tag */
             flex-grow: 1;
             max-width: 160px;
         }
@@ -104,6 +106,7 @@
             border-radius: 4px;
         }
 
+        /* Container Layouts */
         .view-section {
             display: none;
             padding: 8px;
@@ -113,6 +116,7 @@
             display: block;
         }
 
+        /* Compact Integrated Utility Row Layout (Search & 50on Index Jumper) */
         .search-index-integration-row {
             display: flex;
             gap: 6px;
@@ -133,6 +137,10 @@
             border-radius: 6px;
             outline: none;
             background-color: var(--bg-card);
+        }
+
+        .search-input:focus {
+            border-color: var(--state-selected-border);
         }
 
         .index-nav-cell {
@@ -161,8 +169,15 @@
             text-align: center;
             color: var(--text-main);
             cursor: pointer;
+            -webkit-user-select: none;
+            user-select: none;
         }
 
+        .index-btn:active {
+            background-color: #e2e8f0;
+        }
+
+        /* Stats Bar */
         .stats-bar {
             font-size: 11px;
             color: var(--text-muted);
@@ -171,14 +186,18 @@
             font-weight: bold;
         }
 
+        /* Excel-like Table Layout Specifications */
         .table-scroll-container {
             width: 100%;
-            max-height: 320px;
+            max-height: 320px; /* Expanded for more list visibility */
             overflow-y: auto;
+            overflow-x: auto;
             border: 1px solid var(--border-color);
             border-radius: 6px;
             background-color: var(--bg-card);
             margin-bottom: 8px;
+            -webkit-overflow-scrolling: touch;
+            position: relative;
         }
 
         .excel-table {
@@ -196,59 +215,144 @@
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+            vertical-align: middle;
         }
 
+        .excel-table th:last-child, .excel-table td:last-child {
+            border-right: none;
+        }
+
+        /* Interactive Sorting Headers & Sticky Fixed Position */
         .excel-table th {
             background-color: #edf2f7;
+            color: var(--text-main);
             font-weight: 700;
+            cursor: pointer;
             position: sticky;
             top: 0;
             z-index: 10;
+            user-select: none;
+            -webkit-user-select: none;
+            box-shadow: inset 0 -1px 0 var(--border-color);
         }
 
-        .col-artist { width: 95px; }
-        .col-charge { width: 45px; }
-        .col-flag   { width: 55px; }
-        .col-yomi   { width: 32px; }
-        .col-date   { width: 42px; }
-        .col-meth   { width: 38px; }
+        .excel-table th:active {
+            background-color: #e2e8f0;
+        }
 
+        .sort-indicator {
+            display: inline-block;
+            margin-left: 1px;
+            font-size: 8px;
+            color: var(--state-selected-border);
+        }
+
+        /* Highly Compact Columns Width Configuration */
+        .col-artist { width: 95px; }
+        .col-charge { width: 45px; font-size: 9px; color: #4a5568; }
+        .col-flag   { width: 55px; text-align: center; }
+        .col-yomi   { width: 32px; text-align: center; font-size: 9px; color: #4a5568; }
+        .col-date   { width: 42px; text-align: center; font-size: 9px; }
+        .col-meth   { width: 38px; text-align: center; font-size: 9px; }
+
+        /* Inline Dropdown Editor styling inside grid cell */
         .cell-select-editor {
             width: 100%;
             font-size: 11px;
+            padding: 1px 0;
+            border: 1px solid transparent;
+            background: transparent;
+            color: var(--text-main);
+            outline: none;
+            cursor: pointer;
             text-align: center;
+            text-align-last: center;
+            border-radius: 3px;
         }
 
-        .table-row-item.selected {
+        .cell-select-editor:focus {
+            background-color: #ffffff;
+            border-color: var(--state-selected-border);
+            box-shadow: 0 0 2px rgba(49, 130, 206, 0.3);
+        }
+
+        /* Excel-like Row States Mapping Selector rules */
+        .excel-table tr.table-row-item {
+            cursor: pointer;
+        }
+
+        .excel-table tr.table-row-item:hover {
+            background-color: #f7fafc;
+        }
+
+        .excel-table tr.table-row-item.selected {
             background-color: var(--state-selected);
+        }
+
+        .excel-table tr.table-row-item.selected td {
             font-weight: 600;
         }
 
+        /* Compact Mini Badge Pills inside Grid cells */
+        .cell-badge {
+            font-size: 8px;
+            padding: 1px 2px;
+            border-radius: 3px;
+            font-weight: bold;
+            display: inline-block;
+            line-height: 1;
+        }
+        .cell-badge-line { background-color: #e6f9ed; color: var(--brand-line); }
+        .cell-badge-twitter { background-color: #e8f5fe; color: var(--brand-twitter); }
+        .cell-badge-mail { background-color: #fdeaea; color: var(--brand-gmail); }
+        .cell-badge-default { background-color: #edf2f7; color: #4a5568; }
+
+        /* Template Row Specifics */
         .template-row-item {
             background-color: var(--bg-card);
             border: 1px solid var(--border-color);
             border-radius: 6px;
-            padding: 8px;
-            margin-bottom: 6px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .template-info { flex: 1; overflow: hidden; }
-        .template-title { font-size: 12px; font-weight: 700; }
-        .template-snippet { font-size: 10px; color: var(--text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-
-        .btn-preview {
-            background-color: #edf2f7;
-            border: 1px solid var(--border-color);
-            border-radius: 4px;
-            font-size: 10px;
-            padding: 4px 8px;
+            padding: 6px;
+            margin-bottom: 2px;
             cursor: pointer;
-            margin-left: 8px;
+            position: relative;
         }
 
+        .template-row-item.selected {
+            background-color: var(--state-selected);
+            border-color: var(--state-selected-border);
+        }
+
+        .template-title {
+            font-size: 12px;
+            font-weight: 700;
+            padding-right: 50px;
+        }
+
+        .template-snippet {
+            font-size: 10px;
+            color: var(--text-muted);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-top: 1px;
+            padding-right: 50px;
+        }
+
+        .btn-preview-mini {
+            position: absolute;
+            right: 4px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 10px;
+            background: #edf2f7;
+            border: 1px solid #cbd5e0;
+            border-radius: 4px;
+            padding: 2px 6px;
+            cursor: pointer;
+        }
+
+        /* Settings Tab Configuration */
         .settings-group {
             background-color: var(--bg-card);
             border: 1px solid var(--border-color);
@@ -257,14 +361,134 @@
             margin-bottom: 8px;
         }
 
-        .paste-textarea { width: 100%; height: 90px; font-size: 11px; }
+        .settings-label {
+            font-size: 12px;
+            font-weight: 700;
+            margin-bottom: 4px;
+            color: var(--text-main);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
 
-        .btn-action { width: 100%; padding: 10px; font-size: 13px; font-weight: 700; border: none; border-radius: 6px; cursor: pointer; }
-        .btn-save { background-color: var(--state-selected-border); color: white; }
+        .settings-desc {
+            font-size: 10px;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+            display: block;
+        }
 
+        .paste-textarea {
+            width: 100%;
+            height: 90px;
+            font-size: 11px;
+            font-family: monospace;
+            padding: 6px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            resize: none;
+            outline: none;
+        }
+
+        .paste-textarea:focus {
+            border-color: var(--state-selected-border);
+        }
+
+        /* Dynamic Template Form List UI Styles */
+        .template-builder-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 4px;
+        }
+
+        .template-builder-card {
+            background: #f8fafc;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 6px;
+            position: relative;
+        }
+
+        .template-card-header {
+            display: flex;
+            gap: 4px;
+            margin-bottom: 4px;
+        }
+
+        .template-input-title {
+            flex-grow: 1;
+            font-size: 11px;
+            padding: 4px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            outline: none;
+            font-weight: bold;
+        }
+
+        .template-input-body {
+            width: 100%;
+            height: 60px;
+            font-size: 11px;
+            padding: 4px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            resize: vertical;
+            outline: none;
+        }
+
+        .btn-mini-danger {
+            background-color: #fffafb;
+            color: var(--state-danger);
+            border: 1px solid #fed7d7;
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .btn-mini-add {
+            background-color: #ebf8ff;
+            color: var(--state-selected-border);
+            border: 1px solid #bee3f8;
+            font-size: 10px;
+            padding: 3px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .btn-action {
+            width: 100%;
+            padding: 10px;
+            font-size: 13px;
+            font-weight: 700;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            text-align: center;
+        }
+
+        .btn-save {
+            background-color: var(--state-selected-border);
+            color: white;
+        }
+
+        .btn-clear {
+            background-color: #edf2f7;
+            color: #4a5568;
+            font-size: 11px;
+            padding: 4px;
+            margin-top: 6px;
+        }
+
+        /* Fixed Bottom Control Bar */
         .bottom-control-bar {
             position: fixed;
-            bottom: 0; left: 0; right: 0;
+            bottom: 0;
+            left: 0;
+            right: 0;
             background-color: var(--bg-card);
             border-top: 1px solid var(--border-color);
             padding: 4px;
@@ -273,17 +497,60 @@
             width: 100%;
         }
 
-        .action-cell { display: table-cell; width: 33.333%; padding: 0 3px; }
-
-        .dispatch-btn {
-            width: 100%; padding: 6px 2px; font-size: 11px; font-weight: bold; color: white; border: none; border-radius: 6px; cursor: pointer; opacity: 0.25;
+        .action-cell {
+            display: table-cell;
+            width: 33.333%;
+            padding: 0 3px;
         }
 
-        .dispatch-btn.enabled { opacity: 1; }
+        .dispatch-btn {
+            width: 100%;
+            padding: 6px 2px;
+            font-size: 11px;
+            font-weight: bold;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            text-align: center;
+            opacity: 0.25;
+            pointer-events: none;
+        }
+
+        .dispatch-btn.enabled {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .dispatch-btn.suggested {
+            box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.5);
+            animation: pulse 2s infinite;
+        }
+
         .btn-line { background-color: var(--brand-line); }
         .btn-twitter { background-color: #1a1a1a; }
         .btn-gmail { background-color: var(--brand-gmail); }
 
+        /* Toast Alert Notification */
+        .toast {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(45, 55, 72, 0.95);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            z-index: 1000;
+            display: none;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            text-align: center;
+            white-space: pre-wrap;
+        }
+
+        /* Custom Modal Dialog */
         .modal-overlay {
             position: fixed;
             top: 0; left: 0; right: 0; bottom: 0;
@@ -295,30 +562,104 @@
             padding: 16px;
             opacity: 0;
             pointer-events: none;
+            transition: opacity 0.2s ease;
         }
 
-        .modal-overlay.active { opacity: 1; pointer-events: auto; }
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
 
         .modal-container {
             background-color: var(--bg-card);
             border-radius: 8px;
             width: 100%;
-            max-width: 320px;
+            max-width: 290px;
             padding: 16px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            transform: scale(0.9);
+            transition: transform 0.2s ease;
         }
 
-        .modal-preview-body {
-            background: #f1f0e8;
-            padding: 12px;
-            border-radius: 12px;
+        .modal-overlay.active .modal-container {
+            transform: scale(1);
+        }
+
+        .modal-title {
             font-size: 13px;
-            white-space: pre-wrap;
-            line-height: 1.5;
-            min-height: 100px;
+            font-weight: bold;
+            color: var(--text-main);
+            margin-bottom: 6px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
-        .edit-form-input { width: 100%; height: 30px; padding: 4px; margin-bottom: 8px; }
-        
+        .modal-body {
+            font-size: 12px;
+            color: #4a5568;
+            margin-bottom: 14px;
+            line-height: 1.4;
+        }
+
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+        }
+
+        .btn-modal {
+            padding: 6px 12px;
+            font-size: 11px;
+            font-weight: bold;
+            border-radius: 4px;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-modal-cancel {
+            background-color: #edf2f7;
+            color: #4a5568;
+        }
+
+        .btn-modal-confirm {
+            background-color: var(--state-danger);
+            color: white;
+        }
+
+        /* Artist Editor Modal Form Specification */
+        .edit-form-group {
+            margin-bottom: 8px;
+        }
+        .edit-form-label {
+            font-size: 11px;
+            font-weight: bold;
+            color: var(--text-muted);
+            margin-bottom: 2px;
+            display: block;
+        }
+        .edit-form-input {
+            width: 100%;
+            height: 30px;
+            padding: 4px 8px;
+            font-size: 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            outline: none;
+        }
+        .edit-form-input:focus {
+            border-color: var(--state-selected-border);
+        }
+        .btn-modal-save {
+            background-color: var(--state-selected-border);
+            color: white;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+            100% { transform: scale(1); }
+        }
     </style>
 </head>
 <body>
@@ -335,108 +676,350 @@
     </header>
 
     <div id="view-operation" class="view-section active">
+        
         <div class="search-index-integration-row">
-            <input type="text" id="search-bar" class="search-input" placeholder="絞り込み..." oninput="filterArtists()">
+            <div class="search-box-cell">
+                <input type="text" id="search-bar" class="search-input" placeholder="アーティスト名・フリガナで絞り込み..." oninput="filterArtists()">
+            </div>
+            <div class="index-nav-cell">
+                <div class="index-nav-container">
+                    <div class="index-btn" onclick="executeKanaSortAndJump('あ')">あ</div>
+                    <div class="index-btn" onclick="executeKanaSortAndJump('か')">か</div>
+                    <div class="index-btn" onclick="executeKanaSortAndJump('さ')">さ</div>
+                    <div class="index-btn" onclick="executeKanaSortAndJump('た')">た</div>
+                    <div class="index-btn" onclick="executeKanaSortAndJump('な')">な</div>
+                    <div class="index-btn" onclick="executeKanaSortAndJump('は')">は</div>
+                    <div class="index-btn" onclick="executeKanaSortAndJump('ま')">ま</div>
+                    <div class="index-btn" onclick="executeKanaSortAndJump('や')">や</div>
+                    <div class="index-btn" onclick="executeKanaSortAndJump('ら')">ら</div>
+                    <div class="index-btn" onclick="executeKanaSortAndJump('わ')">わ</div>
+                </div>
+            </div>
         </div>
+
         <div id="stats-panel" class="stats-bar">出演者数：0組   合計ヨミ：0人</div>
+
         <div class="table-scroll-container">
             <table class="excel-table">
                 <thead>
                     <tr>
-                        <th class="col-artist">アーティスト</th>
-                        <th class="col-charge">担当</th>
-                        <th class="col-flag">出演</th>
-                        <th class="col-yomi">ヨミ</th>
-                        <th class="col-date">日付</th>
-                        <th class="col-meth">推奨</th>
+                        <th class="col-artist" onclick="toggleSortPipeline('50on')">アーティスト<span id="indicator-50on" class="sort-indicator">▲</span></th>
+                        <th class="col-charge" onclick="toggleSortPipeline('charge')">担当<span id="indicator-charge" class="sort-indicator"></span></th>
+                        <th class="col-flag" onclick="toggleSortPipeline('flag')">出演<span id="indicator-flag" class="sort-indicator"></span></th>
+                        <th class="col-yomi" onclick="toggleSortPipeline('yomi')">ヨミ<span id="indicator-yomi" class="sort-indicator"></span></th>
+                        <th class="col-date" onclick="toggleSortPipeline('date')">日付<span id="indicator-date" class="sort-indicator"></span></th>
+                        <th class="col-meth" onclick="toggleSortPipeline('meth')">推奨<span id="indicator-meth" class="sort-indicator"></span></th>
                     </tr>
                 </thead>
-                <tbody id="artist-table-body-target"></tbody>
+                <tbody id="artist-table-body-target">
+                </tbody>
             </table>
         </div>
-        <div id="template-list-target"></div>
+
+        <div class="preview-title" style="font-size:10px; color:#718096; margin-bottom:4px;">テンプレート</div>
+        <div id="template-list-target" style="max-height: 120px; overflow-y: auto;">
+        </div>
+
     </div>
 
     <div id="view-settings" class="view-section">
+        
         <div class="settings-group">
-            <textarea id="import-artists-raw" class="paste-textarea"></textarea>
-            <button class="btn-action btn-save" onclick="processAndSaveRawData()">データを保存</button>
+            <label class="settings-label">■ 連絡先リストデータ貼り付け (11列)</label>
+            <span class="settings-desc">スプレッドシートの「No.」から「yomi」までの11列を範囲選択して貼り付けてください。</span>
+            <textarea id="import-artists-raw" class="paste-textarea" placeholder="No.	furigana	ARTIST	Charge	mail	twitterID	LINEID	meth	flag	date	yomi..."></textarea>
         </div>
+
+        <div class="settings-group">
+            <div class="settings-label">
+                <span>■ テンプレート登録管理</span>
+                <button type="button" class="btn-mini-add" onclick="createNewTemplateRowInForm()">＋ テンプレートを追加</button>
+            </div>
+            <span class="settings-desc">テンプレート名 and 本文を個別に設定・追加できます。</span>
+            
+            <div id="template-builder-root-container" class="template-builder-list">
+            </div>
+        </div>
+
+        <button class="btn-action btn-save" onclick="processAndSaveRawData()">データを反映して保存</button>
+        <button class="btn-action btn-clear" onclick="triggerAppResetWithModal()">アプリ内データを完全にリセット</button>
+
     </div>
 
     <div class="bottom-control-bar">
-        <div class="action-cell"><button id="action-trigger-twitter" class="dispatch-btn btn-twitter" onclick="executeExternalDispatch('twitter')">X</button></div>
-        <div class="action-cell"><button id="action-trigger-line" class="dispatch-btn btn-line" onclick="executeExternalDispatch('line')">LINE</button></div>
-        <div class="action-cell"><button id="action-trigger-gmail" class="dispatch-btn btn-gmail" onclick="executeExternalDispatch('gmail')">Mail</button></div>
-    </div>
-
-    <div id="preview-modal" class="modal-overlay">
-        <div class="modal-container">
-            <div id="preview-text" class="modal-preview-body"></div>
-            <button class="btn-action" style="margin-top:10px; background:#4a5568; color:white;" onclick="document.getElementById('preview-modal').classList.remove('active')">閉じる</button>
+        <div class="action-cell">
+            <button id="action-trigger-twitter" class="dispatch-btn btn-twitter" onclick="executeExternalDispatch('twitter')">X<br>起動</button>
+        </div>
+        <div class="action-cell">
+            <button id="action-trigger-line" class="dispatch-btn btn-line" onclick="executeExternalDispatch('line')">LINE<br>起動</button>
+        </div>
+        <div class="action-cell">
+            <button id="action-trigger-gmail" class="dispatch-btn btn-gmail" onclick="executeExternalDispatch('gmail')">Gmail<br>下書き</button>
         </div>
     </div>
 
-    <div id="artist-editor-modal" class="modal-overlay">
+    <div id="global-modal-overlay" class="modal-overlay">
         <div class="modal-container">
-            <input type="hidden" id="edit-artist-uid">
-            <input type="text" id="edit-artist-name" class="edit-form-input">
-            <input type="text" id="edit-artist-charge" class="edit-form-input">
-            <input type="number" id="edit-artist-yomi" class="edit-form-input" placeholder="ヨミ(数値)">
-            <button class="btn-action btn-save" onclick="saveArtistEditorModalData()">保存</button>
+            <div id="modal-title-node" class="modal-title">確認</div>
+            <div id="modal-body-node" class="modal-body">本当に実行しますか？</div>
+            <div class="modal-footer">
+                <button type="button" class="btn-modal btn-modal-cancel" onclick="closeConfirmationModal()">キャンセル</button>
+                <button type="button" id="modal-confirm-btn" class="btn-modal btn-modal-confirm">実行</button>
+            </div>
         </div>
     </div>
+
+    <div id="preview-modal-overlay" class="modal-overlay">
+        <div class="modal-container" style="max-width: 340px;">
+            <div class="modal-title">プレビュー <button style="background:none; border:none; cursor:pointer;" onclick="closePreviewModal()">✕</button></div>
+            <div id="preview-modal-body" class="modal-body" style="text-align: left; white-space: pre-wrap; word-break: break-all; max-height: 300px; overflow-y: auto; background: #f7fafc; padding: 10px; border-radius: 4px;"></div>
+        </div>
+    </div>
+
+    <div id="artist-editor-modal-overlay" class="modal-overlay">
+        <div class="modal-container" style="max-width: 310px;">
+            <div class="modal-title" id="edit-modal-header-title">アーティスト情報の編集</div>
+            <div class="modal-body" style="margin-bottom: 10px;">
+                <input type="hidden" id="edit-artist-uid">
+                <div class="edit-form-group">
+                    <label class="edit-form-label">アーティスト名</label>
+                    <input type="text" id="edit-artist-name" class="edit-form-input">
+                </div>
+                <div class="edit-form-group">
+                    <label class="edit-form-label">フリガナ（furigana）</label>
+                    <input type="text" id="edit-artist-furi" class="edit-form-input" placeholder="あいうえお順判定用のひらがな/かたかな">
+                </div>
+                <div class="edit-form-group">
+                    <label class="edit-form-label">担当</label>
+                    <input type="text" id="edit-artist-charge" class="edit-form-input">
+                </div>
+                <div class="edit-form-group">
+                    <label class="edit-form-label">ヨミ</label>
+                    <input type="number" id="edit-artist-yomi" class="edit-form-input">
+                </div>
+                <div class="edit-form-group">
+                    <label class="edit-form-label">LINE ID</label>
+                    <input type="text" id="edit-artist-line" class="edit-form-input" placeholder="空欄時はボタン無効">
+                </div>
+                <div class="edit-form-group">
+                    <label class="edit-form-label">Twitter ID (@除く/URL可)</label>
+                    <input type="text" id="edit-artist-twitter" class="edit-form-input" placeholder="空欄時はボタン無効">
+                </div>
+                <div class="edit-form-group">
+                    <label class="edit-form-label">Gmail（メールアドレス）</label>
+                    <input type="text" id="edit-artist-mail" class="edit-form-input" placeholder="空欄時はボタン無効">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-modal btn-modal-cancel" onclick="closeArtistEditorModal()">閉じる</button>
+                <button type="button" class="btn-modal btn-modal-save" onclick="saveArtistEditorModalData()">変更を保存</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast-message-banner" class="toast"></div>
 
     <script>
-        let appState = { artists: [], templates: [], selectedArtistId: null, selectedTemplateIndex: null };
+        let appState = {
+            artists: [],
+            templates: [],
+            selectedArtistId: null, 
+            selectedTemplateIndex: null,
+            currentSortKey: '50on', 
+            isAscending: true       
+        };
+
+        window.addEventListener('DOMContentLoaded', () => {
+            loadPersistedData();
+            executeSortPipeline(); 
+            renderTemplatesGrid();
+            syncFormStateFromTemplatesArray();
+        });
+
+        function switchView(targetTabName) {
+            document.querySelectorAll('.nav-tab').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+            document.getElementById(`tab-${targetTabName}`).classList.add('active');
+            document.getElementById(`view-${targetTabName}`).classList.add('active');
+            if (targetTabName === 'settings') syncFormStateFromTemplatesArray();
+        }
 
         function loadPersistedData() {
-            appState.artists = JSON.parse(localStorage.getItem('sd_matrix_artists') || '[]');
-            appState.templates = JSON.parse(localStorage.getItem('sd_matrix_templates') || '[]');
-            renderArtistsGrid();
-            renderTemplatesGrid();
+            try {
+                const savedArtists = localStorage.getItem('sd_matrix_artists');
+                const savedTemplates = localStorage.getItem('sd_matrix_templates');
+                if (savedArtists) appState.artists = JSON.parse(savedArtists);
+                if (savedTemplates) appState.templates = JSON.parse(savedTemplates);
+                appState.artists.forEach((item, idx) => {
+                    if (!item.uid) item.uid = "art_" + Date.now() + "_" + idx;
+                });
+                const rawArtistsInput = localStorage.getItem('sd_raw_artists_input');
+                if (rawArtistsInput) document.getElementById('import-artists-raw').value = rawArtistsInput;
+            } catch (e) { console.error(e); }
         }
 
-        function renderArtistsGrid() {
-            const tbody = document.getElementById('artist-table-body-target');
-            tbody.innerHTML = '';
-            let totalYomi = 0, totalCount = 0;
-            appState.artists.forEach(item => {
-                if (item.flag === '🙆🏼‍♀️') { totalCount++; totalYomi += parseInt(item.yomi || 0); }
-                const row = document.createElement('tr');
-                row.className = 'table-row-item' + (appState.selectedArtistId === item.uid ? ' selected' : '');
-                row.onclick = () => {
-                    if (appState.selectedArtistId === item.uid) openArtistEditorModal(item.uid);
-                    else { appState.selectedArtistId = item.uid; renderArtistsGrid(); recalculateControls(); }
-                };
-                row.innerHTML = `<td>${item.artist}</td><td>${item.charge}</td>
-                    <td onclick="event.stopPropagation()"><select class="cell-select-editor" onchange="updateFlag('${item.uid}', this.value)">
-                        <option value="-" ${item.flag === '-' ? 'selected' : ''}>-</option>
-                        <option value="🙆🏼‍♀️" ${item.flag === '🙆🏼‍♀️' ? 'selected' : ''}>🙆🏼‍♀️</option>
-                        <option value="📤" ${item.flag === '📤' ? 'selected' : ''}>📤</option>
-                    </select></td><td>${item.yomi}</td><td>${item.date}</td><td>${item.meth}</td>`;
-                tbody.appendChild(row);
-            });
-            document.getElementById('stats-panel').innerText = `出演者数：${totalCount}組   合計ヨミ：${totalYomi}人`;
+        function createNewTemplateRowInForm(titleValue = '', bodyValue = '') {
+            const container = document.getElementById('template-builder-root-container');
+            const elementId = "tpl_row_" + Date.now() + "_" + Math.random().toString(36).substr(2, 5);
+            const card = document.createElement('div');
+            card.className = 'template-builder-card';
+            card.id = elementId;
+            card.innerHTML = `
+                <div class="template-card-header">
+                    <input type="text" class="template-input-title" placeholder="テンプレート名" value="${escapeHtml(titleValue)}">
+                    <button type="button" class="btn-mini-danger" onclick="document.getElementById('${elementId}').remove()">削除</button>
+                </div>
+                <textarea class="template-input-body" placeholder="本文">${escapeHtml(bodyValue)}</textarea>
+            `;
+            container.appendChild(card);
         }
+
+        function syncFormStateFromTemplatesArray() {
+            const container = document.getElementById('template-builder-root-container');
+            container.innerHTML = '';
+            if (appState.templates.length > 0) {
+                appState.templates.forEach(tpl => createNewTemplateRowInForm(tpl.title, tpl.body));
+            } else {
+                createNewTemplateRowInForm('', '');
+            }
+        }
+
+        function processAndSaveRawData() {
+            const rawArtistsText = document.getElementById('import-artists-raw').value.trim();
+            let cleanArtists = [];
+            const lines = rawArtistsText.split('\n');
+            lines.forEach((line, index) => {
+                const cols = line.split('\t');
+                if (cols.length >= 3 && !cols[0].includes('No')) {
+                    cleanArtists.push({
+                        uid: "art_" + Date.now() + "_" + index,
+                        no: cols[0], furigana: cols[1], artist: cols[2], charge: cols[3], 
+                        mail: cols[4], twitterId: cols[5], lineId: cols[6], meth: cols[7].toLowerCase(), 
+                        flag: cols[8], date: cols[9], yomi: cols[10]
+                    });
+                }
+            });
+            appState.artists = cleanArtists;
+            const formCards = document.querySelectorAll('.template-builder-card');
+            appState.templates = Array.from(formCards).map(c => ({
+                title: c.querySelector('.template-input-title').value,
+                body: c.querySelector('.template-input-body').value
+            }));
+            localStorage.setItem('sd_matrix_artists', JSON.stringify(cleanArtists));
+            localStorage.setItem('sd_matrix_templates', JSON.stringify(appState.templates));
+            localStorage.setItem('sd_raw_artists_input', rawArtistsText);
+            executeSortPipeline();
+            renderTemplatesGrid();
+            switchView('operation');
+            showToastBanner("保存しました");
+        }
+
+        function triggerAppResetWithModal() {
+            document.getElementById('modal-title-node').innerText = "リセット";
+            document.getElementById('modal-body-node').innerHTML = "全データを消去しますか？";
+            document.getElementById('modal-confirm-btn').onclick = () => { localStorage.clear(); location.reload(); };
+            document.getElementById('global-modal-overlay').classList.add('active');
+        }
+
+        function closeConfirmationModal() { document.getElementById('global-modal-overlay').classList.remove('active'); }
 
         function openArtistEditorModal(uid) {
             const art = appState.artists.find(a => a.uid === uid);
             document.getElementById('edit-artist-uid').value = uid;
             document.getElementById('edit-artist-name').value = art.artist;
+            document.getElementById('edit-artist-furi').value = art.furigana;
             document.getElementById('edit-artist-charge').value = art.charge;
-            document.getElementById('edit-artist-yomi').value = art.yomi || 0;
-            document.getElementById('artist-editor-modal').classList.add('active');
+            document.getElementById('edit-artist-yomi').value = art.yomi;
+            document.getElementById('edit-artist-line').value = art.lineId;
+            document.getElementById('edit-artist-twitter').value = art.twitterId;
+            document.getElementById('edit-artist-mail').value = art.mail;
+            document.getElementById('artist-editor-modal-overlay').classList.add('active');
         }
 
+        function closeArtistEditorModal() { document.getElementById('artist-editor-modal-overlay').classList.remove('active'); }
+
         function saveArtistEditorModalData() {
-            const art = appState.artists.find(a => a.uid === document.getElementById('edit-artist-uid').value);
+            const uid = document.getElementById('edit-artist-uid').value;
+            const art = appState.artists.find(a => a.uid === uid);
             art.artist = document.getElementById('edit-artist-name').value;
+            art.furigana = document.getElementById('edit-artist-furi').value;
             art.charge = document.getElementById('edit-artist-charge').value;
             art.yomi = document.getElementById('edit-artist-yomi').value;
+            art.lineId = document.getElementById('edit-artist-line').value;
+            art.twitterId = document.getElementById('edit-artist-twitter').value;
+            art.mail = document.getElementById('edit-artist-mail').value;
             localStorage.setItem('sd_matrix_artists', JSON.stringify(appState.artists));
             renderArtistsGrid();
-            document.getElementById('artist-editor-modal').classList.remove('active');
+            closeArtistEditorModal();
+        }
+
+        function toggleSortPipeline(key) {
+            if (appState.currentSortKey === key) appState.isAscending = !appState.isAscending;
+            else { appState.currentSortKey = key; appState.isAscending = true; }
+            executeSortPipeline();
+        }
+
+        function executeSortPipeline() {
+            const key = appState.currentSortKey;
+            const asc = appState.isAscending ? 1 : -1;
+            appState.artists.sort((a, b) => {
+                let valA = a[key] || '', valB = b[key] || '';
+                return valA.localeCompare(valB, 'ja') * asc;
+            });
+            updateHeaderIndicators();
+            renderArtistsGrid();
+        }
+
+        function updateHeaderIndicators() {
+            ['50on', 'charge', 'flag', 'yomi', 'date', 'meth'].forEach(k => {
+                const el = document.getElementById(`indicator-${k}`);
+                if (el) el.innerText = appState.currentSortKey === k ? (appState.isAscending ? "▲" : "▼") : "";
+            });
+        }
+
+        function renderArtistsGrid() {
+            const container = document.getElementById('artist-table-body-target');
+            container.innerHTML = '';
+            let totalYomi = 0, totalCount = 0;
+            appState.artists.forEach(item => {
+                if (item.flag === '🙆🏼‍♀️') {
+                    totalCount++;
+                    totalYomi += parseInt(item.yomi || 0);
+                }
+                const row = document.createElement('tr');
+                row.className = 'table-row-item';
+                row.onclick = () => {
+                    if (appState.selectedArtistId === item.uid) openArtistEditorModal(item.uid);
+                    else { appState.selectedArtistId = item.uid; renderArtistsGrid(); recalculateControls(); }
+                };
+                if (appState.selectedArtistId === item.uid) row.classList.add('selected');
+                row.innerHTML = `
+                    <td class="col-artist">${escapeHtml(item.artist)}</td>
+                    <td class="col-charge">${escapeHtml(item.charge)}</td>
+                    <td class="col-flag" onclick="event.stopPropagation()">
+                        <select class="cell-select-editor" onchange="updateFlag('${item.uid}', this.value)">
+                            <option value="-" ${item.flag === '-' ? 'selected' : ''}>-</option>
+                            <option value="🚩" ${item.flag === '🚩' ? 'selected' : ''}>🚩</option>
+                            <option value="🙆🏼‍♀️" ${item.flag === '🙆🏼‍♀️' ? 'selected' : ''}>🙆🏼‍♀️</option>
+                            <option value="📤" ${item.flag === '📤' ? 'selected' : ''}>📤</option>
+                            <option value="🤦‍♂️" ${item.flag === '🤦‍♂️' ? 'selected' : ''}>🤦‍♂️</option>
+                            <option value="🙅‍♀️" ${item.flag === '🙅‍♀️' ? 'selected' : ''}>🙅‍♀️</option>
+                        </select>
+                    </td>
+                    <td class="col-yomi">${escapeHtml(item.yomi)}</td>
+                    <td class="col-date">${escapeHtml(item.date)}</td>
+                    <td class="col-meth">${item.meth}</td>
+                `;
+                container.appendChild(row);
+            });
+            document.getElementById('stats-panel').innerText = `出演者数：${totalCount}組   合計ヨミ：${totalYomi}人`;
+        }
+
+        function updateFlag(uid, val) {
+            const art = appState.artists.find(a => a.uid === uid);
+            art.flag = val;
+            localStorage.setItem('sd_matrix_artists', JSON.stringify(appState.artists));
+            renderArtistsGrid();
         }
 
         function renderTemplatesGrid() {
@@ -445,32 +1028,74 @@
             appState.templates.forEach((t, i) => {
                 const div = document.createElement('div');
                 div.className = 'template-row-item';
-                div.innerHTML = `<div class="template-info"><div class="template-title">${t.title}</div><div class="template-snippet">${t.body}</div></div>
-                                <button class="btn-preview" onclick="showPreviewModal(${i})">プレビュー</button>`;
+                if (appState.selectedTemplateIndex === i) div.classList.add('selected');
+                div.onclick = () => { appState.selectedTemplateIndex = i; renderTemplatesGrid(); recalculateControls(); };
+                div.innerHTML = `
+                    <div class="template-title">${escapeHtml(t.title)}</div>
+                    <div class="template-snippet">${escapeHtml(t.body)}</div>
+                    <button class="btn-preview-mini" onclick="event.stopPropagation(); openPreviewModal(${i})">プレビュー</button>
+                `;
                 container.appendChild(div);
             });
         }
 
-        function showPreviewModal(idx) {
-            const tpl = appState.templates[idx];
+        function openPreviewModal(index) {
+            if (!appState.selectedArtistId) { showToastBanner("アーティストを選択してください"); return; }
             const art = appState.artists.find(a => a.uid === appState.selectedArtistId);
-            const msg = art ? `${art.artist}様\n${art.charge}\n${tpl.body}` : `(アーティスト未選択)\n${tpl.body}`;
-            document.getElementById('preview-text').innerText = msg;
-            document.getElementById('preview-modal').classList.add('active');
+            const tpl = appState.templates[index];
+            const previewText = `${art.artist}\n${art.charge}\n${tpl.body}`;
+            document.getElementById('preview-modal-body').innerText = previewText;
+            document.getElementById('preview-modal-overlay').classList.add('active');
         }
 
-        function updateFlag(uid, val) {
-            appState.artists.find(a => a.uid === uid).flag = val;
-            localStorage.setItem('sd_matrix_artists', JSON.stringify(appState.artists));
-            renderArtistsGrid();
-        }
+        function closePreviewModal() { document.getElementById('preview-modal-overlay').classList.remove('active'); }
 
         function recalculateControls() {
             const btns = document.querySelectorAll('.dispatch-btn');
-            btns.forEach(b => b.classList.toggle('enabled', !!appState.selectedArtistId));
+            btns.forEach(b => b.classList.remove('enabled'));
+            if (appState.selectedArtistId && appState.selectedTemplateIndex !== null) {
+                const art = appState.artists.find(a => a.uid === appState.selectedArtistId);
+                if (art.lineId) document.getElementById('action-trigger-line').classList.add('enabled');
+                if (art.twitterId) document.getElementById('action-trigger-twitter').classList.add('enabled');
+                if (art.mail) document.getElementById('action-trigger-gmail').classList.add('enabled');
+            }
         }
 
-        window.onload = loadPersistedData;
+        function executeExternalDispatch(platform) {
+            const art = appState.artists.find(a => a.uid === appState.selectedArtistId);
+            const tpl = appState.templates[appState.selectedTemplateIndex];
+            const msg = `${art.artist}\n${art.charge}\n${tpl.body}`;
+            
+            navigator.clipboard.writeText(msg).then(() => {
+                showToastBanner(`コピーしました！\n\n${msg}`);
+                if (platform === 'line') window.location.href = `https://line.me/R/ti/p/@${art.lineId}`;
+                if (platform === 'twitter') window.location.href = `twitter://messages/compose?recipient_screen_name=${art.twitterId}`;
+                if (platform === 'gmail') window.location.href = `googlegmail:///co?to=${art.mail}&subject=${tpl.title}&body=${encodeURIComponent(msg)}`;
+            });
+        }
+
+        function showToastBanner(msg) {
+            const t = document.getElementById('toast-message-banner');
+            t.innerText = msg;
+            t.style.display = 'block';
+            setTimeout(() => t.style.display = 'none', 3000);
+        }
+
+        function executeKanaSortAndJump(k) {
+            const target = appState.artists.find(a => a.furigana.startsWith(k));
+            if (target) document.querySelector(`[data-uid="${target.uid}"]`)?.scrollIntoView();
+        }
+
+        function filterArtists() {
+            const q = document.getElementById('search-bar').value.toLowerCase();
+            document.querySelectorAll('.table-row-item').forEach(r => {
+                r.style.display = r.innerText.toLowerCase().includes(q) ? '' : 'none';
+            });
+        }
+
+        function escapeHtml(s) {
+            return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        }
     </script>
 </body>
 </html>
