@@ -664,7 +664,7 @@
                 <button id="tab-operation" class="nav-tab active" onclick="switchView('operation')">管理表</button>
                 <button id="tab-settings" class="nav-tab" onclick="switchView('settings')">設定</button>
             </div>
-            <div class="version-tag">ver.0.2.0</div>
+            <div class="version-tag">ver.0.2.1</div>
         </div>
     </header>
 
@@ -1015,6 +1015,16 @@
             container.innerHTML = '';
             let totalYomi = 0, totalCount = 0;
             
+            const today = new Date();
+            const dateOptions = [];
+            for (let i = -2; i <= 2; i++) {
+                const d = new Date(today);
+                d.setDate(today.getDate() + i);
+                const m = d.getMonth() + 1;
+                const dateStr = m + '/' + d.getDate();
+                dateOptions.push(dateStr);
+            }
+            
             appState.artists.forEach(item => {
                 if (item.flag === '🙆🏼‍♀️') {
                     totalCount++;
@@ -1033,6 +1043,17 @@
 
                 if (appState.selectedArtistId === item.uid) row.classList.add('selected');
                 
+                let currentValueHasMatch = dateOptions.includes(item.date);
+                let dateSelectHtml = `<select class="cell-select-editor" onchange="updateArtistDate('${item.uid}', this.value)">`;
+                if (item.date && !currentValueHasMatch) {
+                    dateSelectHtml += `<option value="${escapeHtml(item.date)}" selected>${escapeHtml(item.date)}</option>`;
+                }
+                dateOptions.forEach(dOption => {
+                    const isSelected = item.date === dOption ? 'selected' : '';
+                    dateSelectHtml += `<option value="${dOption}" ${isSelected}>${dOption}</option>`;
+                });
+                dateSelectHtml += `</select>`;
+                
                 row.innerHTML = `
                     <td class="col-artist" onclick="copyArtistName('${escapeHtml(item.artist)}', event)">${escapeHtml(item.artist)}</td>
                     <td class="col-charge" onclick="openArtistEditorModal('${item.uid}')">${escapeHtml(item.charge)}</td>
@@ -1047,8 +1068,8 @@
                         </select>
                     </td>
                     <td class="col-yomi" onclick="openArtistEditorModal('${item.uid}')">${escapeHtml(item.yomi)}</td>
-                    <td class="col-date" onclick="openArtistEditorModal('${item.uid}')">${escapeHtml(item.date)}</td>
-                    <td class="col-meth" onclick="openArtistEditorModal('${item.uid}')">${item.meth}</td>
+                    <td class="col-date" onclick="event.stopPropagation()">${dateSelectHtml}</td>
+                    <td class="col-meth">${escapeHtml(item.meth)}</td>
                 `;
                 container.appendChild(row);
             });
@@ -1065,6 +1086,13 @@
         function updateFlag(uid, val) {
             const art = appState.artists.find(a => a.uid === uid);
             art.flag = val;
+            localStorage.setItem('sd_matrix_artists', JSON.stringify(appState.artists));
+            renderArtistsGrid();
+        }
+
+        function updateArtistDate(uid, val) {
+            const art = appState.artists.find(a => a.uid === uid);
+            art.date = val;
             localStorage.setItem('sd_matrix_artists', JSON.stringify(appState.artists));
             renderArtistsGrid();
         }
