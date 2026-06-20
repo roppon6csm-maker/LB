@@ -293,20 +293,6 @@
             font-weight: 600;
         }
 
-        /* Compact Mini Badge Pills inside Grid cells */
-        .cell-badge {
-            font-size: 8px;
-            padding: 1px 2px;
-            border-radius: 3px;
-            font-weight: bold;
-            display: inline-block;
-            line-height: 1;
-        }
-        .cell-badge-line { background-color: #e6f9ed; color: var(--brand-line); }
-        .cell-badge-twitter { background-color: #e8f5fe; color: var(--brand-twitter); }
-        .cell-badge-mail { background-color: #fdeaea; color: var(--brand-gmail); }
-        .cell-badge-default { background-color: #edf2f7; color: #4a5568; }
-
         /* Template Row Specifics */
         .template-row-item {
             background-color: var(--bg-card);
@@ -548,6 +534,7 @@
             box-shadow: 0 4px 15px rgba(0,0,0,0.3);
             text-align: center;
             white-space: pre-wrap;
+            pointer-events: none;
         }
 
         /* Custom Modal Dialog */
@@ -981,6 +968,7 @@
             const container = document.getElementById('artist-table-body-target');
             container.innerHTML = '';
             let totalYomi = 0, totalCount = 0;
+            
             appState.artists.forEach(item => {
                 if (item.flag === '🙆🏼‍♀️') {
                     totalCount++;
@@ -990,20 +978,28 @@
                 row.className = 'table-row-item';
                 row.dataset.uid = item.uid;
                 
+                // 長押しコピー機能の実装
                 let pressTimer;
                 const clearTimer = () => clearTimeout(pressTimer);
-                
+
                 row.addEventListener('touchstart', (e) => {
+                    // セル内での長押しを検知
                     pressTimer = setTimeout(() => {
                         navigator.clipboard.writeText(item.artist).then(() => {
-                            showToastBanner(item.artist + "をコピーしました", 1000);
+                            showToastBanner(item.artist + " をコピーしました", 1000);
                         });
-                    }, 500);
+                    }, 600); // 0.6秒の長押しで発動
                 });
+
                 row.addEventListener('touchend', clearTimer);
                 row.addEventListener('touchmove', clearTimer);
                 
                 row.addEventListener('click', (e) => {
+                    // 長押しタイマーのキャンセル
+                    clearTimer();
+                    
+                    if (e.target.closest('.col-flag')) return; // フラグ選択時は編集モードへ移行しない
+                    
                     if (appState.selectedArtistId === item.uid) {
                         openArtistEditorModal(item.uid);
                     } else {
