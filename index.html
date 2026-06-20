@@ -671,7 +671,7 @@
                 <button id="tab-operation" class="nav-tab active" onclick="switchView('operation')">管理表</button>
                 <button id="tab-settings" class="nav-tab" onclick="switchView('settings')">設定</button>
             </div>
-            <div class="version-tag">ver.0.1.8</div>
+            <div class="version-tag">ver.0.1.9</div>
         </div>
     </header>
 
@@ -991,20 +991,28 @@
                 row.dataset.uid = item.uid;
                 
                 let pressTimer;
-                row.addEventListener('touchstart', () => {
+                const clearTimer = () => clearTimeout(pressTimer);
+                
+                row.addEventListener('touchstart', (e) => {
                     pressTimer = setTimeout(() => {
                         navigator.clipboard.writeText(item.artist).then(() => {
                             showToastBanner(item.artist + "をコピーしました", 1000);
                         });
                     }, 500);
                 });
-                row.addEventListener('touchend', () => clearTimeout(pressTimer));
-                row.addEventListener('touchmove', () => clearTimeout(pressTimer));
+                row.addEventListener('touchend', clearTimer);
+                row.addEventListener('touchmove', clearTimer);
                 
-                row.onclick = () => {
-                    if (appState.selectedArtistId === item.uid) openArtistEditorModal(item.uid);
-                    else { appState.selectedArtistId = item.uid; renderArtistsGrid(); recalculateControls(); }
-                };
+                row.addEventListener('click', (e) => {
+                    if (appState.selectedArtistId === item.uid) {
+                        openArtistEditorModal(item.uid);
+                    } else {
+                        appState.selectedArtistId = item.uid;
+                        renderArtistsGrid();
+                        recalculateControls();
+                    }
+                });
+                
                 if (appState.selectedArtistId === item.uid) row.classList.add('selected');
                 row.innerHTML = `
                     <td class="col-artist">${escapeHtml(item.artist)}</td>
