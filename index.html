@@ -664,7 +664,7 @@
                 <button id="tab-operation" class="nav-tab active" onclick="switchView('operation')">管理表</button>
                 <button id="tab-settings" class="nav-tab" onclick="switchView('settings')">設定</button>
             </div>
-            <div class="version-tag">ver.0.2.3</div>
+            <div class="version-tag">ver.0.2.4</div>
         </div>
     </header>
 
@@ -797,6 +797,16 @@
                     <input type="number" id="edit-artist-yomi" class="edit-form-input">
                 </div>
                 <div class="edit-form-group">
+                    <label class="edit-form-label">推奨</label>
+                    <select id="edit-artist-meth" class="edit-form-input" style="padding: 4px 6px;">
+                        <option value=""> </option>
+                        <option value="✉️">✉️</option>
+                        <option value="𝕏">𝕏</option>
+                        <option value="l">l</option>
+                        <option value="🗒">🗒</option>
+                    </select>
+                </div>
+                <div class="edit-form-group">
                     <label class="edit-form-label">LINE ID</label>
                     <input type="text" id="edit-artist-line" class="edit-form-input" placeholder="空欄時はボタン無効">
                 </div>
@@ -879,7 +889,7 @@
             if (appState.templates.length > 0) {
                 appState.templates.forEach(tpl => createNewTemplateRowInForm(tpl.title, tpl.body));
             } else {
-                createNewTemplateRowInForm('', '');
+                createNewTemplateFormRowInForm('', '');
             }
         }
 
@@ -893,7 +903,7 @@
                     cleanArtists.push({
                         uid: "art_" + Date.now() + "_" + index,
                         no: cols[0], furigana: cols[1], artist: cols[2], charge: cols[3], 
-                        mail: cols[4], twitterId: cols[5], lineId: cols[6], meth: cols[7].toLowerCase(), 
+                        mail: cols[4], twitterId: cols[5], lineId: cols[6], meth: cols[7], 
                         flag: cols[8], date: cols[9], yomi: cols[10]
                     });
                 }
@@ -963,6 +973,7 @@
             document.getElementById('edit-artist-furi').value = art.furigana;
             document.getElementById('edit-artist-charge').value = art.charge;
             document.getElementById('edit-artist-yomi').value = art.yomi;
+            document.getElementById('edit-artist-meth').value = art.meth || '';
             document.getElementById('edit-artist-line').value = art.lineId;
             document.getElementById('edit-artist-twitter').value = art.twitterId;
             document.getElementById('edit-artist-mail').value = art.mail;
@@ -978,6 +989,7 @@
             art.furigana = document.getElementById('edit-artist-furi').value;
             art.charge = document.getElementById('edit-artist-charge').value;
             art.yomi = document.getElementById('edit-artist-yomi').value;
+            art.meth = document.getElementById('edit-artist-meth').value;
             art.lineId = document.getElementById('edit-artist-line').value;
             art.twitterId = document.getElementById('edit-artist-twitter').value;
             art.mail = document.getElementById('edit-artist-mail').value;
@@ -1048,7 +1060,7 @@
                 let dateSelectHtml = `<select class="cell-select-editor" onchange="updateArtistDate('${item.uid}', this.value)">`;
                 
                 const isBlankSelected = isDateEmpty ? 'selected' : '';
-                dateSelectHtml += `<option value="" ${isBlankSelected}>(空白)</option>`;
+                dateSelectHtml += `<option value="" ${isBlankSelected}></option>`;
                 
                 if (!isDateEmpty && !currentValueHasMatch) {
                     dateSelectHtml += `<option value="${escapeHtml(item.date)}" selected>${escapeHtml(item.date)}</option>`;
