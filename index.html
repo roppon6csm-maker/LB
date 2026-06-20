@@ -671,7 +671,7 @@
                 <button id="tab-operation" class="nav-tab active" onclick="switchView('operation')">管理表</button>
                 <button id="tab-settings" class="nav-tab" onclick="switchView('settings')">設定</button>
             </div>
-            <div class="version-tag">ver.0.1.7</div>
+            <div class="version-tag">ver.0.1.8</div>
         </div>
     </header>
 
@@ -682,17 +682,17 @@
                 <input type="text" id="search-bar" class="search-input" placeholder="アーティスト名・フリガナで絞り込み..." oninput="filterArtists()">
             </div>
             <div class="index-nav-cell">
-                <div class="index-nav-container">
-                    <div class="index-btn" onclick="executeKanaSortAndJump('あ')">あ</div>
-                    <div class="index-btn" onclick="executeKanaSortAndJump('か')">か</div>
-                    <div class="index-btn" onclick="executeKanaSortAndJump('さ')">さ</div>
-                    <div class="index-btn" onclick="executeKanaSortAndJump('た')">た</div>
-                    <div class="index-btn" onclick="executeKanaSortAndJump('な')">な</div>
-                    <div class="index-btn" onclick="executeKanaSortAndJump('は')">は</div>
-                    <div class="index-btn" onclick="executeKanaSortAndJump('ま')">ま</div>
-                    <div class="index-btn" onclick="executeKanaSortAndJump('や')">や</div>
-                    <div class="index-btn" onclick="executeKanaSortAndJump('ら')">ら</div>
-                    <div class="index-btn" onclick="executeKanaSortAndJump('わ')">わ</div>
+                <div class="index-nav-container" style="grid-template-columns: repeat(5, 1fr);">
+                    <div class="index-btn" onclick="executeKanaSortAndJump('a')">あ</div>
+                    <div class="index-btn" onclick="executeKanaSortAndJump('ka')">か</div>
+                    <div class="index-btn" onclick="executeKanaSortAndJump('sa')">さ</div>
+                    <div class="index-btn" onclick="executeKanaSortAndJump('ta')">た</div>
+                    <div class="index-btn" onclick="executeKanaSortAndJump('na')">な</div>
+                    <div class="index-btn" onclick="executeKanaSortAndJump('ha')">は</div>
+                    <div class="index-btn" onclick="executeKanaSortAndJump('ma')">ま</div>
+                    <div class="index-btn" onclick="executeKanaSortAndJump('ya')">や</div>
+                    <div class="index-btn" onclick="executeKanaSortAndJump('ra')">ら</div>
+                    <div class="index-btn" onclick="executeKanaSortAndJump('wa')">わ</div>
                 </div>
             </div>
         </div>
@@ -988,6 +988,19 @@
                 }
                 const row = document.createElement('tr');
                 row.className = 'table-row-item';
+                row.dataset.uid = item.uid;
+                
+                let pressTimer;
+                row.addEventListener('touchstart', () => {
+                    pressTimer = setTimeout(() => {
+                        navigator.clipboard.writeText(item.artist).then(() => {
+                            showToastBanner(item.artist + "をコピーしました", 1000);
+                        });
+                    }, 500);
+                });
+                row.addEventListener('touchend', () => clearTimeout(pressTimer));
+                row.addEventListener('touchmove', () => clearTimeout(pressTimer));
+                
                 row.onclick = () => {
                     if (appState.selectedArtistId === item.uid) openArtistEditorModal(item.uid);
                     else { appState.selectedArtistId = item.uid; renderArtistsGrid(); recalculateControls(); }
@@ -1040,7 +1053,7 @@
         }
 
         function openPreviewModal(index) {
-            if (!appState.selectedArtistId) { showToastBanner("アーティストを選択してください"); return; }
+            if (!appState.selectedArtistId) { showToastBanner("アーティストを選択してください", 1000); return; }
             const art = appState.artists.find(a => a.uid === appState.selectedArtistId);
             const tpl = appState.templates[index];
             const previewText = `${art.artist}\n${art.charge}\n${tpl.body}`;
@@ -1067,23 +1080,45 @@
             const msg = `${art.artist}\n${art.charge}\n${tpl.body}`;
             
             navigator.clipboard.writeText(msg).then(() => {
-                showToastBanner(`コピーしました！\n\n${msg}`);
+                showToastBanner(`コピーしました！\n\n${msg}`, 1000);
                 if (platform === 'line') window.location.href = `https://line.me/R/ti/p/@${art.lineId}`;
                 if (platform === 'twitter') window.location.href = `twitter://messages/compose?recipient_screen_name=${art.twitterId}`;
                 if (platform === 'gmail') window.location.href = `googlegmail:///co?to=${art.mail}&subject=${tpl.title}&body=${encodeURIComponent(msg)}`;
             });
         }
 
-        function showToastBanner(msg) {
+        function showToastBanner(msg, duration = 3000) {
             const t = document.getElementById('toast-message-banner');
             t.innerText = msg;
             t.style.display = 'block';
-            setTimeout(() => t.style.display = 'none', 3000);
+            setTimeout(() => t.style.display = 'none', duration);
         }
 
         function executeKanaSortAndJump(k) {
-            const target = appState.artists.find(a => a.furigana.startsWith(k));
-            if (target) document.querySelector(`[data-uid="${target.uid}"]`)?.scrollIntoView();
+            const kanaMap = {
+                'a': ['あ', 'い', 'う', 'え', 'お'],
+                'ka': ['か', 'き', 'く', 'け', 'こ', 'が', 'ぎ', 'ぐ', 'げ', 'ご'],
+                'sa': ['さ', 'し', 'す', 'せ', 'そ', 'ざ', 'じ', 'ず', 'ぜ', 'ぞ'],
+                'ta': ['た', 'ち', 'つ', 'て', 'と', 'だ', 'ぢ', 'づ', 'で', 'ど'],
+                'na': ['な', 'に', 'ぬ', 'ね', 'の'],
+                'ha': ['は', 'ひ', 'ふ', 'へ', 'ほ', 'ば', 'び', 'ぶ', 'べ', 'ぼ', 'ぱ', 'ぴ', 'ぷ', 'ぺ', 'ぽ'],
+                'ma': ['ま', 'み', 'む', 'め', 'も'],
+                'ya': ['や', 'ゆ', 'よ'],
+                'ra': ['ら', 'り', 'る', 'れ', 'ろ'],
+                'wa': ['わ', 'を', 'ん']
+            };
+            const targets = kanaMap[k];
+            appState.artists.sort((a, b) => {
+                const fA = a.furigana[0];
+                const fB = b.furigana[0];
+                const isTargetA = targets.includes(fA) ? 0 : 1;
+                const isTargetB = targets.includes(fB) ? 0 : 1;
+                if (isTargetA !== isTargetB) return isTargetA - isTargetB;
+                return a.furigana.localeCompare(b.furigana, 'ja');
+            });
+            renderArtistsGrid();
+            const targetEl = document.querySelector(`tr[data-uid]`);
+            if (targetEl) targetEl.scrollIntoView({ behavior: 'smooth' });
         }
 
         function filterArtists() {
