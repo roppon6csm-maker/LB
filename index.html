@@ -664,7 +664,7 @@
                 <button id="tab-operation" class="nav-tab active" onclick="switchView('operation')">管理表</button>
                 <button id="tab-settings" class="nav-tab" onclick="switchView('settings')">設定</button>
             </div>
-            <div class="version-tag">ver.0.2.2</div>
+            <div class="version-tag">ver.0.2.3</div>
         </div>
     </header>
 
@@ -1043,13 +1043,18 @@
 
                 if (appState.selectedArtistId === item.uid) row.classList.add('selected');
                 
+                let isDateEmpty = !item.date || item.date.trim() === "";
                 let currentValueHasMatch = dateOptions.includes(item.date);
                 let dateSelectHtml = `<select class="cell-select-editor" onchange="updateArtistDate('${item.uid}', this.value)">`;
-                if (item.date && !currentValueHasMatch) {
+                
+                const isBlankSelected = isDateEmpty ? 'selected' : '';
+                dateSelectHtml += `<option value="" ${isBlankSelected}>(空白)</option>`;
+                
+                if (!isDateEmpty && !currentValueHasMatch) {
                     dateSelectHtml += `<option value="${escapeHtml(item.date)}" selected>${escapeHtml(item.date)}</option>`;
                 }
                 dateOptions.forEach(dOption => {
-                    const isSelected = item.date === dOption ? 'selected' : '';
+                    const isSelected = (!isDateEmpty && item.date === dOption) ? 'selected' : '';
                     dateSelectHtml += `<option value="${dOption}" ${isSelected}>${dOption}</option>`;
                 });
                 dateSelectHtml += `</select>`;
