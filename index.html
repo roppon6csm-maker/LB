@@ -461,6 +461,12 @@
             color: white;
         }
 
+        .btn-export {
+            background-color: #2b6cb0;
+            color: white;
+            margin-bottom: 6px;
+        }
+
         .btn-clear {
             background-color: #edf2f7;
             color: #4a5568;
@@ -658,7 +664,7 @@
                 <button id="tab-operation" class="nav-tab active" onclick="switchView('operation')">管理表</button>
                 <button id="tab-settings" class="nav-tab" onclick="switchView('settings')">設定</button>
             </div>
-            <div class="version-tag">ver.0.1.9</div>
+            <div class="version-tag">ver.0.2.0</div>
         </div>
     </header>
 
@@ -726,6 +732,12 @@
             
             <div id="template-builder-root-container" class="template-builder-list">
             </div>
+        </div>
+
+        <div class="settings-group">
+            <label class="settings-label">■ 連絡先リストデータ書き出し</label>
+            <span class="settings-desc">現在の最新データを元のNo.順に並び替えてクリップボードにエクスポートします。</span>
+            <button class="btn-action btn-export" onclick="exportArtistsToClipboard()">データをクリップボードにエクスポート</button>
         </div>
 
         <button class="btn-action btn-save" onclick="processAndSaveRawData()">データを反映して保存</button>
@@ -899,6 +911,40 @@
             renderTemplatesGrid();
             switchView('operation');
             showToastBanner("保存しました");
+        }
+
+        function exportArtistsToClipboard() {
+            if (!appState.artists || appState.artists.length === 0) {
+                showToastBanner("エクスポートするデータがありません", 1000);
+                return;
+            }
+            const sorted = [...appState.artists].sort((a, b) => {
+                return parseInt(a.no || 0, 10) - parseInt(b.no || 0, 10);
+            });
+            let tsvLines = [];
+            sorted.forEach(item => {
+                const rowCols = [
+                    item.no || '',
+                    item.furigana || '',
+                    item.artist || '',
+                    item.charge || '',
+                    item.mail || '',
+                    item.twitterId || '',
+                    item.lineId || '',
+                    item.meth || '',
+                    item.flag || '',
+                    item.date || '',
+                    item.yomi || ''
+                ];
+                tsvLines.push(rowCols.join('\t'));
+            });
+            const tsvText = tsvLines.join('\n');
+            navigator.clipboard.writeText(tsvText).then(() => {
+                showToastBanner("アプリのデータ " + sorted.length + " 件をクリップボードにコピーしました", 1000);
+            }).catch(err => {
+                console.error(err);
+                showToastBanner("コピーに失敗しました", 1000);
+            });
         }
 
         function triggerAppResetWithModal() {
