@@ -658,7 +658,7 @@
                 <button id="tab-operation" class="nav-tab active" onclick="switchView('operation')">管理表</button>
                 <button id="tab-settings" class="nav-tab" onclick="switchView('settings')">設定</button>
             </div>
-            <div class="version-tag">ver.0.2.0</div>
+            <div class="version-tag">ver.0.1.9</div>
         </div>
     </header>
 
@@ -978,39 +978,18 @@
                 row.className = 'table-row-item';
                 row.dataset.uid = item.uid;
                 
-                // 長押しコピー制御の再構築
-                let pressTimer = null;
-                const clearTimer = () => { if (pressTimer) { clearTimeout(pressTimer); pressTimer = null; } };
+                row.onclick = (e) => {
+                    if (e.target.tagName === 'SELECT') return;
+                    appState.selectedArtistId = item.uid;
+                    renderArtistsGrid();
+                    recalculateControls();
+                };
 
-                row.addEventListener('touchstart', (e) => {
-                    pressTimer = setTimeout(() => {
-                        navigator.clipboard.writeText(item.artist).then(() => {
-                            showToastBanner(item.artist + " をコピーしました", 1000);
-                        });
-                        pressTimer = null;
-                    }, 600);
-                }, { passive: true });
-
-                row.addEventListener('touchend', clearTimer, { passive: true });
-                row.addEventListener('touchmove', clearTimer, { passive: true });
-                
-                row.addEventListener('click', (e) => {
-                    clearTimer();
-                    if (e.target.closest('.col-flag')) return;
-                    
-                    if (appState.selectedArtistId === item.uid) {
-                        openArtistEditorModal(item.uid);
-                    } else {
-                        appState.selectedArtistId = item.uid;
-                        renderArtistsGrid();
-                        recalculateControls();
-                    }
-                });
-                
                 if (appState.selectedArtistId === item.uid) row.classList.add('selected');
+                
                 row.innerHTML = `
-                    <td class="col-artist">${escapeHtml(item.artist)}</td>
-                    <td class="col-charge">${escapeHtml(item.charge)}</td>
+                    <td class="col-artist" onclick="copyArtistName('${escapeHtml(item.artist)}', event)">${escapeHtml(item.artist)}</td>
+                    <td class="col-charge" onclick="openArtistEditorModal('${item.uid}')">${escapeHtml(item.charge)}</td>
                     <td class="col-flag" onclick="event.stopPropagation()">
                         <select class="cell-select-editor" onchange="updateFlag('${item.uid}', this.value)">
                             <option value="-" ${item.flag === '-' ? 'selected' : ''}>-</option>
@@ -1021,13 +1000,20 @@
                             <option value="🙅‍♀️" ${item.flag === '🙅‍♀️' ? 'selected' : ''}>🙅‍♀️</option>
                         </select>
                     </td>
-                    <td class="col-yomi">${escapeHtml(item.yomi)}</td>
-                    <td class="col-date">${escapeHtml(item.date)}</td>
-                    <td class="col-meth">${item.meth}</td>
+                    <td class="col-yomi" onclick="openArtistEditorModal('${item.uid}')">${escapeHtml(item.yomi)}</td>
+                    <td class="col-date" onclick="openArtistEditorModal('${item.uid}')">${escapeHtml(item.date)}</td>
+                    <td class="col-meth" onclick="openArtistEditorModal('${item.uid}')">${item.meth}</td>
                 `;
                 container.appendChild(row);
             });
             document.getElementById('stats-panel').innerText = `出演者数：${totalCount}組   合計ヨミ：${totalYomi}人`;
+        }
+
+        function copyArtistName(name, event) {
+            event.stopPropagation();
+            navigator.clipboard.writeText(name).then(() => {
+                showToastBanner(name + " をコピーしました", 1000);
+            });
         }
 
         function updateFlag(uid, val) {
