@@ -72,7 +72,7 @@
             padding: 2px;
             margin-right: 55px; /* Leave space for version tag */
             flex-grow: 1;
-            max-width: 160px;
+            max-width: 220px;
         }
 
         .nav-tab {
@@ -255,6 +255,13 @@
         .col-yomi   { width: 32px; text-align: center; font-size: 9px; color: #4a5568; }
         .col-date   { width: 36px; text-align: center; font-size: 9px; }
         .col-meth   { width: 38px; text-align: center; font-size: 9px; }
+
+        /* Performance View Grid Specifications */
+        .col-perf-artist   { width: 100px; }
+        .col-perf-flag     { width: 45px; text-align: center; }
+        .col-perf-yomi     { width: 35px; text-align: center; }
+        .col-perf-req      { width: 80px; color: #4a5568; cursor: pointer; }
+        .col-perf-progress { width: 75px; text-align: center; }
 
         /* Inline Dropdown Editor styling inside grid cell */
         .cell-select-editor {
@@ -662,14 +669,33 @@
         <div class="header-container">
             <div class="brand-title">Smart Dispatcher</div>
             <div class="nav-inline-tabs">
-                <button id="tab-operation" class="nav-tab active" onclick="switchView('operation')">管理表</button>
+                <button id="tab-performers" class="nav-tab active" onclick="switchView('performers')">出演者</button>
+                <button id="tab-operation" class="nav-tab" onclick="switchView('operation')">管理表</button>
                 <button id="tab-settings" class="nav-tab" onclick="switchView('settings')">設定</button>
             </div>
-            <div class="version-tag">ver.0.2.5</div>
+            <div class="version-tag">ver.0.2.6</div>
         </div>
     </header>
 
-    <div id="view-operation" class="view-section active">
+    <div id="view-performers" class="view-section active">
+        <div class="table-scroll-container" style="max-height: 400px;">
+            <table class="excel-table">
+                <thead>
+                    <tr>
+                        <th class="col-perf-artist">アーティスト</th>
+                        <th class="col-perf-flag">出演</th>
+                        <th class="col-perf-yomi">ヨミ</th>
+                        <th class="col-perf-req">要望</th>
+                        <th class="col-perf-progress">進捗</th>
+                    </tr>
+                </thead>
+                <tbody id="performers-table-body-target">
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="view-operation" class="view-section">
         
         <div class="search-index-integration-row">
             <div class="search-box-cell">
@@ -777,6 +803,20 @@
         </div>
     </div>
 
+    <div id="req-editor-modal-overlay" class="modal-overlay">
+        <div class="modal-container" style="max-width: 300px;">
+            <div class="modal-title">要望の編集</div>
+            <div class="modal-body" style="margin-bottom: 10px;">
+                <input type="hidden" id="edit-req-artist-uid">
+                <textarea id="edit-req-textarea" class="paste-textarea" style="height: 120px;" placeholder="要望を入力してください"></textarea>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-modal btn-modal-cancel" onclick="closeReqEditorModal()">閉じる</button>
+                <button type="button" class="btn-modal btn-modal-save" onclick="saveReqEditorModalData()">保存</button>
+            </div>
+        </div>
+    </div>
+
     <div id="artist-editor-modal-overlay" class="modal-overlay">
         <div class="modal-container" style="max-width: 310px;">
             <div class="modal-title" id="edit-modal-header-title">アーティスト情報の編集</div>
@@ -852,6 +892,7 @@
             document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
             document.getElementById(`tab-${targetTabName}`).classList.add('active');
             document.getElementById(`view-${targetTabName}`).classList.add('active');
+            if (targetTabName === 'performers') renderPerformersGrid();
             if (targetTabName === 'settings') syncFormStateFromTemplatesArray();
         }
 
@@ -863,6 +904,8 @@
                 if (savedTemplates) appState.templates = JSON.parse(savedTemplates);
                 appState.artists.forEach((item, idx) => {
                     if (!item.uid) item.uid = "art_" + Date.now() + "_" + idx;
+                    if (!item.req) item.req = "";
+                    if (!item.progress) item.progress = "";
                 });
                 const rawArtistsInput = localStorage.getItem('sd_raw_artists_input');
                 if (rawArtistsInput) document.getElementById('import-artists-raw').value = rawArtistsInput;
@@ -891,7 +934,7 @@
             if (appState.templates.length > 0) {
                 appState.templates.forEach(tpl => createNewTemplateRowInForm(tpl.title, tpl.body));
             } else {
-                createNewTemplateFormRowInForm('', '');
+                createNewTemplateRowInForm('', '');
             }
         }
 
@@ -906,7 +949,7 @@
                         uid: "art_" + Date.now() + "_" + index,
                         no: cols[0], furigana: cols[1], artist: cols[2], charge: cols[3], 
                         mail: cols[4], twitterId: cols[5], lineId: cols[6], meth: cols[7], 
-                        flag: cols[8], date: cols[9], yomi: cols[10]
+                        flag: cols[8], date: cols[9], yomi: cols[10], req: "", progress: ""
                     });
                 }
             });
@@ -921,7 +964,7 @@
             localStorage.setItem('sd_raw_artists_input', rawArtistsText);
             executeSortPipeline();
             renderTemplatesGrid();
-            switchView('operation');
+            switchView('performers');
             showToastBanner("保存しました");
         }
 
@@ -1000,6 +1043,24 @@
             closeArtistEditorModal();
         }
 
+        function openReqEditorModal(uid) {
+            const art = appState.artists.find(a => a.uid === uid);
+            document.getElementById('edit-req-artist-uid').value = uid;
+            document.getElementById('edit-req-textarea').value = art.req || '';
+            document.getElementById('req-editor-modal-overlay').classList.add('active');
+        }
+
+        function closeReqEditorModal() { document.getElementById('req-editor-modal-overlay').classList.remove('active'); }
+
+        function saveReqEditorModalData() {
+            const uid = document.getElementById('edit-req-artist-uid').value;
+            const art = appState.artists.find(a => a.uid === uid);
+            art.req = document.getElementById('edit-req-textarea').value;
+            localStorage.setItem('sd_matrix_artists', JSON.stringify(appState.artists));
+            renderPerformersGrid();
+            closeReqEditorModal();
+        }
+
         function toggleSortPipeline(key) {
             if (appState.currentSortKey === key) appState.isAscending = !appState.isAscending;
             else { appState.currentSortKey = key; appState.isAscending = true; }
@@ -1022,6 +1083,40 @@
                 const el = document.getElementById(`indicator-${k}`);
                 if (el) el.innerText = appState.currentSortKey === k ? (appState.isAscending ? "▲" : "▼") : "";
             });
+        }
+
+        function renderPerformersGrid() {
+            const container = document.getElementById('performers-table-body-target');
+            container.innerHTML = '';
+            const performers = appState.artists.filter(a => a.flag === '🙆🏼‍♀️');
+            
+            performers.forEach(item => {
+                const row = document.createElement('tr');
+                row.className = 'table-row-item';
+                
+                let progressHtml = `<select class="cell-select-editor" onchange="updatePerformerProgress('${item.uid}', this.value)">`;
+                const progressOptions = ["", "タイテ", "開催告知", "予約連絡"];
+                progressOptions.forEach(opt => {
+                    const isSel = (item.progress || "") === opt ? "selected" : "";
+                    progressHtml += `<option value="${escapeHtml(opt)}" ${isSel}>${escapeHtml(opt || " ")}</option>`;
+                });
+                progressHtml += `</select>`;
+
+                row.innerHTML = `
+                    <td class="col-perf-artist">${escapeHtml(item.artist)}</td>
+                    <td class="col-perf-flag">${escapeHtml(item.flag)}</td>
+                    <td class="col-perf-yomi">${escapeHtml(item.yomi)}</td>
+                    <td class="col-perf-req" onclick="openReqEditorModal('${item.uid}')">${escapeHtml(item.req || "")}</td>
+                    <td class="col-perf-progress" onclick="event.stopPropagation()">${progressHtml}</td>
+                `;
+                container.appendChild(row);
+            });
+        }
+
+        function updatePerformerProgress(uid, val) {
+            const art = appState.artists.find(a => a.uid === uid);
+            art.progress = val;
+            localStorage.setItem('sd_matrix_artists', JSON.stringify(appState.artists));
         }
 
         function renderArtistsGrid() {
@@ -1076,7 +1171,7 @@
                 let xlinkTd = '';
                 const hasTwitter = item.twitterId && item.twitterId.trim() !== "";
                 if (hasTwitter) {
-                    xlinkTd = `<td class="col-xlink" onclick="jumpToTwitterProfile('${escapeHtml(item.twitterId)}', event)">🐦</td>`;
+                    xlinkTd = `<td class="col-xlink" onclick="launchTwitterProfileApp('${escapeHtml(item.twitterId)}', event)">🐦</td>`;
                 } else {
                     xlinkTd = `<td class="col-xlink" style="background-color: #edf2f7;" onclick="event.stopPropagation()"></td>`;
                 }
@@ -1104,15 +1199,24 @@
             document.getElementById('stats-panel').innerText = `出演者数：${totalCount}組   合計ヨミ：${totalYomi}人`;
         }
 
-        function jumpToTwitterProfile(twitterId, event) {
-            event.stopPropagation();
-            let targetUrl = "";
-            if (twitterId.startsWith('http://') || twitterId.startsWith('https://')) {
-                targetUrl = twitterId;
-            } else {
-                targetUrl = `https://x.com/${twitterId}`;
+        function extractTwitterScreenName(input) {
+            let clean = input.trim();
+            if (clean.startsWith('http://') || clean.startsWith('https://')) {
+                try {
+                    const url = new URL(clean);
+                    const pathParts = url.pathname.split('/').filter(p => p);
+                    if (pathParts.length > 0) return pathParts[0];
+                } catch (e) { console.error(e); }
             }
-            window.open(targetUrl, '_blank');
+            return clean.replace(/^@/, '');
+        }
+
+        function launchTwitterProfileApp(twitterId, event) {
+            if (event) event.stopPropagation();
+            const screenName = extractTwitterScreenName(twitterId);
+            if (screenName) {
+                window.location.href = `twitter://user?screen_name=${screenName}`;
+            }
         }
 
         function copyArtistName(name, event) {
@@ -1183,7 +1287,7 @@
             navigator.clipboard.writeText(msg).then(() => {
                 showToastBanner(`コピーしました！\n\n${msg}`, 1000);
                 if (platform === 'line') window.location.href = `https://line.me/R/ti/p/@${art.lineId}`;
-                if (platform === 'twitter') window.location.href = `twitter://messages/compose?recipient_screen_name=${art.twitterId}`;
+                if (platform === 'twitter') launchTwitterProfileApp(art.twitterId, null);
                 if (platform === 'gmail') window.location.href = `googlegmail:///co?to=${art.mail}&subject=${tpl.title}&body=${encodeURIComponent(msg)}`;
             });
         }
@@ -1225,7 +1329,9 @@
         function filterArtists() {
             const q = document.getElementById('search-bar').value.toLowerCase();
             document.querySelectorAll('.table-row-item').forEach(r => {
-                r.style.display = r.innerText.toLowerCase().includes(q) ? '' : 'none';
+                if(r.closest('#artist-table-body-target')) {
+                    r.style.display = r.innerText.toLowerCase().includes(q) ? '' : 'none';
+                }
             });
         }
 
