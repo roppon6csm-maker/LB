@@ -248,11 +248,12 @@
         }
 
         /* Highly Compact Columns Width Configuration */
+        .col-xlink   { width: 22px; text-align: center; font-size: 10px; }
         .col-artist { width: 95px; }
         .col-charge { width: 45px; font-size: 9px; color: #4a5568; }
-        .col-flag   { width: 55px; text-align: center; }
+        .col-flag   { width: 45px; text-align: center; }
         .col-yomi   { width: 32px; text-align: center; font-size: 9px; color: #4a5568; }
-        .col-date   { width: 42px; text-align: center; font-size: 9px; }
+        .col-date   { width: 36px; text-align: center; font-size: 9px; }
         .col-meth   { width: 38px; text-align: center; font-size: 9px; }
 
         /* Inline Dropdown Editor styling inside grid cell */
@@ -664,7 +665,7 @@
                 <button id="tab-operation" class="nav-tab active" onclick="switchView('operation')">管理表</button>
                 <button id="tab-settings" class="nav-tab" onclick="switchView('settings')">設定</button>
             </div>
-            <div class="version-tag">ver.0.2.4</div>
+            <div class="version-tag">ver.0.2.5</div>
         </div>
     </header>
 
@@ -696,6 +697,7 @@
             <table class="excel-table">
                 <thead>
                     <tr>
+                        <th class="col-xlink">𝕏</th>
                         <th class="col-artist" onclick="toggleSortPipeline('50on')">アーティスト<span id="indicator-50on" class="sort-indicator">▲</span></th>
                         <th class="col-charge" onclick="toggleSortPipeline('charge')">担当<span id="indicator-charge" class="sort-indicator"></span></th>
                         <th class="col-flag" onclick="toggleSortPipeline('flag')">出演<span id="indicator-flag" class="sort-indicator"></span></th>
@@ -1057,7 +1059,7 @@
                 
                 let isDateEmpty = !item.date || item.date.trim() === "";
                 let currentValueHasMatch = dateOptions.includes(item.date);
-                let dateSelectHtml = `<select class="cell-select-editor" onchange="updateArtistDate('${item.uid}', this.value)">`;
+                let dateSelectHtml = `<select class="cell-select-editor" style="font-size: 9px;" onchange="updateArtistDate('${item.uid}', this.value)">`;
                 
                 const isBlankSelected = isDateEmpty ? 'selected' : '';
                 dateSelectHtml += `<option value="" ${isBlankSelected}></option>`;
@@ -1071,11 +1073,20 @@
                 });
                 dateSelectHtml += `</select>`;
                 
+                let xlinkTd = '';
+                const hasTwitter = item.twitterId && item.twitterId.trim() !== "";
+                if (hasTwitter) {
+                    xlinkTd = `<td class="col-xlink" onclick="jumpToTwitterProfile('${escapeHtml(item.twitterId)}', event)">🐦</td>`;
+                } else {
+                    xlinkTd = `<td class="col-xlink" style="background-color: #edf2f7;" onclick="event.stopPropagation()"></td>`;
+                }
+                
                 row.innerHTML = `
+                    ${xlinkTd}
                     <td class="col-artist" onclick="copyArtistName('${escapeHtml(item.artist)}', event)">${escapeHtml(item.artist)}</td>
                     <td class="col-charge" onclick="openArtistEditorModal('${item.uid}')">${escapeHtml(item.charge)}</td>
                     <td class="col-flag" onclick="event.stopPropagation()">
-                        <select class="cell-select-editor" onchange="updateFlag('${item.uid}', this.value)">
+                        <select class="cell-select-editor" style="font-size: 9px;" onchange="updateFlag('${item.uid}', this.value)">
                             <option value="-" ${item.flag === '-' ? 'selected' : ''}>-</option>
                             <option value="🚩" ${item.flag === '🚩' ? 'selected' : ''}>🚩</option>
                             <option value="🙆🏼‍♀️" ${item.flag === '🙆🏼‍♀️' ? 'selected' : ''}>🙆🏼‍♀️</option>
@@ -1091,6 +1102,17 @@
                 container.appendChild(row);
             });
             document.getElementById('stats-panel').innerText = `出演者数：${totalCount}組   合計ヨミ：${totalYomi}人`;
+        }
+
+        function jumpToTwitterProfile(twitterId, event) {
+            event.stopPropagation();
+            let targetUrl = "";
+            if (twitterId.startsWith('http://') || twitterId.startsWith('https://')) {
+                targetUrl = twitterId;
+            } else {
+                targetUrl = `https://x.com/${twitterId}`;
+            }
+            window.open(targetUrl, '_blank');
         }
 
         function copyArtistName(name, event) {
