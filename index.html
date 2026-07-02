@@ -803,6 +803,7 @@ loadPersistedData();
 executeSortPipeline();
 renderTemplatesGrid();
 syncFormStateFromTemplatesArray();
+renderPerformersGrid();
 });
 function switchView(targetTabName) {
 document.querySelectorAll('.nav-tab').forEach(el => el.classList.remove('active'));
@@ -848,6 +849,7 @@ if (rawPerformersInput) document.getElementById('import-performers-raw').value =
 }
 function createNewTemplateRowInForm(titleValue = '', bodyValue = '') {
 const container = document.getElementById('template-builder-root-container');
+if (!container) return;
 const elementId = "tpl_row_" + Date.now() + "_" + Math.random().toString(36).substr(2, 5);
 const card = document.createElement('div');
 card.className = 'template-builder-card';
@@ -857,6 +859,7 @@ container.appendChild(card);
 }
 function syncFormStateFromTemplatesArray() {
 const container = document.getElementById('template-builder-root-container');
+if (!container) return;
 container.innerHTML = '';
 if (appState.templates.length > 0) {
 appState.templates.forEach(tpl => createNewTemplateRowInForm(tpl.title, tpl.body));
@@ -986,21 +989,23 @@ document.getElementById('global-modal-overlay').classList.add('active');
 function closeConfirmationModal() { document.getElementById('global-modal-overlay').classList.remove('active'); }
 function openArtistEditorModal(uid) {
 const art = appState.artists.find(a => a.uid === uid);
+if (!art) return;
 document.getElementById('edit-artist-uid').value = uid;
-document.getElementById('edit-artist-name').value = art.artist;
-document.getElementById('edit-artist-furi').value = art.furigana;
-document.getElementById('edit-artist-charge').value = art.charge;
-document.getElementById('edit-artist-yomi').value = art.yomi;
+document.getElementById('edit-artist-name').value = art.artist || '';
+document.getElementById('edit-artist-furi').value = art.furigana || '';
+document.getElementById('edit-artist-charge').value = art.charge || '';
+document.getElementById('edit-artist-yomi').value = art.yomi || '';
 document.getElementById('edit-artist-meth').value = art.meth || '';
-document.getElementById('edit-artist-line').value = art.lineId;
-document.getElementById('edit-artist-twitter').value = art.twitterId;
-document.getElementById('edit-artist-mail').value = art.mail;
+document.getElementById('edit-artist-line').value = art.lineId || '';
+document.getElementById('edit-artist-twitter').value = art.twitterId || '';
+document.getElementById('edit-artist-mail').value = art.mail || '';
 document.getElementById('artist-editor-modal-overlay').classList.add('active');
 }
 function closeArtistEditorModal() { document.getElementById('artist-editor-modal-overlay').classList.remove('active'); }
 function saveArtistEditorModalData() {
 const uid = document.getElementById('edit-artist-uid').value;
 const art = appState.artists.find(a => a.uid === uid);
+if (art) {
 art.artist = document.getElementById('edit-artist-name').value;
 art.furigana = document.getElementById('edit-artist-furi').value;
 art.charge = document.getElementById('edit-artist-charge').value;
@@ -1011,6 +1016,7 @@ art.twitterId = document.getElementById('edit-artist-twitter').value;
 art.mail = document.getElementById('edit-artist-mail').value;
 localStorage.setItem('sd_matrix_artists', JSON.stringify(appState.artists));
 renderArtistsGrid();
+}
 closeArtistEditorModal();
 }
 function openReqEditorModal(uid) {
@@ -1042,7 +1048,7 @@ const key = appState.currentSortKey;
 const asc = appState.isAscending ? 1 : -1;
 appState.artists.sort((a, b) => {
 let valA = a[key] || '', valB = b[key] || '';
-return valA.localeCompare(valB, 'ja') * asc;
+return String(valA).localeCompare(String(valB), 'ja') * asc;
 });
 updateHeaderIndicators();
 renderArtistsGrid();
@@ -1055,6 +1061,7 @@ if (el) el.innerText = appState.currentSortKey === k ? (appState.isAscending ? "
 }
 function renderPerformersGrid() {
 const container = document.getElementById('performers-table-body-target');
+if (!container) return;
 container.innerHTML = '';
 const performers = appState.performers;
 let totalCount = performers.length;
@@ -1104,6 +1111,7 @@ renderPerformersGrid();
 }
 function renderArtistsGrid() {
 const container = document.getElementById('artist-table-body-target');
+if (!container) return;
 container.innerHTML = '';
 let totalYomi = 0, totalCount = 0;
 const today = new Date();
@@ -1130,7 +1138,7 @@ renderArtistsGrid();
 recalculateControls();
 };
 if (appState.selectedArtistId === item.uid) row.classList.add('selected');
-let isDateEmpty = !item.date || item.date.trim() === "";
+let isDateEmpty = !item.date || String(item.date).trim() === "";
 let currentValueHasMatch = dateOptions.includes(item.date);
 let dateSelectHtml = <select class="cell-select-editor" style="font-size: 9px;" onchange="updateArtistDate('${item.uid}', this.value)">;
 const isBlankSelected = isDateEmpty ? 'selected' : '';
@@ -1144,7 +1152,7 @@ dateSelectHtml += <option value="${dOption}" ${isSelected}>${dOption}</option>;
 });
 dateSelectHtml += </select>;
 let xlinkTd = '';
-const hasTwitter = item.twitterId && item.twitterId.trim() !== "";
+const hasTwitter = item.twitterId && String(item.twitterId).trim() !== "";
 if (hasTwitter) {
 xlinkTd = <td class="col-xlink" onclick="launchTwitterProfileApp('${escapeHtml(item.twitterId)}', event)">🐦</td>;
 } else {
@@ -1153,10 +1161,13 @@ xlinkTd = <td class="col-xlink" style="background-color: #edf2f7;" onclick="even
 row.innerHTML = ${xlinkTd} <td class="col-artist" onclick="copyArtistName('${escapeHtml(item.artist)}', event)">${escapeHtml(item.artist)}</td> <td class="col-charge" onclick="openArtistEditorModal('${item.uid}')">${escapeHtml(item.charge)}</td> <td class="col-flag" onclick="event.stopPropagation()"> <select class="cell-select-editor" style="font-size: 9px;" onchange="updateFlag('${item.uid}', this.value)"> <option value="-" ${item.flag === '-' ? 'selected' : ''}>-</option> <option value="🚩" ${item.flag === '🚩' ? 'selected' : ''}>🚩</option> <option value="🙆🏼‍♀️" ${item.flag === '🙆🏼‍♀️' ? 'selected' : ''}>🙆🏼‍♀️</option> <option value="📤" ${item.flag === '📤' ? 'selected' : ''}>📤</option> <option value="🤦‍♂️" ${item.flag === '🤦‍♂️' ? 'selected' : ''}>🤦‍♂️</option> <option value="🙅‍♀️" ${item.flag === '🙅‍♀️' ? 'selected' : ''}>🙅‍♀️</option> </select> </td> <td class="col-yomi" onclick="openArtistEditorModal('${item.uid}')">${escapeHtml(item.yomi)}</td> <td class="col-date" onclick="event.stopPropagation()">${dateSelectHtml}</td> <td class="col-meth">${escapeHtml(item.meth)}</td>;
 container.appendChild(row);
 });
-document.getElementById('stats-panel').innerText = 出演者数：${totalCount}組   合計ヨミ：${totalYomi}人;
+const statsPanel = document.getElementById('stats-panel');
+if (statsPanel) {
+statsPanel.innerText = 出演者数：${totalCount}組   合計ヨミ：${totalYomi}人;
+}
 }
 function extractTwitterScreenName(input) {
-let clean = input.trim();
+let clean = String(input).trim();
 if (clean.startsWith('http://') || clean.startsWith('https://')) {
 try {
 const url = new URL(clean);
@@ -1181,18 +1192,23 @@ showToastBanner(name + " をコピーしました", 1000);
 }
 function updateFlag(uid, val) {
 const art = appState.artists.find(a => a.uid === uid);
+if (art) {
 art.flag = val;
 localStorage.setItem('sd_matrix_artists', JSON.stringify(appState.artists));
 renderArtistsGrid();
 }
+}
 function updateArtistDate(uid, val) {
 const art = appState.artists.find(a => a.uid === uid);
+if (art) {
 art.date = val;
 localStorage.setItem('sd_matrix_artists', JSON.stringify(appState.artists));
 renderArtistsGrid();
 }
+}
 function renderTemplatesGrid() {
 const container = document.getElementById('template-list-target');
+if (!container) return;
 container.innerHTML = '';
 appState.templates.forEach((t, i) => {
 const div = document.createElement('div');
@@ -1207,9 +1223,11 @@ function openPreviewModal(index) {
 if (!appState.selectedArtistId) { showToastBanner("アーティストを選択してください", 1000); return; }
 const art = appState.artists.find(a => a.uid === appState.selectedArtistId);
 const tpl = appState.templates[index];
+if (art && tpl) {
 const previewText = ${art.artist}\n${art.charge}\n${tpl.body};
 document.getElementById('preview-modal-body').innerText = previewText;
 document.getElementById('preview-modal-overlay').classList.add('active');
+}
 }
 function closePreviewModal() { document.getElementById('preview-modal-overlay').classList.remove('active'); }
 function recalculateControls() {
@@ -1217,14 +1235,17 @@ const btns = document.querySelectorAll('.dispatch-btn');
 btns.forEach(b => b.classList.remove('enabled'));
 if (appState.selectedArtistId && appState.selectedTemplateIndex !== null) {
 const art = appState.artists.find(a => a.uid === appState.selectedArtistId);
+if (art) {
 if (art.lineId) document.getElementById('action-trigger-line').classList.add('enabled');
 if (art.twitterId) document.getElementById('action-trigger-twitter').classList.add('enabled');
 if (art.mail) document.getElementById('action-trigger-gmail').classList.add('enabled');
 }
 }
+}
 function executeExternalDispatch(platform) {
 const art = appState.artists.find(a => a.uid === appState.selectedArtistId);
 const tpl = appState.templates[appState.selectedTemplateIndex];
+if (art && tpl) {
 const msg = ${art.artist}\n${art.charge}\n${tpl.body};
 navigator.clipboard.writeText(msg).then(() => {
 showToastBanner(コピーしました！\n\n${msg}, 1000);
@@ -1233,11 +1254,14 @@ if (platform === 'twitter') launchTwitterProfileApp(art.twitterId, null);
 if (platform === 'gmail') window.location.href = googlegmail:///co?to=${art.mail}&subject=${tpl.title}&body=${encodeURIComponent(msg)};
 });
 }
+}
 function showToastBanner(msg, duration = 3000) {
 const t = document.getElementById('toast-message-banner');
+if (t) {
 t.innerText = msg;
 t.style.display = 'block';
 setTimeout(() => t.style.display = 'none', duration);
+}
 }
 function executeKanaSortAndJump(k) {
 const kanaMap = {
@@ -1247,19 +1271,19 @@ const kanaMap = {
 'ta': ['た', 'ち', 'つ', 'て', 'と', 'だ', 'ぢ', 'づ', 'で', 'ど'],
 'na': ['な', 'に', 'ぬ', 'ね', 'の'],
 'ha': ['は', 'ひ', 'ふ', 'へ', 'ほ', 'ば', 'び', 'ぶ', 'べ', 'ぼ', 'ぱ', 'ぴ', 'ぷ', 'ぺ', 'ぽ'],
-'ma': ['ま', 'み', 'む', 'め', 'モ'],
+'ma': ['ま', 'み', 'む', 'め', 'も'],
 'ya': ['や', 'ゆ', 'よ'],
 'ra': ['ら', 'り', 'る', 'れ', 'ろ'],
 'wa': ['わ', 'を', 'ん']
 };
 const targets = kanaMap[k];
 appState.artists.sort((a, b) => {
-const fA = a.furigana[0];
-const fB = b.furigana[0];
+const fA = (a.furigana && a.furigana.length > 0) ? a.furigana[0] : '';
+const fB = (b.furigana && b.furigana.length > 0) ? b.furigana[0] : '';
 const isTargetA = targets.includes(fA) ? 0 : 1;
 const isTargetB = targets.includes(fB) ? 0 : 1;
 if (isTargetA !== isTargetB) return isTargetA - isTargetB;
-return a.furigana.localeCompare(b.furigana, 'ja');
+return String(a.furigana).localeCompare(String(b.furigana), 'ja');
 });
 renderArtistsGrid();
 const targetEl = document.querySelector(tr[data-uid]);
