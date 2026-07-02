@@ -683,7 +683,7 @@
                 <button id="tab-operation" class="nav-tab" onclick="switchView('operation')">管理表</button>
                 <button id="tab-settings" class="nav-tab" onclick="switchView('settings')">設定</button>
             </div>
-            <div class="version-tag">ver.0.2.7</div>
+            <div class="version-tag">ver.0.2.8</div>
         </div>
     </header>
 
@@ -759,12 +759,6 @@
     <div id="view-settings" class="view-section">
         
         <div class="settings-group">
-            <label class="settings-label">■ 連絡先リストデータ貼り付け (11列)</label>
-            <span class="settings-desc">スプレッドシートの「No.」から「yomi」までの11列を範囲選択して貼り付けてください。</span>
-            <textarea id="import-artists-raw" class="paste-textarea" placeholder="No.	furigana	ARTIST	Charge	mail	twitterID	LINEID	meth	flag	date	yomi..."></textarea>
-        </div>
-
-        <div class="settings-group">
             <div class="settings-label">
                 <span>■ テンプレート登録管理</span>
                 <button type="button" class="btn-mini-add" onclick="createNewTemplateRowInForm()">＋ テンプレートを追加</button>
@@ -776,9 +770,19 @@
         </div>
 
         <div class="settings-group">
-            <label class="settings-label">■ 連絡先リストデータ書き出し</label>
-            <span class="settings-desc">現在の最新データを元のNo.順に並び替えてクリップボードにエクスポートします。</span>
+            <label class="settings-label">■ 連絡先リスト</label>
+            <span class="settings-desc">・リストデータ貼り付け</span>
+            <textarea id="import-artists-raw" class="paste-textarea" placeholder="【連絡先】No	アーティスト名	Twitter	LINE	Mail... （11列のTSVデータを貼り付けてください）"></textarea>
+            <span class="settings-desc" style="margin-top: 8px; display: block;">・リストデータ書き出し</span>
             <button class="btn-action btn-export" onclick="exportArtistsToClipboard()">データをクリップボードにエクスポート</button>
+        </div>
+
+        <div class="settings-group">
+            <label class="settings-label">■ 出演者リスト</label>
+            <span class="settings-desc">・リストデータ貼り付け</span>
+            <textarea id="import-performers-raw" class="paste-textarea" placeholder="【出演者】No	アーティスト	出演回数	出演flag	ヨミ	要望	進捗 （7列のTSVデータを貼り付けてください）"></textarea>
+            <span class="settings-desc" style="margin-top: 8px; display: block;">・リストデータ書き出し</span>
+            <button class="btn-action btn-export" onclick="exportPerformersToClipboard()">出演者データをクリップボードにエクスポート</button>
         </div>
 
         <button class="btn-action btn-save" onclick="processAndSaveRawData()">データを反映して保存</button>
@@ -886,6 +890,7 @@
     <script>
         let appState = {
             artists: [],
+            performers: [],
             templates: [],
             selectedArtistId: null, 
             selectedTemplateIndex: null,
@@ -914,15 +919,37 @@
                 }
             }
             if (targetTabName === 'performers') renderPerformersGrid();
-            if (targetTabName === 'settings') syncFormStateFromTemplatesArray();
+            if (targetTabName === 'settings') {
+                syncFormStateFromTemplatesArray();
+                let tsvLines = [];
+                appState.performers.forEach(item => {
+                    tsvLines.push([item.no || '', item.artist || '', item.count || '', item.flag || '', item.yomi || '', item.req || '', item.progress || ''].join('\t'));
+                });
+                document.getElementById('import-performers-raw').value = tsvLines.join('\n');
+            }
         }
 
         function loadPersistedData() {
             try {
                 const savedArtists = localStorage.getItem('sd_matrix_artists');
                 const savedTemplates = localStorage.getItem('sd_matrix_templates');
+                const savedPerformers = localStorage.getItem('sd_matrix_performers');
                 if (savedArtists) appState.artists = JSON.parse(savedArtists);
                 if (savedTemplates) appState.templates = JSON.parse(savedTemplates);
+                if (savedPerformers) {
+                    appState.performers = JSON.parse(savedPerformers);
+                } else if (savedArtists) {
+                    appState.performers = appState.artists.filter(a => a.flag === '🙆🏼‍♀️').map((a, idx) => ({
+                        uid: "perf_" + Date.now() + "_" + idx,
+                        no: (idx + 1).toString(), artist: a.artist, count: a.count || "", flag: a.flag || "🙆🏼‍♀️", yomi: a.yomi || "", req: a.req || "", progress: a.progress || ""
+                    }));
+                    let tsvLines = [];
+                    appState.performers.forEach(item => {
+                        tsvLines.push([item.no, item.artist, item.count, item.flag, item.yomi, item.req, item.progress].join('\t'));
+                    });
+                    localStorage.setItem('sd_matrix_performers', JSON.stringify(appState.performers));
+                    localStorage.setItem('sd_raw_performers_input', tsvLines.join('\n'));
+                }
                 appState.artists.forEach((item, idx) => {
                     if (!item.uid) item.uid = "art_" + Date.now() + "_" + idx;
                     if (!item.req) item.req = "";
@@ -931,6 +958,8 @@
                 });
                 const rawArtistsInput = localStorage.getItem('sd_raw_artists_input');
                 if (rawArtistsInput) document.getElementById('import-artists-raw').value = rawArtistsInput;
+                const rawPerformersInput = localStorage.getItem('sd_raw_performers_input');
+                if (rawPerformersInput) document.getElementById('import-performers-raw').value = rawPerformersInput;
             } catch (e) { console.error(e); }
         }
 
@@ -976,14 +1005,32 @@
                 }
             });
             appState.artists = cleanArtists;
+
+            const rawPerformersText = document.getElementById('import-performers-raw').value.trim();
+            let cleanPerformers = [];
+            const pLines = rawPerformersText.split('\n');
+            pLines.forEach((line, index) => {
+                const cols = line.split('\t');
+                if (cols.length >= 2 && !cols[0].includes('No')) {
+                    cleanPerformers.push({
+                        uid: "perf_" + Date.now() + "_" + index,
+                        no: cols[0], artist: cols[1], count: cols[2] || "", flag: cols[3] || "",
+                        yomi: cols[4] || "", req: cols[5] || "", progress: cols[6] || ""
+                    });
+                }
+            });
+            appState.performers = cleanPerformers;
+
             const formCards = document.querySelectorAll('.template-builder-card');
             appState.templates = Array.from(formCards).map(c => ({
                 title: c.querySelector('.template-input-title').value,
                 body: c.querySelector('.template-input-body').value
             }));
             localStorage.setItem('sd_matrix_artists', JSON.stringify(cleanArtists));
+            localStorage.setItem('sd_matrix_performers', JSON.stringify(cleanPerformers));
             localStorage.setItem('sd_matrix_templates', JSON.stringify(appState.templates));
             localStorage.setItem('sd_raw_artists_input', rawArtistsText);
+            localStorage.setItem('sd_raw_performers_input', rawPerformersText);
             executeSortPipeline();
             renderTemplatesGrid();
             switchView('performers');
@@ -1018,6 +1065,33 @@
             const tsvText = tsvLines.join('\n');
             navigator.clipboard.writeText(tsvText).then(() => {
                 showToastBanner("アプリのデータ " + sorted.length + " 件をクリップボードにコピーしました", 1000);
+            }).catch(err => {
+                console.error(err);
+                showToastBanner("コピーに失敗しました", 1000);
+            });
+        }
+
+        function exportPerformersToClipboard() {
+            if (!appState.performers || appState.performers.length === 0) {
+                showToastBanner("エクスポートするデータがありません", 1000);
+                return;
+            }
+            let tsvLines = [];
+            appState.performers.forEach(item => {
+                const rowCols = [
+                    item.no || '',
+                    item.artist || '',
+                    item.count || '',
+                    item.flag || '',
+                    item.yomi || '',
+                    item.req || '',
+                    item.progress || ''
+                ];
+                tsvLines.push(rowCols.join('\t'));
+            });
+            const tsvText = tsvLines.join('\n');
+            navigator.clipboard.writeText(tsvText).then(() => {
+                showToastBanner("出演者データ " + appState.performers.length + " 件をクリップボードにコピーしました", 1000);
             }).catch(err => {
                 console.error(err);
                 showToastBanner("コピーに失敗しました", 1000);
@@ -1066,7 +1140,8 @@
         }
 
         function openReqEditorModal(uid) {
-            const art = appState.artists.find(a => a.uid === uid);
+            const art = appState.performers.find(a => a.uid === uid) || appState.artists.find(a => a.uid === uid);
+            if (!art) return;
             document.getElementById('edit-req-artist-uid').value = uid;
             document.getElementById('edit-req-textarea').value = art.req || '';
             document.getElementById('req-editor-modal-overlay').classList.add('active');
@@ -1076,11 +1151,14 @@
 
         function saveReqEditorModalData() {
             const uid = document.getElementById('edit-req-artist-uid').value;
-            const art = appState.artists.find(a => a.uid === uid);
-            art.req = document.getElementById('edit-req-textarea').value;
-            localStorage.setItem('sd_matrix_artists', JSON.stringify(appState.artists));
-            renderPerformersGrid();
-            closeReqEditorModal();
+            const art = appState.performers.find(a => a.uid === uid) || appState.artists.find(a => a.uid === uid);
+            if (art) {
+                art.req = document.getElementById('edit-req-textarea').value;
+                localStorage.setItem('sd_matrix_artists', JSON.stringify(appState.artists));
+                localStorage.setItem('sd_matrix_performers', JSON.stringify(appState.performers));
+                renderPerformersGrid();
+                closeReqEditorModal();
+            }
         }
 
         function toggleSortPipeline(key) {
@@ -1110,7 +1188,7 @@
         function renderPerformersGrid() {
             const container = document.getElementById('performers-table-body-target');
             container.innerHTML = '';
-            const performers = appState.artists.filter(a => a.flag === '🙆🏼‍♀️');
+            const performers = appState.performers;
             
             let totalCount = performers.length;
             let totalYomi = 0;
@@ -1157,16 +1235,20 @@
         }
 
         function updatePerformerProgress(uid, val) {
-            const art = appState.artists.find(a => a.uid === uid);
-            art.progress = val;
-            localStorage.setItem('sd_matrix_artists', JSON.stringify(appState.artists));
+            const art = appState.performers.find(a => a.uid === uid);
+            if (art) {
+                art.progress = val;
+                localStorage.setItem('sd_matrix_performers', JSON.stringify(appState.performers));
+            }
         }
 
         function updatePerformerCount(uid, val) {
-            const art = appState.artists.find(a => a.uid === uid);
-            art.count = val;
-            localStorage.setItem('sd_matrix_artists', JSON.stringify(appState.artists));
-            renderPerformersGrid();
+            const art = appState.performers.find(a => a.uid === uid);
+            if (art) {
+                art.count = val;
+                localStorage.setItem('sd_matrix_performers', JSON.stringify(appState.performers));
+                renderPerformersGrid();
+            }
         }
 
         function renderArtistsGrid() {
@@ -1309,7 +1391,7 @@
 
         function openPreviewModal(index) {
             if (!appState.selectedArtistId) { showToastBanner("アーティストを選択してください", 1000); return; }
-            const art = appState.artists.find(a => a.uid === appState.selectedArtistId);
+            const art = appState.artists.find(a => a.uid === appState.selectedArtistId) || appState.performers.find(a => a.uid === appState.selectedArtistId);
             const tpl = appState.templates[index];
             const previewText = `${art.artist}\n${art.charge}\n${tpl.body}`;
             document.getElementById('preview-modal-body').innerText = previewText;
@@ -1322,7 +1404,7 @@
             const btns = document.querySelectorAll('.dispatch-btn');
             btns.forEach(b => b.classList.remove('enabled'));
             if (appState.selectedArtistId && appState.selectedTemplateIndex !== null) {
-                const art = appState.artists.find(a => a.uid === appState.selectedArtistId);
+                const art = appState.artists.find(a => a.uid === appState.selectedArtistId) || appState.performers.find(a => a.uid === appState.selectedArtistId);
                 if (art.lineId) document.getElementById('action-trigger-line').classList.add('enabled');
                 if (art.twitterId) document.getElementById('action-trigger-twitter').classList.add('enabled');
                 if (art.mail) document.getElementById('action-trigger-gmail').classList.add('enabled');
@@ -1330,7 +1412,7 @@
         }
 
         function executeExternalDispatch(platform) {
-            const art = appState.artists.find(a => a.uid === appState.selectedArtistId);
+            const art = appState.artists.find(a => a.uid === appState.selectedArtistId) || appState.performers.find(a => a.uid === appState.selectedArtistId);
             const tpl = appState.templates[appState.selectedTemplateIndex];
             const msg = `${art.artist}\n${art.charge}\n${tpl.body}`;
             
