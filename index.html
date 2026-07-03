@@ -1,1215 +1,1045 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Smart Dispatcher</title>
-    <style>
-        :root {
-            --bg-main: #121214;
-            --bg-card: #1a1a1e;
-            --bg-input: #26262b;
-            --border-color: #2f2f35;
-            --text-main: #f3f4f6;
-            --text-muted: #9ca3af;
-            --accent-color: #6366f1;
-            --accent-hover: #4f46e5;
-            --success-color: #10b981;
-            --danger-color: #ef4444;
-            --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-            --transition: all 0.2s ease;
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        body {
-            font-family: var(--font-family);
-            background-color: var(--bg-main);
-            color: var(--text-main);
-            line-height: 1.5;
-            overflow: hidden;
-            position: fixed;
-            width: 100%;
-            height: 100vh;
-        }
-
-        .app-container {
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-            max-width: 100%;
-            margin: 0 auto;
-            position: relative;
-        }
-
-        /* ----------------------------------
-         * Header Component
-         * ---------------------------------- */
-        header {
-            background-color: var(--bg-card);
-            padding: 12px 16px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid var(--border-color);
-            z-index: 10;
-        }
-
-        .header-title-area {
-            display: flex;
-            flex-direction: column;
-        }
-
-        header h1 {
-            font-size: 1.1rem;
-            font-weight: 700;
-            letter-spacing: -0.025em;
-        }
-
-        .header-subtitle {
-            font-size: 0.7rem;
-            color: var(--text-muted);
-            margin-top: 1px;
-        }
-
-        .header-meta {
-            text-align: right;
-        }
-
-        .version-badge {
-            font-size: 0.65rem;
-            background-color: var(--bg-input);
-            padding: 2px 6px;
-            border-radius: 4px;
-            color: var(--text-muted);
-            font-family: monospace;
-            border: 1px solid var(--border-color);
-        }
-
-        /* ----------------------------------
-         * Navigation Tab Bar
-         * ---------------------------------- */
-        .nav-tabs {
-            display: flex;
-            background-color: var(--bg-card);
-            border-bottom: 1px solid var(--border-color);
-            padding: 0 8px;
-            overflow-x: auto;
-            scrollbar-width: none;
-        }
-
-        .nav-tabs::-webkit-scrollbar {
-            display: none;
-        }
-
-        .tab-btn {
-            background: none;
-            border: none;
-            color: var(--text-muted);
-            padding: 12px 14px;
-            font-size: 0.85rem;
-            font-weight: 600;
-            cursor: pointer;
-            position: relative;
-            white-space: nowrap;
-            transition: var(--transition);
-        }
-
-        .tab-btn.active {
-            color: var(--text-main);
-        }
-
-        .tab-btn.active::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 8px;
-            right: 8px;
-            height: 3px;
-            background-color: var(--accent-color);
-            border-top-left-radius: 2px;
-            border-top-right-radius: 2px;
-        }
-
-        /* ----------------------------------
-         * Main Content Window
-         * ---------------------------------- */
-        .main-content {
-            flex: 1;
-            overflow-y: auto;
-            position: relative;
-            -webkit-overflow-scrolling: touch;
-            padding-bottom: 80px; /* Space for bottom control bar */
-        }
-
-        .tab-panel {
-            display: none;
-            padding: 16px;
-            animation: fadeIn 0.15s ease-out;
-        }
-
-        .tab-panel.active {
-            display: block;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(2px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* ----------------------------------
-         * UI Elements & Grid Card Table
-         * ---------------------------------- */
-        .search-container {
-            margin-bottom: 12px;
-            position: relative;
-        }
-
-        .search-input {
-            width: 100%;
-            background-color: var(--bg-card);
-            border: 1px solid var(--border-color);
-            color: var(--text-main);
-            padding: 10px 14px;
-            border-radius: 8px;
-            font-size: 0.9rem;
-            outline: none;
-            transition: var(--transition);
-        }
-
-        .search-input:focus {
-            border-color: var(--accent-color);
-            box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
-        }
-
-        .grid-table {
-            width: 100%;
-            border-collapse: separate;
-            border-spacing: 0;
-            background-color: var(--bg-card);
-            border-radius: 8px;
-            overflow: hidden;
-            border: 1px solid var(--border-color);
-        }
-
-        .grid-table th {
-            background-color: rgba(255, 255, 255, 0.02);
-            padding: 10px 12px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            color: var(--text-muted);
-            text-align: left;
-            border-bottom: 1px solid var(--border-color);
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
-
-        .grid-table td {
-            padding: 12px;
-            font-size: 0.85rem;
-            border-bottom: 1px solid var(--border-color);
-            white-space: nowrap;
-            max-width: 180px;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .grid-table tr:last-child td {
-            border-bottom: none;
-        }
-
-        .grid-table tr {
-            cursor: pointer;
-            transition: var(--transition);
-        }
-
-        .grid-table tr.selected {
-            background-color: rgba(99, 102, 241, 0.15) !important;
-        }
-
-        .grid-table tr.selected td {
-            color: #fff;
-            font-weight: 500;
-        }
-
-        .badge {
-            display: inline-block;
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-size: 0.7rem;
-            font-weight: 600;
-        }
-
-        .badge-flag {
-            background-color: rgba(16, 185, 129, 0.15);
-            color: var(--success-color);
-        }
-
-        .badge-none {
-            background-color: rgba(255, 255, 255, 0.05);
-            color: var(--text-muted);
-        }
-
-        /* ----------------------------------
-         * Settings UI Form Layout
-         * ---------------------------------- */
-        .settings-section {
-            background-color: var(--bg-card);
-            border-radius: 8px;
-            border: 1px solid var(--border-color);
-            padding: 16px;
-            margin-bottom: 16px;
-        }
-
-        .settings-section h2 {
-            font-size: 0.95rem;
-            font-weight: 600;
-            margin-bottom: 12px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            color: var(--text-main);
-        }
-
-        .form-group {
-            margin-bottom: 14px;
-        }
-
-        .form-group:last-child {
-            margin-bottom: 0;
-        }
-
-        .form-label {
-            display: block;
-            font-size: 0.75rem;
-            font-weight: 600;
-            color: var(--text-muted);
-            margin-bottom: 6px;
-        }
-
-        .form-textarea {
-            width: 100%;
-            height: 120px;
-            background-color: var(--bg-input);
-            border: 1px solid var(--border-color);
-            color: var(--text-main);
-            border-radius: 6px;
-            padding: 10px;
-            font-size: 0.8rem;
-            font-family: monospace;
-            resize: vertical;
-            outline: none;
-        }
-
-        .form-textarea:focus {
-            border-color: var(--accent-color);
-        }
-
-        .btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            background-color: var(--bg-input);
-            color: var(--text-main);
-            border: 1px solid var(--border-color);
-            padding: 10px 16px;
-            font-size: 0.85rem;
-            font-weight: 600;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: var(--transition);
-            width: 100%;
-            gap: 6px;
-        }
-
-        .btn:active {
-            transform: scale(0.98);
-        }
-
-        .btn-primary {
-            background-color: var(--accent-color);
-            border-color: var(--accent-color);
-            color: #fff;
-        }
-
-        .btn-primary:hover {
-            background-color: var(--accent-hover);
-            border-color: var(--accent-hover);
-        }
-
-        .btn-danger {
-            background-color: rgba(239, 68, 68, 0.1);
-            border-color: rgba(239, 68, 68, 0.2);
-            color: var(--danger-color);
-        }
-
-        /* ----------------------------------
-         * Fixed Bottom Dispatch Controller Bar
-         * ---------------------------------- */
-        .bottom-control-bar {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background-color: rgba(26, 26, 30, 0.95);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border-top: 1px solid var(--border-color);
-            padding: 12px 16px;
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 8px;
-            z-index: 100;
-            box-shadow: 0 -4px 20px rgba(0,0,0,0.3);
-        }
-
-        .action-btn {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            background-color: var(--bg-input);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            color: var(--text-main);
-            padding: 8px 4px;
-            cursor: pointer;
-            transition: var(--transition);
-            text-decoration: none;
-        }
-
-        .action-btn:disabled, .action-btn.disabled {
-            opacity: 0.4;
-            cursor: not-allowed;
-            pointer-events: none;
-        }
-
-        .action-btn-icon {
-            font-size: 1.2rem;
-            margin-bottom: 2px;
-        }
-
-        .action-btn-label {
-            font-size: 0.65rem;
-            font-weight: 600;
-            color: var(--text-muted);
-        }
-
-        .action-btn.disabled .action-btn-label {
-            color: var(--text-muted) !important;
-        }
-
-        /* Specific Brand Accent Overrides */
-        .btn-x.active-ready {
-            border-color: #3f3f46;
-            background: linear-gradient(145deg, #18181b, #09090b);
-        }
-        .btn-x.active-ready .action-btn-label { color: #ffffff; }
-
-        .btn-line.active-ready {
-            border-color: rgba(6, 193, 95, 0.3);
-            background: rgba(6, 193, 95, 0.1);
-        }
-        .btn-line.active-ready .action-btn-label { color: #06C15F; }
-
-        .btn-mail.active-ready {
-            border-color: rgba(234, 179, 8, 0.3);
-            background: rgba(234, 179, 8, 0.1);
-        }
-        .btn-mail.active-ready .action-btn-label { color: #eab308; }
-
-        .btn-template.active-ready {
-            border-color: rgba(168, 85, 247, 0.3);
-            background: rgba(168, 85, 247, 0.1);
-        }
-        .btn-template.active-ready .action-btn-label { color: #a855f7; }
-
-        /* ----------------------------------
-         * Modal Popup Component
-         * ---------------------------------- */
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: rgba(0, 0, 0, 0.6);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-            opacity: 0;
-            visibility: hidden;
-            transition: var(--transition);
-            padding: 16px;
-        }
-
-        .modal-overlay.active {
-            opacity: 1;
-            visibility: visible;
-        }
-
-        .modal-window {
-            background-color: var(--bg-card);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            width: 100%;
-            max-width: 400px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
-            transform: scale(0.95);
-            transition: var(--transition);
-            overflow: hidden;
-        }
-
-        .modal-overlay.active .modal-window {
-            transform: scale(1);
-        }
-
-        .modal-header {
-            padding: 14px 16px;
-            border-bottom: 1px solid var(--border-color);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background-color: rgba(255,255,255,0.01);
-        }
-
-        .modal-header h3 {
-            font-size: 0.95rem;
-            font-weight: 600;
-        }
-
-        .modal-body {
-            padding: 16px;
-            font-size: 0.85rem;
-            color: var(--text-muted);
-            max-height: 260px;
-            overflow-y: auto;
-        }
-
-        .modal-footer {
-            padding: 12px 16px;
-            border-top: 1px solid var(--border-color);
-            display: flex;
-            justify-content: flex-end;
-            gap: 8px;
-            background-color: rgba(255,255,255,0.01);
-        }
-
-        .modal-footer .btn {
-            width: auto;
-            padding: 8px 14px;
-            font-size: 0.8rem;
-        }
-
-        /* Template Selector Specific Layout */
-        .template-list-wrapper {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-
-        .template-item-card {
-            background-color: var(--bg-input);
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            padding: 10px;
-            cursor: pointer;
-            transition: var(--transition);
-            text-align: left;
-        }
-
-        .template-item-card:hover {
-            border-color: var(--accent-color);
-        }
-
-        .template-item-name {
-            font-size: 0.8rem;
-            font-weight: 600;
-            color: var(--text-main);
-            margin-bottom: 2px;
-        }
-
-        .template-item-preview {
-            font-size: 0.7rem;
-            color: var(--text-muted);
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        /* Utility Helpers */
-        .empty-state {
-            text-align: center;
-            padding: 32px 16px;
-            color: var(--text-muted);
-            font-size: 0.85rem;
-        }
-
-        .utility-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 12px;
-        }
-
-        .counter-badge {
-            font-size: 0.75rem;
-            color: var(--text-muted);
-            background-color: var(--bg-card);
-            padding: 2px 8px;
-            border-radius: 20px;
-            border: 1px solid var(--border-color);
-        }
-    </style>
+  <meta charset="UTF-8">
+  <title>Smart Dispatcher</title>
+  <style>
+    :root {
+      --bg-color: #f4f6f9;
+      --panel-bg: #ffffff;
+      --text-color: #333333;
+      --text-muted: #666666;
+      --accent-color: #007bff;
+      --accent-hover: #0056b3;
+      --border-color: #dddddd;
+      --row-hover: #f1f5f9;
+      --selected-bg: #e2e8f0;
+      --danger-color: #dc3545;
+      --danger-hover: #bd2130;
+      --success-color: #28a745;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      font-size: 14px;
+      line-height: 1.4;
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      background-color: var(--panel-bg);
+      padding: 10px 15px;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-shrink: 0;
+    }
+
+    header h1 {
+      font-size: 16px;
+      font-weight: bold;
+    }
+
+    .version-tag {
+      font-size: 11px;
+      color: var(--text-muted);
+      background: #eee;
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+
+    nav.tab-actions {
+      display: flex;
+      background-color: var(--panel-bg);
+      border-bottom: 1px solid var(--border-color);
+      flex-shrink: 0;
+    }
+
+    nav.tab-actions button {
+      flex: 1;
+      padding: 12px 5px;
+      border: none;
+      background: none;
+      font-size: 13px;
+      font-weight: bold;
+      color: var(--text-muted);
+      cursor: pointer;
+      text-align: center;
+      border-bottom: 3px solid transparent;
+    }
+
+    nav.tab-actions button.active {
+      color: var(--accent-color);
+      border-bottom-color: var(--accent-color);
+      background-color: rgba(0, 123, 255, 0.05);
+    }
+
+    .main-content {
+      flex: 1;
+      overflow-y: auto;
+      position: relative;
+    }
+
+    .tab-panel {
+      display: none;
+      height: 100%;
+    }
+
+    .tab-panel.active {
+      display: block;
+    }
+
+    .scrollable-container {
+      height: 100%;
+      overflow-y: auto;
+      padding-bottom: 60px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background-color: var(--panel-bg);
+    }
+
+    th, td {
+      padding: 10px 8px;
+      text-align: left;
+      border-bottom: 1px solid var(--border-color);
+      white-space: nowrap;
+    }
+
+    th {
+      background-color: #f8f9fa;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      font-weight: bold;
+      font-size: 12px;
+      color: var(--text-muted);
+      box-shadow: inset 0 -1px 0 var(--border-color);
+    }
+
+    tbody tr:hover {
+      background-color: var(--row-hover);
+    }
+
+    tbody tr.selected {
+      background-color: var(--selected-bg);
+    }
+
+    .sticky-th {
+      position: sticky;
+      top: 0;
+      background: #f8f9fa;
+      z-index: 10;
+    }
+
+    .config-section {
+      padding: 15px;
+      background-color: var(--panel-bg);
+      border-bottom: 1px solid var(--border-color);
+      margin-bottom: 10px;
+    }
+
+    .config-section h3 {
+      font-size: 14px;
+      margin-bottom: 10px;
+      color: #111;
+      border-left: 4px solid var(--accent-color);
+      padding-left: 8px;
+    }
+
+    .config-section p {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+
+    textarea {
+      width: 100%;
+      height: 120px;
+      font-family: monospace;
+      font-size: 12px;
+      padding: 8px;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      resize: vertical;
+      margin-bottom: 8px;
+    }
+
+    .btn {
+      display: inline-block;
+      width: 100%;
+      padding: 12px;
+      background-color: var(--accent-color);
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      font-size: 14px;
+      font-weight: bold;
+      cursor: pointer;
+      text-align: center;
+    }
+
+    .btn:hover {
+      background-color: var(--accent-hover);
+    }
+
+    .btn-secondary {
+      background-color: #6c757d;
+      padding: 8px 12px;
+      font-size: 12px;
+      width: auto;
+      margin-bottom: 8px;
+    }
+
+    .btn-secondary:hover {
+      background-color: #5a6268;
+    }
+
+    .bottom-control-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background-color: var(--panel-bg);
+      border-top: 1px solid var(--border-color);
+      padding: 10px 15px;
+      display: flex;
+      gap: 10px;
+      z-index: 100;
+    }
+
+    .bottom-control-bar button {
+      flex: 1;
+      padding: 10px;
+      font-size: 13px;
+      font-weight: bold;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      background-color: #f8f9fa;
+      cursor: pointer;
+    }
+
+    .bottom-control-bar button:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    .bottom-control-bar button.action-primary {
+      background-color: #e3f2fd;
+      color: #0d47a1;
+      border-color: #bbdefb;
+    }
+
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.5);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 200;
+      padding: 20px;
+    }
+
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    .modal-box {
+      background: var(--panel-bg);
+      padding: 20px;
+      border-radius: 6px;
+      width: 100%;
+      max-width: 500px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+
+    .modal-box h2 {
+      font-size: 16px;
+      margin-bottom: 12px;
+    }
+
+    .modal-box p {
+      font-size: 13px;
+      margin-bottom: 15px;
+      color: #555;
+    }
+
+    .modal-footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+
+    .modal-footer button {
+      padding: 8px 16px;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      background: #f8f9fa;
+      cursor: pointer;
+      font-size: 13px;
+    }
+
+    .modal-footer button.btn-confirm-danger {
+      background: var(--danger-color);
+      color: #fff;
+      border-color: var(--danger-color);
+    }
+
+    .tmpl-item {
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      padding: 10px;
+      margin-bottom: 8px;
+      background: #fafafa;
+    }
+
+    .tmpl-item-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+    }
+
+    .tmpl-item-title {
+      font-weight: bold;
+      font-size: 13px;
+    }
+
+    .tmpl-item-actions {
+      display: flex;
+      gap: 5px;
+    }
+
+    .btn-small {
+      padding: 3px 6px;
+      font-size: 11px;
+      border: 1px solid var(--border-color);
+      background: #fff;
+      border-radius: 3px;
+      cursor: pointer;
+    }
+
+    .btn-small-danger {
+      color: var(--danger-color);
+      border-color: #f5c6cb;
+      background: #f8d7da;
+    }
+
+    .tmpl-item-body {
+      font-size: 12px;
+      color: #555;
+      white-space: pre-wrap;
+      background: #fff;
+      padding: 6px;
+      border: 1px solid #eee;
+      border-radius: 3px;
+      max-height: 80px;
+      overflow-y: auto;
+    }
+
+    .tmpl-form {
+      margin-top: 10px;
+      border-top: 1px dashed var(--border-color);
+      padding-top: 10px;
+    }
+
+    .tmpl-form input, .tmpl-form textarea {
+      width: 100%;
+      margin-bottom: 6px;
+      font-size: 12px;
+      padding: 6px;
+      border: 1px solid var(--border-color);
+      border-radius: 3px;
+    }
+
+    .tmpl-form textarea {
+      height: 60px;
+    }
+
+    .badge-flag {
+      background-color: #fff3cd;
+      color: #856404;
+      padding: 2px 4px;
+      border-radius: 3px;
+      font-size: 11px;
+      border: 1px solid #ffeeba;
+    }
+
+    .search-bar-container {
+      background-color: var(--panel-bg);
+      padding: 8px 12px;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .search-input {
+      flex: 1;
+      padding: 6px 10px;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      font-size: 13px;
+    }
+
+    .clear-search-btn {
+      padding: 6px 12px;
+      border: 1px solid var(--border-color);
+      background: #f8f9fa;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 12px;
+    }
+  </style>
 </head>
 <body>
 
-    <div class="app-container">
-        <header>
-            <div class="header-title-area">
-                <h1>Smart Dispatcher</h1>
-                <div class="header-subtitle">ワンタップ現場連絡システム</div>
-            </div>
-            <div class="header-meta">
-                <span class="version-badge">ver.0.2.8</span>
-            </div>
-        </header>
+  <header>
+    <h1>Smart Dispatcher</h1>
+    <div class="version-tag" id="ui-version-tag">ver.0.2.8</div>
+  </header>
 
-        <nav class="nav-tabs">
-            <button class="tab-btn active" onclick="switchTab('matrix')">管理表一覧</button>
-            <button class="tab-btn" onclick="switchTab('performers')">出演者抽出</button>
-            <button class="tab-btn" onclick="switchTab('settings')">システム設定</button>
-        </nav>
+  <nav class="tab-actions">
+    <button id="tab-btn-matrix" class="active" onclick="switchTab('matrix')">管理表</button>
+    <button id="tab-btn-performers" onclick="switchTab('performers')">出演者</button>
+    <button id="tab-btn-templates" onclick="switchTab('templates')">定型文</button>
+    <button id="tab-btn-config" onclick="switchTab('config')">設定</button>
+  </nav>
 
-        <main class="main-content">
-            
-            <div id="view-matrix" class="tab-panel active">
-                <div class="utility-row">
-                    <div style="flex: 1; margin-right: 12px;">
-                        <input type="text" id="matrix-search" class="search-input" placeholder="アーティスト名やフラグで検索..." oninput="handleMatrixSearch()">
-                    </div>
-                    <span id="matrix-counter" class="counter-badge">0件</span>
-                </div>
-                <div style="overflow-x: auto; width: 100%;">
-                    <table class="grid-table">
-                        <thead>
-                            <tr>
-                                <th style="width: 50px;">No</th>
-                                <th>アーティスト</th>
-                                <th style="text-align: center; width: 60px;">回数</th>
-                                <th style="text-align: center; width: 70px;">出演</th>
-                            </tr>
-                        </thead>
-                        <tbody id="matrix-table-body">
-                            </tbody>
-                    </table>
-                </div>
-                <div id="matrix-empty" class="empty-state" style="display: none;">該当するアーティストが見つかりません。</div>
-            </div>
+  <div class="main-content">
 
-            <div id="view-performers" class="tab-panel">
-                <div class="utility-row">
-                    <div style="font-size: 0.8rem; font-weight: 600; color: var(--text-muted);">本日の出演確定キャスト</div>
-                    <span id="performers-counter" class="counter-badge">0名</span>
-                </div>
-                <div style="overflow-x: auto; width: 100%;">
-                    <table class="grid-table">
-                        <thead>
-                            <tr>
-                                <th style="width: 50px;">No</th>
-                                <th>アーティスト</th>
-                                <th>要望・進捗備考</th>
-                            </tr>
-                        </thead>
-                        <tbody id="performers-table-body">
-                            </tbody>
-                    </table>
-                </div>
-                <div id="performers-empty" class="empty-state" style="display: none;">出演フラグ(🙆🏼‍♀️)の立っているキャストはいません。</div>
-            </div>
-
-            <div id="view-settings" class="tab-panel">
-                
-                <div class="settings-section">
-                    <h2>📋 連絡配信用テンプレート</h2>
-                    <div class="form-group">
-                        <label class="form-label">配信文面テンプレート (変数構文対応)</label>
-                        <textarea id="config-template-text" class="form-textarea" placeholder="こんにちは、{アーティスト}様。本日の入り時間は..."></textarea>
-                    </div>
-                </div>
-
-                <div class="settings-section">
-                    <h2>👥 連絡先マスターデータ (11列構成)</h2>
-                    <div class="form-group">
-                        <label class="form-label">TSVスプレッドシートデータ</label>
-                        <textarea id="config-raw-tsv" class="form-textarea" placeholder="【連絡先】No	アーティスト名	Twitter	LINE	Mail... （11列のTSVデータを貼り付けてください）"></textarea>
-                    </div>
-                    <button class="btn" onclick="exportToClipboard()">📋 データをクリップボードにエクスポート</button>
-                </div>
-
-                <div class="settings-section">
-                    <h2>🎤 当日出演者データ (7列構成)</h2>
-                    <div class="form-group">
-                        <label class="form-label">TSVスプレッドシートデータ</label>
-                        <textarea id="config-raw-performers-tsv" class="form-textarea" placeholder="【出演者】No	アーティスト	出演回数	出演flag	ヨミ	要望	進捗 （7列のTSVデータを貼り付けてください）"></textarea>
-                    </div>
-                    <button class="btn" onclick="exportPerformersToClipboard()">📋 出演者データをクリップボードにエクスポート</button>
-                </div>
-
-                <button class="btn btn-primary" style="margin-top: 8px; margin-bottom: 24px;" onclick="commitSystemConfiguration()">💾 データを反映して保存</button>
-
-            </div>
-
-        </main>
-
-        <div id="bottom-control-bar" class="bottom-control-bar">
-            <button id="action-btn-x" class="action-btn btn-x disabled" onclick="executeDispatch('x')">
-                <span class="action-btn-icon">𝕏</span>
-                <span class="action-btn-label">X起動</span>
-            </button>
-            <button id="action-btn-line" class="action-btn btn-line disabled" onclick="executeDispatch('line')">
-                <span class="action-btn-icon">💬</span>
-                <span class="action-btn-label">LINE</span>
-            </button>
-            <button id="action-btn-mail" class="action-btn btn-mail disabled" onclick="executeDispatch('mail')">
-                <span class="action-btn-icon">✉️</span>
-                <span class="action-btn-label">Mail</span>
-            </button>
-            <button id="action-btn-template" class="action-btn btn-template disabled" onclick="openTemplateModal()">
-                <span class="action-btn-icon">📝</span>
-                <span class="action-btn-label">下書生成</span>
-            </button>
-        </div>
-
+    <div id="panel-matrix" class="tab-panel active">
+      <div class="search-bar-container">
+        <input type="text" id="matrix-search-input" class="search-input" placeholder="アーティスト名、要望、進捗などで検索..." oninput="handleMatrixSearch()">
+        <button class="clear-search-btn" onclick="clearMatrixSearch()">クリア</button>
+      </div>
+      <div class="scrollable-container">
+        <table id="table-matrix">
+          <thead>
+            <tr>
+              <th>No</th>
+              <th>アーティスト名</th>
+              <th>Twitter</th>
+              <th>LINE</th>
+              <th>Mail</th>
+              <th>出演回数</th>
+              <th>出演flag</th>
+              <th>ヨミ</th>
+              <th>要望</th>
+              <th>進捗</th>
+              <th>備考</th>
+            </tr>
+          </thead>
+          <tbody id="tbody-matrix"></tbody>
+        </table>
+      </div>
     </div>
 
-    <div id="system-modal" class="modal-overlay" onclick="closeModalOutside(event)">
-        <div class="modal-window">
-            <div class="modal-header">
-                <h3 id="modal-title">モーダルウィンドウ</h3>
-                <span style="cursor:pointer; font-size:1.2rem; color:var(--text-muted);" onclick="closeSystemModal()">&times;</span>
-            </div>
-            <div id="modal-body" class="modal-body">
-                </div>
-            <div class="modal-footer" id="modal-footer">
-                <button class="btn" onclick="closeSystemModal()">閉じる</button>
-            </div>
+    <div id="panel-performers" class="tab-panel">
+      <div class="scrollable-container">
+        <table id="table-performers">
+          <thead>
+            <tr>
+              <th>No</th>
+              <th>アーティスト</th>
+              <th>出演回数</th>
+              <th>出演flag</th>
+              <th>ヨミ</th>
+              <th>要望</th>
+              <th>進捗</th>
+            </tr>
+          </thead>
+          <tbody id="tbody-performers"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div id="panel-templates" class="tab-panel">
+      <div class="scrollable-container" style="padding:15px;" id="container-templates-trigger">
         </div>
     </div>
 
-    <script>
-        // State Machine Initializer
-        const appState = {
-            artists: [],
-            performers: [],
-            selectedArtistId: null,
-            activeTab: 'matrix',
-            templateStr: ""
-        };
+    <div id="panel-config" class="tab-panel">
+      <div class="scrollable-container">
 
-        // Data Storage Hydration Engine
-        const STORAGE_KEYS = {
-            ARTISTS: 'sd_matrix_artists',
-            PERFORMERS: 'sd_matrix_performers',
-            RAW_INPUT: 'sd_raw_artists_input',
-            RAW_PERFORMERS_INPUT: 'sd_raw_performers_input',
-            TEMPLATE: 'sd_template_string'
-        };
+        <div class="config-section">
+          <h3>テンプレート登録管理</h3>
+          <p>配信プラットフォーム等で使用するメッセージテンプレートを管理します。文章内の <b>{name}</b> はアーティスト名に自動置換されます。</p>
+          <div id="config-tmpl-list"></div>
+          <div class="tmpl-form">
+            <input type="text" id="new-tmpl-title" placeholder="テンプレート名 (例: 出演確定連絡)">
+            <textarea id="new-tmpl-body" placeholder="メッセージ本文を入力してください。&#13;&#10;例: {name}様お疲れ様です！..."></textarea>
+            <button class="btn btn-secondary" style="width:100%;" onclick="addTemplate()">新しいテンプレートを追加</button>
+          </div>
+        </div>
 
-        // Standard 11-Column Mapping Profile Schema Definition
-        const ARTIST_COLUMNS = {
-            NO: 0,
-            NAME: 1,
-            TWITTER: 2,
-            LINE: 3,
-            MAIL: 4,
-            COUNT: 5,
-            FLAG: 6,
-            YOMI: 7,
-            REQ: 8,
-            PROGRESS: 9,
-            NOTE: 10
-        };
+        <div class="config-section">
+          <h3>連絡先リスト</h3>
+          <p>マスターデータとなる11列のTSVデータを貼り付けるか、現在のデータを書き出せます。</p>
+          <button class="btn btn-secondary" onclick="exportToClipboard()">リストデータ書き出し</button>
+          <textarea id="raw-artists-input" placeholder="【連絡先】No	アーティスト名	Twitter	LINE	Mail... （11列のTSVデータを貼り付けてください）"></textarea>
+        </div>
 
-        // Standard 7-Column Mapping Profile Schema Definition
-        const PERFORMER_COLUMNS = {
-            NO: 0,
-            NAME: 1,
-            COUNT: 2,
-            FLAG: 3,
-            YOMI: 4,
-            REQ: 5,
-            PROGRESS: 6
-        };
+        <div class="config-section">
+          <h3>出演者リスト</h3>
+          <p>出演者タブ専用の7列のTSVデータを貼り付けるか、現在の出演者データを書き出せます。</p>
+          <button class="btn btn-secondary" onclick="exportPerformersToClipboard()">リストデータ書き出し</button>
+          <textarea id="raw-performers-input" placeholder="【出演者】No	アーティスト	出演回数	出演flag	ヨミ	要望	進捗 （7列のTSVデータを貼り付けてください）"></textarea>
+        </div>
 
-        // App Bootloader Event Dispatcher Execution Hook
-        document.addEventListener('DOMContentLoaded', () => {
-            initializeApplicationEngine();
+        <div class="config-section">
+          <button class="btn" onclick="saveConfigAll()">データを反映して保存</button>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+  <div id="bottom-control-bar" class="bottom-control-bar" style="display: none;">
+    <button id="btn-action-x" onclick="triggerAction('X')">X起動</button>
+    <button id="btn-action-line" onclick="triggerAction('LINE')">LINE</button>
+    <button id="btn-action-mail" onclick="triggerAction('Mail')">Mail</button>
+    <button id="btn-action-copy" class="action-primary" onclick="triggerAction('Copy')">名前コピー</button>
+  </div>
+
+  <div id="modal-overlay" class="modal-overlay">
+    <div class="modal-box">
+      <h2 id="modal-title">確認</h2>
+      <p id="modal-message">処理を実行しますか？</p>
+      <div class="modal-footer">
+        <button onclick="closeModal()">キャンセル</button>
+        <button id="modal-confirm-btn" class="btn-confirm-danger">実行</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ------------------------------------------------------------------------
+    // アプリケーション状態管理
+    // ------------------------------------------------------------------------
+    const appState = {
+      artists: [],
+      performers: [],
+      templates: [],
+      selectedArtistId: null,
+      currentTab: 'matrix',
+      matrixSearchQuery: ''
+    };
+
+    // デフォルト定型文
+    const defaultTemplates = [
+      { id: "tmpl_1", title: "出演打診", body: "{name}様\nお疲れ様です！Smart Dispatcher運営です。\n次回イベントへのご出演のご都合はいかがでしょうか？" },
+      { id: "tmpl_2", title: "詳細送付", body: "{name}様\nありがとうございます！当日の詳細スケジュールをお送りいたします。" }
+    ];
+
+    // 11列のヘッダー定義
+    const MATRIX_HEADERS = [
+      "No", "アーティスト名", "Twitter", "LINE", "Mail", 
+      "出演回数", "出演flag", "ヨミ", "要望", "進捗", "備考"
+    ];
+
+    // 7列のヘッダー定義
+    const PERFORMER_HEADERS = [
+      "No", "アーティスト", "出演回数", "出演flag", "ヨミ", "要望", "進捗"
+    ];
+
+    // ------------------------------------------------------------------------
+    // 初期化・ライフサイクル
+    // ------------------------------------------------------------------------
+    window.addEventListener('DOMContentLoaded', () => {
+      loadDataFromStorage();
+      renderAll();
+    });
+
+    function loadDataFromStorage() {
+      // 1. 連絡先リスト読み込み
+      const storedRaw = localStorage.getItem('sd_raw_artists_input');
+      if (storedRaw) {
+        document.getElementById('raw-artists-input').value = storedRaw;
+        appState.artists = parseTSV(storedRaw, 11);
+      } else {
+        appState.artists = [];
+      }
+
+      // 2. 出演者リスト読み込み
+      const storedPerfRaw = localStorage.getItem('sd_raw_performers_input');
+      if (storedPerfRaw) {
+        document.getElementById('raw-performers-input').value = storedPerfRaw;
+        appState.performers = parseTSV(storedPerfRaw, 7);
+      } else {
+        appState.performers = [];
+      }
+
+      // 3. テンプレート読み込み
+      const storedTmpl = localStorage.getItem('sd_templates');
+      if (storedTmpl) {
+        try {
+          appState.templates = JSON.parse(storedTmpl);
+        } catch(e) {
+          appState.templates = [...defaultTemplates];
+        }
+      } else {
+        appState.templates = [...defaultTemplates];
+      }
+      syncTemplateConfigUI();
+    }
+
+    // ------------------------------------------------------------------------
+    // タブ切り替え制御
+    // ------------------------------------------------------------------------
+    function switchTab(tabName) {
+      appState.currentTab = tabName;
+      
+      document.querySelectorAll('.tab-actions button').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.tab-panel').forEach(panel => panel.classList.remove('active'));
+
+      const targetBtn = document.getElementById(`tab-btn-${tabName}`);
+      const targetPanel = document.getElementById(`panel-${tabName}`);
+      if(targetBtn) targetBtn.classList.add('active');
+      if(targetPanel) targetPanel.classList.add('active');
+
+      updateBottomBarVisibility();
+    }
+
+    function updateBottomBarVisibility() {
+      const bar = document.getElementById('bottom-control-bar');
+      if (appState.currentTab === 'matrix' && appState.selectedArtistId !== null) {
+        bar.style.display = 'flex';
+      } else {
+        bar.style.display = 'none';
+      }
+    }
+
+    // ------------------------------------------------------------------------
+    // TSVパース・整形ロジック
+    // ------------------------------------------------------------------------
+    function parseTSV(text, expectedCols) {
+      if (!text || !text.trim()) return [];
+      const lines = text.split(/\r?\n/);
+      const result = [];
+
+      let isHeader = true;
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+        if (!line.trim()) continue;
+        const cols = line.split('\t');
+
+        // 最初の行がヘッダーっぽい場合はスキップ
+        if (isHeader && (cols[0] === 'No' || cols[1] === 'アーティスト名' || cols[1] === 'アーティスト')) {
+          isHeader = false;
+          continue;
+        }
+        isHeader = false;
+
+        if (expectedCols === 11) {
+          const obj = {
+            no: cols[0] || '',
+            name: cols[1] || '',
+            twitter: cols[2] || '',
+            line: cols[3] || '',
+            mail: cols[4] || '',
+            count: cols[5] || '',
+            flag: cols[6] || '',
+            yomi: cols[7] || '',
+            request: cols[8] || '',
+            progress: cols[9] || '',
+            note: cols[10] || ''
+          };
+          if (obj.no || obj.name) result.push(obj);
+        } else if (expectedCols === 7) {
+          const obj = {
+            no: cols[0] || '',
+            name: cols[1] || '',
+            count: cols[2] || '',
+            flag: cols[3] || '',
+            yomi: cols[4] || '',
+            request: cols[5] || '',
+            progress: cols[6] || '',
+            // 連絡先情報は完全独立のため空固定
+            twitter: '',
+            line: '',
+            mail: '',
+            note: ''
+          };
+          if (obj.no || obj.name) result.push(obj);
+        }
+      }
+      return result;
+    }
+
+    // ------------------------------------------------------------------------
+    // レンダリング統合
+    // ------------------------------------------------------------------------
+    function renderAll() {
+      renderMatrixGrid();
+      renderPerformersGrid();
+      renderTemplatesTriggerTab();
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    // 管理表の描画
+    function renderMatrixGrid() {
+      const tbody = document.getElementById('tbody-matrix');
+      tbody.innerHTML = '';
+
+      const query = appState.matrixSearchQuery.toLowerCase().trim();
+
+      appState.artists.forEach(item => {
+        if (query) {
+          const match = 
+            item.no.toLowerCase().includes(query) ||
+            item.name.toLowerCase().includes(query) ||
+            item.twitter.toLowerCase().includes(query) ||
+            item.line.toLowerCase().includes(query) ||
+            item.mail.toLowerCase().includes(query) ||
+            item.count.toLowerCase().includes(query) ||
+            item.flag.toLowerCase().includes(query) ||
+            item.yomi.toLowerCase().includes(query) ||
+            item.request.toLowerCase().includes(query) ||
+            item.progress.toLowerCase().includes(query) ||
+            item.note.toLowerCase().includes(query);
+          if (!match) return;
+        }
+
+        const tr = document.createElement('tr');
+        tr.id = `matrix-row-${item.no}`;
+        if (appState.selectedArtistId === item.no) {
+          tr.classList.add('selected');
+        }
+
+        tr.addEventListener('click', () => {
+          selectArtist(item.no);
         });
 
-        function initializeApplicationEngine() {
-            try {
-                // Read local storage memory caches
-                const cachedTemplate = localStorage.getItem(STORAGE_KEYS.TEMPLATE);
-                if (cachedTemplate !== null) {
-                    appState.templateStr = cachedTemplate;
-                } else {
-                    appState.templateStr = "こんにちは、{アーティスト}様。\n本日の入り時間は【15:00】となります。よろしくお願いいたします。";
-                }
+        tr.innerHTML = `
+          <td>${escapeHtml(item.no)}</td>
+          <td style="font-weight:bold;">${escapeHtml(item.name)}</td>
+          <td>${escapeHtml(item.twitter)}</td>
+          <td>${escapeHtml(item.line)}</td>
+          <td>${escapeHtml(item.mail)}</td>
+          <td>${escapeHtml(item.count)}</td>
+          <td>${item.flag ? `<span class="badge-flag">${escapeHtml(item.flag)}</span>` : ''}</td>
+          <td>${escapeHtml(item.yomi)}</td>
+          <td style="max-width:150px; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(item.request)}</td>
+          <td>${escapeHtml(item.progress)}</td>
+          <td style="max-width:150px; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(item.note)}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
 
-                const cachedRaw = localStorage.getItem(STORAGE_KEYS.RAW_INPUT);
-                if (cachedRaw) {
-                    appState.artists = parseTsvToArtistObjects(cachedRaw);
-                }
+    // 出演者の描画 (独立した出演者リストをそのまま全件出力)
+    function renderPerformersGrid() {
+      const tbody = document.getElementById('tbody-performers');
+      tbody.innerHTML = '';
 
-                const cachedRawPerformers = localStorage.getItem(STORAGE_KEYS.RAW_PERFORMERS_INPUT);
-                if (cachedRawPerformers) {
-                    appState.performers = parseTsvToPerformerObjects(cachedRawPerformers);
-                }
+      appState.performers.forEach(item => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${escapeHtml(item.no)}</td>
+          <td style="font-weight:bold;">${escapeHtml(item.name)}</td>
+          <td>${escapeHtml(item.count)}</td>
+          <td>${item.flag ? `<span class="badge-flag">${escapeHtml(item.flag)}</span>` : ''}</td>
+          <td>${escapeHtml(item.yomi)}</td>
+          <td style="max-width:200px; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(item.request)}</td>
+          <td>${escapeHtml(item.progress)}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
 
-                // Sync Configuration panel input fields
-                document.getElementById('config-template-text').value = appState.templateStr;
-                document.getElementById('config-raw-tsv').value = cachedRaw || "";
-                document.getElementById('config-raw-performers-tsv').value = cachedRawPerformers || "";
+    // ------------------------------------------------------------------------
+    // 検索窓の処理
+    // ------------------------------------------------------------------------
+    function handleMatrixSearch() {
+      appState.matrixSearchQuery = document.getElementById('matrix-search-input').value;
+      renderMatrixGrid();
+    }
 
-                // Render active datasets into views
-                renderMatrixGridTable(appState.artists);
-                renderPerformersGridTable(appState.performers);
-                evaluateGlobalControlBarState();
+    function clearMatrixSearch() {
+      document.getElementById('matrix-search-input').value = '';
+      appState.matrixSearchQuery = '';
+      renderMatrixGrid();
+    }
 
-            } catch (error) {
-                console.error("Critical storage system crash encountered:", error);
-            }
+    // ------------------------------------------------------------------------
+    // 選択状態の管理・アクション駆動
+    // ------------------------------------------------------------------------
+    function selectArtist(no) {
+      if (appState.selectedArtistId === no) {
+        appState.selectedArtistId = null;
+      } else {
+        appState.selectedArtistId = no;
+      }
+
+      document.querySelectorAll('#tbody-matrix tr').forEach(tr => tr.classList.remove('selected'));
+      
+      if (appState.selectedArtistId !== null) {
+        const activeRow = document.getElementById(`matrix-row-${appState.selectedArtistId}`);
+        if(activeRow) activeRow.classList.add('selected');
+      }
+
+      updateBottomBarVisibility();
+      updateActionButtonsState();
+    }
+
+    function updateActionButtonsState() {
+      const target = appState.artists.find(a => a.no === appState.selectedArtistId);
+      const btnX = document.getElementById('btn-action-x');
+      const btnLine = document.getElementById('btn-action-line');
+      const btnMail = document.getElementById('btn-action-mail');
+
+      if (!target) return;
+
+      if(btnX) btnX.disabled = !target.twitter;
+      if(btnLine) btnLine.disabled = !target.line;
+      if(btnMail) btnMail.disabled = !target.mail;
+    }
+
+    function triggerAction(type) {
+      if (appState.selectedArtistId === null) return;
+      const target = appState.artists.find(a => a.no === appState.selectedArtistId);
+      if (!target) return;
+
+      if (type === 'Copy') {
+        navigator.clipboard.writeText(target.name);
+        return;
+      }
+
+      if (type === 'X') {
+        if (target.twitter) {
+          const url = target.twitter.startsWith('http') ? target.twitter : `https://x.com/${target.twitter.replace('@','')}`;
+          window.open(url, '_blank');
+        }
+      } else if (type === 'LINE') {
+        if (target.line) {
+          const url = target.line.startsWith('http') ? target.line : `https://line.me/R/ti/p/${target.line}`;
+          window.open(url, '_blank');
+        }
+      } else if (type === 'Mail') {
+        if (target.mail) {
+          window.location.href = `mailto:${target.mail}`;
+        }
+      }
+    }
+
+    // ------------------------------------------------------------------------
+    // 定型文発信機能
+    // ------------------------------------------------------------------------
+    function renderTemplatesTriggerTab() {
+      const container = document.getElementById('container-templates-trigger');
+      container.innerHTML = '';
+
+      if (appState.templates.length === 0) {
+        container.innerHTML = '<p style="color:var(--text-muted); font-size:13px;">登録されている定型文がありません。「設定」タブから追加してください。</p>';
+        return;
+      }
+
+      appState.templates.forEach(tmpl => {
+        const div = document.createElement('div');
+        div.className = 'config-section';
+        div.style.padding = '12px';
+        div.style.borderRadius = '4px';
+
+        let previewText = tmpl.body;
+        if (appState.selectedArtistId !== null) {
+          const currentArtist = appState.artists.find(a => a.no === appState.selectedArtistId);
+          if (currentArtist) {
+            previewText = previewText.replace(/{name}/g, currentArtist.name);
+          }
         }
 
-        // TSV Standard Format Parser Engine (11 columns)
-        function parseTsvToArtistObjects(tsvString) {
-            if (!tsvString || tsvString.trim() === "") return [];
-            
-            const rows = tsvString.split(/\r?\n/);
-            const parsedList = [];
+        div.innerHTML = `
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+            <strong style="font-size:13px; color:#111;">${escapeHtml(tmpl.title)}</strong>
+            <button class="btn btn-secondary" style="margin-bottom:0; padding:4px 10px;" onclick="copyTemplateText('${tmpl.id}')">
+              ${appState.selectedArtistId !== null ? '置換してコピー' : '本文をコピー'}
+            </button>
+          </div>
+          <div style="font-size:12px; background:#f8f9fa; border:1px solid #eee; padding:8px; border-radius:3px; white-space:pre-wrap; max-height:100px; overflow-y:auto; color:#444;">${escapeHtml(previewText)}</div>
+        `;
+        container.appendChild(div);
+      });
+    }
 
-            rows.forEach((row, idx) => {
-                if (row.trim() === "") return;
-                const cols = row.split('\t');
-                
-                // Header exclusion filter rule detection
-                if (idx === 0 && (cols[0].includes("No") || cols[1].includes("アーティスト"))) {
-                    return; 
-                }
+    function copyTemplateText(id) {
+      const tmpl = appState.templates.find(t => t.id === id);
+      if (!tmpl) return;
 
-                if (cols.length >= 2) {
-                    parsedList.push({
-                        no: cols[ARTIST_COLUMNS.NO] || String(idx + 1),
-                        name: cols[ARTIST_COLUMNS.NAME] ? cols[ARTIST_COLUMNS.NAME].trim() : "未名キャスト",
-                        twitter: cols[ARTIST_COLUMNS.TWITTER] ? cols[ARTIST_COLUMNS.TWITTER].trim() : "",
-                        line: cols[ARTIST_COLUMNS.LINE] ? cols[ARTIST_COLUMNS.LINE].trim() : "",
-                        mail: cols[ARTIST_COLUMNS.MAIL] ? cols[ARTIST_COLUMNS.MAIL].trim() : "",
-                        count: cols[ARTIST_COLUMNS.COUNT] ? cols[ARTIST_COLUMNS.COUNT].trim() : "0",
-                        flag: cols[ARTIST_COLUMNS.FLAG] ? cols[ARTIST_COLUMNS.FLAG].trim() : "",
-                        yomi: cols[ARTIST_COLUMNS.YOMI] ? cols[ARTIST_COLUMNS.YOMI].trim() : "",
-                        req: cols[ARTIST_COLUMNS.REQ] ? cols[ARTIST_COLUMNS.REQ].trim() : "",
-                        progress: cols[ARTIST_COLUMNS.PROGRESS] ? cols[ARTIST_COLUMNS.PROGRESS].trim() : "",
-                        note: cols[ARTIST_COLUMNS.NOTE] ? cols[ARTIST_COLUMNS.NOTE].trim() : ""
-                    });
-                }
-            });
-
-            return parsedList;
+      let finalBody = tmpl.body;
+      if (appState.selectedArtistId !== null) {
+        const currentArtist = appState.artists.find(a => a.no === appState.selectedArtistId);
+        if (currentArtist) {
+          finalBody = finalBody.replace(/{name}/g, currentArtist.name);
         }
+      }
+      navigator.clipboard.writeText(finalBody);
+    }
 
-        // TSV Standard Format Parser Engine (7 columns)
-        function parseTsvToPerformerObjects(tsvString) {
-            if (!tsvString || tsvString.trim() === "") return [];
-            
-            const rows = tsvString.split(/\r?\n/);
-            const parsedList = [];
+    // ------------------------------------------------------------------------
+    // 設定変更・テンプレート管理
+    // ------------------------------------------------------------------------
+    function syncTemplateConfigUI() {
+      const listDiv = document.getElementById('config-tmpl-list');
+      listDiv.innerHTML = '';
 
-            rows.forEach((row, idx) => {
-                if (row.trim() === "") return;
-                const cols = row.split('\t');
-                
-                // Header exclusion filter rule detection
-                if (idx === 0 && (cols[0].includes("No") || cols[1].includes("アーティスト"))) {
-                    return; 
-                }
+      appState.templates.forEach(tmpl => {
+        const item = document.createElement('div');
+        item.className = 'tmpl-item';
+        item.innerHTML = `
+          <div class="tmpl-item-header">
+            <span class="tmpl-item-title">${escapeHtml(tmpl.title)}</span>
+            <div class="tmpl-item-actions">
+              <button class="btn-small btn-small-danger" onclick="deleteTemplate('${tmpl.id}')">削除</button>
+            </div>
+          </div>
+          <div class="tmpl-item-body">${escapeHtml(tmpl.body)}</div>
+        `;
+        listDiv.appendChild(item);
+      });
+    }
 
-                if (cols.length >= 2) {
-                    parsedList.push({
-                        no: cols[PERFORMER_COLUMNS.NO] || String(idx + 1),
-                        name: cols[PERFORMER_COLUMNS.NAME] ? cols[PERFORMER_COLUMNS.NAME].trim() : "未名キャスト",
-                        count: cols[PERFORMER_COLUMNS.COUNT] ? cols[PERFORMER_COLUMNS.COUNT].trim() : "0",
-                        flag: cols[PERFORMER_COLUMNS.FLAG] ? cols[PERFORMER_COLUMNS.FLAG].trim() : "",
-                        yomi: cols[PERFORMER_COLUMNS.YOMI] ? cols[PERFORMER_COLUMNS.YOMI].trim() : "",
-                        req: cols[PERFORMER_COLUMNS.REQ] ? cols[PERFORMER_COLUMNS.REQ].trim() : "",
-                        progress: cols[PERFORMER_COLUMNS.PROGRESS] ? cols[PERFORMER_COLUMNS.PROGRESS].trim() : "",
-                        twitter: "",
-                        line: "",
-                        mail: ""
-                    });
-                }
-            });
+    function addTemplate() {
+      const titleInput = document.getElementById('new-tmpl-title');
+      const bodyInput = document.getElementById('new-tmpl-body');
 
-            return parsedList;
-        }
+      const title = titleInput.value.trim();
+      const body = bodyInput.value;
 
-        // Core UI Navigation Window View Switcher Logic
-        function switchTab(targetTabId) {
-            appState.activeTab = targetTabId;
-            
-            // Toggle view panels
-            document.querySelectorAll('.tab-panel').forEach(panel => panel.classList.remove('active'));
-            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      if (!title) {
+        alert('テンプレート名を入力してください。');
+        return;
+      }
 
-            const activePanel = document.getElementById(`view-${targetTabId}`);
-            if (activePanel) activePanel.classList.add('active');
-            
-            // Tab button state activate finder matching
-            const targetBtn = Array.from(document.querySelectorAll('.tab-btn')).find(btn => 
-                btn.getAttribute('onclick').includes(`'${targetTabId}'`)
-            );
-            if (targetBtn) targetBtn.classList.add('active');
+      const newTmpl = {
+        id: 'tmpl_' + Date.now(),
+        title: title,
+        body: body
+      };
 
-            // Responsive control visibility based on screen focus environment
-            const bottomBar = document.getElementById('bottom-control-bar');
-            if (targetTabId === 'matrix') {
-                bottomBar.style.display = 'grid';
-            } else {
-                bottomBar.style.display = 'none';
-            }
-        }
+      appState.templates.push(newTmpl);
+      localStorage.setItem('sd_templates', JSON.stringify(appState.templates));
 
-        // Render Matrix Grid Dom Implementation
-        function renderMatrixGridTable(dataset) {
-            const tbody = document.getElementById('matrix-table-body');
-            tbody.innerHTML = "";
+      titleInput.value = '';
+      bodyInput.value = '';
 
-            if (dataset.length === 0) {
-                document.getElementById('matrix-counter').innerText = "0件";
-                document.getElementById('matrix-empty').style.display = 'block';
-                return;
-            }
-            document.getElementById('matrix-empty').style.display = 'none';
-            document.getElementById('matrix-counter').innerText = `${dataset.length}件`;
+      syncTemplateConfigUI();
+      renderTemplatesTriggerTab();
+    }
 
-            dataset.forEach(item => {
-                const tr = document.createElement('tr');
-                tr.setAttribute('id', `row-artist-${item.no}`);
-                if (appState.selectedArtistId === item.no) {
-                    tr.classList.add('selected');
-                }
+    function deleteTemplate(id) {
+      appState.templates = appState.templates.filter(t => t.id !== id);
+      localStorage.setItem('sd_templates', JSON.stringify(appState.templates));
+      syncTemplateConfigUI();
+      renderTemplatesTriggerTab();
+    }
 
-                tr.onclick = () => selectArtistRowItem(item.no);
+    // 連絡先エクスポート
+    function exportToClipboard() {
+      let tsvLines = [MATRIX_HEADERS.join('\t')];
+      
+      const sorted = [...appState.artists].sort((a,b) => {
+        return (parseInt(a.no) || 0) - (parseInt(b.no) || 0);
+      });
 
-                const hasFlag = (item.flag && item.flag.trim() !== "");
-                const flagBadge = hasFlag ? `<span class="badge badge-flag">${escapeHtml(item.flag)}</span>` : `<span class="badge badge-none">-</span>`;
+      sorted.forEach(item => {
+        const line = [
+          item.no, item.name, item.twitter, item.line, item.mail,
+          item.count, item.flag, item.yomi, item.request, item.progress, item.note
+        ].join('\t');
+        tsvLines.push(line);
+      });
 
-                tr.innerHTML = `
-                    <td style="font-family: monospace; color: var(--text-muted);">${escapeHtml(item.no)}</td>
-                    <td style="font-weight: 500;">${escapeHtml(item.name)}</td>
-                    <td style="text-align: center; font-family: monospace;">${escapeHtml(item.count)}</td>
-                    <td style="text-align: center;">${flagBadge}</td>
-                `;
-                tbody.appendChild(tr);
-            });
-        }
+      const fullText = tsvLines.join('\n');
+      navigator.clipboard.writeText(fullText);
+      document.getElementById('raw-artists-input').value = fullText;
+    }
 
-        // Render Performers Grid Dom Implementation
-        function renderPerformersGridTable(dataset) {
-            const tbody = document.getElementById('performers-table-body');
-            tbody.innerHTML = "";
+    // 出演者エクスポート (7列構成)
+    function exportPerformersToClipboard() {
+      let tsvLines = [PERFORMER_HEADERS.join('\t')];
 
-            if (dataset.length === 0) {
-                document.getElementById('performers-counter').innerText = "0名";
-                document.getElementById('performers-empty').style.display = 'block';
-                return;
-            }
-            document.getElementById('performers-empty').style.display = 'none';
-            document.getElementById('performers-counter').innerText = `${dataset.length}名`;
+      const sorted = [...appState.performers].sort((a,b) => {
+        return (parseInt(a.no) || 0) - (parseInt(b.no) || 0);
+      });
 
-            dataset.forEach(item => {
-                const tr = document.createElement('tr');
-                
-                let combinedInfo = "";
-                if (item.req) combinedInfo += `[要望] ${item.req} `;
-                if (item.progress) combinedInfo += `[進捗] ${item.progress}`;
-                if (combinedInfo === "") combinedInfo = `<span style="color:var(--text-muted); font-size:0.75rem;">備考なし</span>`;
+      sorted.forEach(item => {
+        const line = [
+          item.no, item.name, item.count, item.flag, item.yomi, item.request, item.progress
+        ].join('\t');
+        tsvLines.push(line);
+      });
 
-                tr.innerHTML = `
-                    <td style="font-family: monospace; color: var(--text-muted);">${escapeHtml(item.no)}</td>
-                    <td style="font-weight: 500;">${escapeHtml(item.name)}</td>
-                    <td style="font-size: 0.8rem; white-space: normal; max-width: 300px;">${combinedInfo}</td>
-                `;
-                tbody.appendChild(tr);
-            });
-        }
+      const fullText = tsvLines.join('\n');
+      navigator.clipboard.writeText(fullText);
+      document.getElementById('raw-performers-input').value = fullText;
+    }
 
-        // Search Filter Execution Handlers
-        function handleMatrixSearch() {
-            const query = document.getElementById('matrix-search').value.toLowerCase().trim();
-            if (query === "") {
-                renderMatrixGridTable(appState.artists);
-                return;
-            }
+    // 一括反映保存
+    function saveConfigAll() {
+      const rawArtistsText = document.getElementById('raw-artists-input').value;
+      const rawPerformersText = document.getElementById('raw-performers-input').value;
 
-            const filtered = appState.artists.filter(item => {
-                return item.name.toLowerCase().includes(query) || 
-                       item.flag.toLowerCase().includes(query) || 
-                       item.yomi.toLowerCase().includes(query) ||
-                       item.no.toLowerCase().includes(query);
-            });
-            renderMatrixGridTable(filtered);
-        }
+      localStorage.setItem('sd_raw_artists_input', rawArtistsText);
+      localStorage.setItem('sd_raw_performers_input', rawPerformersText);
 
-        // Active State Selection Management Engine
-        function selectArtistRowItem(id) {
-            const standardRows = document.querySelectorAll('#matrix-table-body tr');
-            standardRows.forEach(r => r.classList.remove('selected'));
+      appState.artists = parseTSV(rawArtistsText, 11);
+      appState.performers = parseTSV(rawPerformersText, 7);
 
-            if (appState.selectedArtistId === id) {
-                appState.selectedArtistId = null;
-            } else {
-                appState.selectedArtistId = id;
-                const targetRow = document.getElementById(`row-artist-${id}`);
-                if (targetRow) targetRow.classList.add('selected');
-            }
+      appState.selectedArtistId = null;
+      updateBottomBarVisibility();
 
-            evaluateGlobalControlBarState();
-        }
+      renderAll();
+      switchTab('matrix');
+    }
 
-        // Context Engine Reactive Evaluation Engine
-        function evaluateGlobalControlBarState() {
-            const btnX = document.getElementById('action-btn-x');
-            const btnLine = document.getElementById('action-btn-line');
-            const btnMail = document.getElementById('action-btn-mail');
-            const btnTemplate = document.getElementById('action-btn-template');
+    // ------------------------------------------------------------------------
+    // モーダルユーティリティ
+    // ------------------------------------------------------------------------
+    function openModal(title, msg, onConfirm) {
+      document.getElementById('modal-title').innerText = title;
+      document.getElementById('modal-message').innerText = msg;
+      
+      const confirmBtn = document.getElementById('modal-confirm-btn');
+      
+      // イベントリスナーのクローン破棄
+      const newConfirmBtn = confirmBtn.cloneNode(true);
+      confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
+      
+      newConfirmBtn.addEventListener('click', () => {
+        onConfirm();
+        closeModal();
+      });
 
-            if (!appState.selectedArtistId) {
-                disableControlActionNode(btnX);
-                disableControlActionNode(btnLine);
-                disableControlActionNode(btnMail);
-                disableControlActionNode(btnTemplate);
-                return;
-            }
+      document.getElementById('modal-overlay').classList.add('active');
+    }
 
-            const currentArtist = appState.artists.find(a => a.no === appState.selectedArtistId);
-            if (!currentArtist) return;
-
-            // X Channel Validation
-            if (currentArtist.twitter && currentArtist.twitter.trim() !== "") {
-                enableControlActionNode(btnX);
-            } else {
-                disableControlActionNode(btnX);
-            }
-
-            // LINE Channel Validation
-            if (currentArtist.line && currentArtist.line.trim() !== "") {
-                enableControlActionNode(btnLine);
-            } else {
-                disableControlActionNode(btnLine);
-            }
-
-            // Mail Channel Validation
-            if (currentArtist.mail && currentArtist.mail.trim() !== "") {
-                enableControlActionNode(btnMail);
-            } else {
-                disableControlActionNode(btnMail);
-            }
-
-            // Document Generation Action is always possible if record is isolated
-            enableControlActionNode(btnTemplate);
-        }
-
-        function enableControlActionNode(domNode) {
-            domNode.removeAttribute('disabled');
-            domNode.classList.remove('disabled');
-            domNode.classList.add('active-ready');
-        }
-
-        function disableControlActionNode(domNode) {
-            domNode.setAttribute('disabled', 'true');
-            domNode.classList.add('disabled');
-            domNode.classList.remove('active-ready');
-        }
-
-        // External Link Routing Pipeline Processor
-        function executeDispatch(channelKey) {
-            if (!appState.selectedArtistId) return;
-            const target = appState.artists.find(a => a.no === appState.selectedArtistId);
-            if (!target) return;
-
-            const structuredMessage = compileTemplateMessageString(appState.templateStr, target);
-            const encodedPayload = encodeURIComponent(structuredMessage);
-
-            switch (channelKey) {
-                case 'x':
-                    let twitterId = target.twitter.replace('@', '').trim();
-                    // Resolve direct intent or status routing via basic URI string
-                    window.open(`https://x.com/messages/compose?recipient_id=&text=${encodedPayload}`, '_blank');
-                    break;
-                case 'line':
-                    // Native protocol dispatch
-                    window.open(`https://line.me/R/share?text=${encodedPayload}`, '_blank');
-                    break;
-                case 'mail':
-                    window.open(`mailto:${target.mail}?subject=${encodeURIComponent("本日の公演スケジュールのご連絡")}&body=${encodedPayload}`, '_blank');
-                    break;
-            }
-        }
-
-        // High Level Compiler Context Engine Function
-        function compileTemplateMessageString(template, profile) {
-            let output = template;
-            output = output.replace(/{アーティスト}/g, profile.name);
-            output = output.replace(/{回数}/g, profile.count);
-            output = output.replace(/{フラグ}/g, profile.flag);
-            output = output.replace(/{要望}/g, profile.req);
-            output = output.replace(/{進捗}/g, profile.progress);
-            output = output.replace(/{備考}/g, profile.note);
-            return output;
-        }
-
-        // System Settings Storage Commit Orchestrator
-        function commitSystemConfiguration() {
-            const rawTsv = document.getElementById('config-raw-tsv').value;
-            const rawPerformersTsv = document.getElementById('config-raw-performers-tsv').value;
-            const txtTemplate = document.getElementById('config-template-text').value;
-
-            // Save records directly into sandbox container database profiles
-            localStorage.setItem(STORAGE_KEYS.RAW_INPUT, rawTsv);
-            localStorage.setItem(STORAGE_KEYS.RAW_PERFORMERS_INPUT, rawPerformersTsv);
-            localStorage.setItem(STORAGE_KEYS.TEMPLATE, txtTemplate);
-
-            appState.templateStr = txtTemplate;
-            appState.artists = parseTsvToArtistObjects(rawTsv);
-            appState.performers = parseTsvToPerformerObjects(rawPerformersTsv);
-
-            // Force dynamic interface redraw matching updated records array mapping
-            appState.selectedArtistId = null;
-            document.getElementById('matrix-search').value = "";
-            
-            renderMatrixGridTable(appState.artists);
-            renderPerformersGridTable(appState.performers);
-            evaluateGlobalControlBarState();
-
-            showSystemNotificationModal("保存完了", "システム設定および各リストデータが正常に反映・保存されました。");
-        }
-
-        // Data Clipboard Exporter Processing Routine (11 columns)
-        function exportToClipboard() {
-            if (appState.artists.length === 0) {
-                showSystemNotificationModal("エラー", "エクスポートするデータがありません。");
-                return;
-            }
-
-            let tsvContent = "No\tアーティスト名\tTwitter\tLINE\tMail\t出演回数\t出演flag\tヨミ\t要望\t進捗\t備考\n";
-            appState.artists.forEach(a => {
-                tsvContent += `${a.no}\t${a.name}\t${a.twitter}\t${a.line}\t${a.mail}\t${a.count}\t${a.flag}\t${a.yomi}\t${a.req}\t${a.progress}\t${a.note}\n`;
-            });
-
-            navigator.clipboard.writeText(tsvContent).then(() => {
-                showSystemNotificationModal("エクスポート成功", "連絡先マスターデータをTSV形式でクリップボードにコピーしました。スプレッドシート等に直接貼り付け可能です。");
-            }).catch(err => {
-                console.error("Clipboard engine permission access rejected:", err);
-            });
-        }
-
-        // Data Clipboard Exporter Processing Routine (7 columns)
-        function exportPerformersToClipboard() {
-            if (appState.performers.length === 0) {
-                showSystemNotificationModal("エラー", "エクスポートするデータがありません。");
-                return;
-            }
-
-            let tsvContent = "No\tアーティスト\t出演回数\t出演flag\tヨミ\t要望\t進捗\n";
-            appState.performers.forEach(p => {
-                tsvContent += `${p.no}\t${p.name}\t${p.count}\t${p.flag}\t${p.yomi}\t${p.req}\t${p.progress}\n`;
-            });
-
-            navigator.clipboard.writeText(tsvContent).then(() => {
-                showSystemNotificationModal("エクスポート成功", "出演者データをTSV形式（7列構成）でクリップボードにコピーしました。");
-            }).catch(err => {
-                console.error("Clipboard engine permission access rejected:", err);
-            });
-        }
-
-        // Modal Component Dynamic Display Handlers
-        function openTemplateModal() {
-            if (!appState.selectedArtistId) return;
-            const target = appState.artists.find(a => a.no === appState.selectedArtistId);
-            if (!target) return;
-
-            const messageBodyText = compileTemplateMessageString(appState.templateStr, target);
-
-            const titleNode = document.getElementById('modal-title');
-            const bodyNode = document.getElementById('modal-body');
-            const footerNode = document.getElementById('modal-footer');
-
-            titleNode.innerText = "生成テキスト確認";
-            bodyNode.innerHTML = `
-                <div style="font-size:0.75rem; color:var(--text-muted); margin-bottom:6px;">宛先: ${escapeHtml(target.name)}</div>
-                <textarea id="modal-copy-target-area" class="form-textarea" style="height:160px; font-size:0.85rem;" readonly>${escapeHtml(messageBodyText)}</textarea>
-            `;
-
-            footerNode.innerHTML = `
-                <button class="btn btn-primary" onclick="copyModalGeneratedTextText()">📋 本文をコピー</button>
-                <button class="btn" onclick="closeSystemModal()">閉じる</button>
-            `;
-
-            document.getElementById('system-modal').classList.add('active');
-        }
-
-        function copyModalGeneratedTextText() {
-            const txtArea = document.getElementById('modal-copy-target-area');
-            if (!txtArea) return;
-
-            txtArea.select();
-            txtArea.setSelectionRange(0, 99999); // Responsive mobile device safety select range selection
-
-            navigator.clipboard.writeText(txtArea.value).then(() => {
-                closeSystemModal();
-            });
-        }
-
-        function showSystemNotificationModal(title, text) {
-            document.getElementById('modal-title').innerText = title;
-            document.getElementById('modal-body').innerHTML = `<div style="padding:8px 0; line-height:1.6;">${escapeHtml(text)}</div>`;
-            document.getElementById('modal-footer').innerHTML = `<button class="btn btn-primary" onclick="closeSystemModal()">了解</button>`;
-            document.getElementById('system-modal').classList.add('active');
-        }
-
-        function closeSystemModal() {
-            document.getElementById('system-modal').classList.remove('active');
-        }
-
-        function closeModalOutside(e) {
-            if (e.target.id === 'system-modal') {
-                closeSystemModal();
-            }
-        }
-
-        // Secure Text Escaper Module
-        function escapeHtml(string) {
-            if (typeof string !== 'string') {
-                return string;
-            }
-            return string.replace(/[&'`"<>]/g, function(match) {
-                return {
-                    '&': '&amp;',
-                    "'": '&#x27;',
-                    '`': '&#x60;',
-                    '"': '&quot;',
-                    '<': '&lt;',
-                    '>': '&gt;'
-                }[match];
-            });
-        }
-    </script>
+    function closeModal() {
+      document.getElementById('modal-overlay').classList.remove('active');
+    }
+  </script>
 </body>
 </html>
