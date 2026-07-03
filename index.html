@@ -683,7 +683,7 @@
                 <button id="tab-operation" class="nav-tab" onclick="switchView('operation')">管理表</button>
                 <button id="tab-settings" class="nav-tab" onclick="switchView('settings')">設定</button>
             </div>
-            <div class="version-tag">ver.0.2.9</div>
+            <div class="version-tag">ver.0.2.10</div>
         </div>
     </header>
 
@@ -766,21 +766,22 @@
             <span class="settings-desc">テンプレート名 and 本文を個別に設定・追加できます。</span>
             <div id="template-builder-root-container" class="template-builder-list">
             </div>
+            <button class="btn-action btn-save" onclick="saveTemplatesOnly()" style="margin-top: 8px;">テンプレートを保存</button>
         </div>
 
         <div class="settings-group">
             <label class="settings-label">■ 連絡先リスト</label>
             <textarea id="import-artists-raw" class="paste-textarea" placeholder="【連絡先】No&#9;アーティスト名&#9;Twitter&#9;LINE&#9;Mail... （11列のTSVデータを貼り付けてください）"></textarea>
             <button class="btn-action btn-export" onclick="exportArtistsToClipboard()" style="margin-top: 6px;">リストデータ書き出し</button>
+            <button class="btn-action btn-save" onclick="importContactList()" style="margin-top: 6px;">連絡先リストを反映して保存</button>
         </div>
 
         <div class="settings-group">
             <label class="settings-label">■ 出演者リスト</label>
             <textarea id="import-performers-raw" class="paste-textarea" placeholder="【出演者】No&#9;アーティスト&#9;出演回数&#9;出演flag&#9;ヨミ&#9;要望&#9;進捗 （7列のTSVデータを貼り付けてください）"></textarea>
             <button class="btn-action btn-export" onclick="exportPerformersToClipboard()" style="margin-top: 6px;">リストデータ書き出し</button>
+            <button class="btn-action btn-save" onclick="importPerformerList()" style="margin-top: 6px;">出演者リストを反映して保存</button>
         </div>
-
-        <button class="btn-action btn-save" onclick="processAndSaveRawData()">データを反映して保存</button>
 
     </div>
 
@@ -930,11 +931,6 @@
                     if (!item.progress) item.progress = "";
                     if (!item.count) item.count = "";
                 });
-                const rawArtistsInput = localStorage.getItem('sd_raw_artists_input');
-                if (rawArtistsInput) document.getElementById('import-artists-raw').value = rawArtistsInput;
-                
-                const rawPerformersInput = localStorage.getItem('sd_raw_performers_input');
-                if (rawPerformersInput) document.getElementById('import-performers-raw').value = rawPerformersInput;
             } catch (e) { console.error(e); }
         }
 
@@ -964,92 +960,110 @@
             }
         }
 
-        function processAndSaveRawData() {
-            const rawArtistsText = document.getElementById('import-artists-raw').value.trim();
-            const rawPerformersText = document.getElementById('import-performers-raw').value.trim();
-            
-            let baseArtists = [];
-            
-            if (rawArtistsText) {
-                const lines = rawArtistsText.split('\n');
-                lines.forEach((line, index) => {
-                    const cols = line.split('\t');
-                    if (cols.length >= 3 && !cols[0].includes('No')) {
-                        let existingByNo = appState.artists.find(a => a.no === cols[0] && a.no !== "");
-                        baseArtists.push({
-                            uid: existingByNo ? existingByNo.uid : ("art_" + Date.now() + "_" + index),
-                            no: cols[0], furigana: cols[1] || "", artist: cols[2], charge: cols[3], 
-                            mail: cols[4], twitterId: cols[5], lineId: cols[6], meth: cols[7], 
-                            flag: cols[8], date: cols[9], yomi: cols[10], 
-                            req: existingByNo ? existingByNo.req : "", 
-                            progress: existingByNo ? existingByNo.progress : "", 
-                            count: existingByNo ? existingByNo.count : ""
-                        });
-                    }
-                });
-            } else {
-                baseArtists = [...appState.artists];
-            }
-
-            if (rawPerformersText) {
-                baseArtists.forEach(a => {
-                    if(a.flag === '🙆🏼‍♀️') {
-                        a.flag = '-';
-                        a.count = '';
-                        a.req = '';
-                        a.progress = '';
-                        a.yomi = '';
-                    }
-                });
-
-                const pLines = rawPerformersText.split('\n');
-                pLines.forEach((line, index) => {
-                    const cols = line.split('\t');
-                    if (cols.length >= 2 && !cols[0].includes('No')) {
-                        const pNo = cols[0];
-                        const pArtist = cols[1];
-                        const pCount = cols[2] || "";
-                        const pFlag = cols[3] || "";
-                        const pYomi = cols[4] || "";
-                        const pReq = cols[5] || "";
-                        const pProgress = cols[6] || "";
-
-                        let target = baseArtists.find(a => a.no === pNo) || baseArtists.find(a => a.artist === pArtist);
-                        if (target) {
-                            target.count = pCount;
-                            target.flag = pFlag;
-                            target.yomi = pYomi;
-                            target.req = pReq;
-                            target.progress = pProgress;
-                        } else {
-                            baseArtists.push({
-                                uid: "art_perf_" + Date.now() + "_" + index,
-                                no: pNo, furigana: "", artist: pArtist, charge: "", 
-                                mail: "", twitterId: "", lineId: "", meth: "", 
-                                flag: pFlag, date: "", yomi: pYomi, req: pReq, progress: pProgress, count: pCount
-                            });
-                        }
-                    }
-                });
-                localStorage.setItem('sd_raw_performers_input', rawPerformersText);
-            }
-
-            appState.artists = baseArtists;
-            
+        function saveTemplatesOnly() {
             const formCards = document.querySelectorAll('.template-builder-card');
             appState.templates = Array.from(formCards).map(c => ({
                 title: c.querySelector('.template-input-title').value,
                 body: c.querySelector('.template-input-body').value
             }));
-            
-            localStorage.setItem('sd_matrix_artists', JSON.stringify(appState.artists));
             localStorage.setItem('sd_matrix_templates', JSON.stringify(appState.templates));
-            localStorage.setItem('sd_raw_artists_input', rawArtistsText);
+            renderTemplatesGrid();
+            showToastBanner("テンプレートを保存しました");
+        }
+
+        function importContactList() {
+            saveTemplatesOnly();
+            const rawText = document.getElementById('import-artists-raw').value.trim();
+            if (!rawText) {
+                showToastBanner("連絡先データが入力されていません");
+                return;
+            }
+            
+            let baseArtists = [];
+            const lines = rawText.split('\n');
+            lines.forEach((line, index) => {
+                const cols = line.split('\t');
+                if (cols.length >= 3 && !cols[0].includes('No')) {
+                    let existingByNo = appState.artists.find(a => a.no === cols[0] && a.no !== "");
+                    baseArtists.push({
+                        uid: existingByNo ? existingByNo.uid : ("art_" + Date.now() + "_" + index),
+                        no: cols[0], furigana: cols[1] || "", artist: cols[2], charge: cols[3], 
+                        mail: cols[4], twitterId: cols[5], lineId: cols[6], meth: cols[7], 
+                        flag: cols[8] || "", date: cols[9] || "", yomi: cols[10] || "", 
+                        req: existingByNo ? existingByNo.req : "", 
+                        progress: existingByNo ? existingByNo.progress : "", 
+                        count: existingByNo ? existingByNo.count : ""
+                    });
+                }
+            });
+            
+            appState.artists = baseArtists;
+            localStorage.setItem('sd_matrix_artists', JSON.stringify(appState.artists));
+            
+            document.getElementById('import-artists-raw').value = '';
+            localStorage.removeItem('sd_raw_artists_input');
             
             executeSortPipeline();
-            renderTemplatesGrid();
+            switchView('operation');
+            showToastBanner("連絡先リストを反映しました");
+        }
+
+        function importPerformerList() {
+            saveTemplatesOnly();
+            const rawText = document.getElementById('import-performers-raw').value.trim();
+            if (!rawText) {
+                showToastBanner("出演者データが入力されていません");
+                return;
+            }
+
+            appState.artists.forEach(a => {
+                if(a.flag === '🙆🏼‍♀️') {
+                    a.flag = '-';
+                    a.count = '';
+                    a.req = '';
+                    a.progress = '';
+                    a.yomi = '';
+                }
+            });
+
+            const pLines = rawText.split('\n');
+            pLines.forEach((line, index) => {
+                const cols = line.split('\t');
+                if (cols.length >= 2 && !cols[0].includes('No')) {
+                    const pNo = cols[0];
+                    const pArtist = cols[1];
+                    const pCount = cols[2] || "";
+                    const pFlag = cols[3] || "";
+                    const pYomi = cols[4] || "";
+                    const pReq = cols[5] || "";
+                    const pProgress = cols[6] || "";
+
+                    let target = appState.artists.find(a => a.no === pNo) || appState.artists.find(a => a.artist === pArtist);
+                    if (target) {
+                        target.count = pCount;
+                        target.flag = pFlag;
+                        target.yomi = pYomi;
+                        target.req = pReq;
+                        target.progress = pProgress;
+                    } else {
+                        appState.artists.push({
+                            uid: "art_perf_" + Date.now() + "_" + index,
+                            no: pNo, furigana: "", artist: pArtist, charge: "", 
+                            mail: "", twitterId: "", lineId: "", meth: "", 
+                            flag: pFlag, date: "", yomi: pYomi, req: pReq, progress: pProgress, count: pCount
+                        });
+                    }
+                }
+            });
+            
+            localStorage.setItem('sd_matrix_artists', JSON.stringify(appState.artists));
+            
+            document.getElementById('import-performers-raw').value = '';
+            localStorage.removeItem('sd_raw_performers_input');
+
+            executeSortPipeline();
             switchView('performers');
-            showToastBanner("保存しました");
+            showToastBanner("出演者リストを反映しました");
         }
 
         function exportArtistsToClipboard() {
