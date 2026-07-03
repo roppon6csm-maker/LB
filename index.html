@@ -2,963 +2,1500 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Smart Dispatcher</title>
     <style>
-        :root {
-            --bg-color: #f4f7f6;
-            --primary-color: #2c3e50;
-            --accent-color: #18bc9c;
-            --text-color: #333;
-            --card-bg: #ffffff;
-            --border-color: #e0e0e0;
-            --active-tab-bg: #18bc9c;
-            --active-tab-text: #ffffff;
-            --hover-color: #f9f9f9;
+        /* CSS Reset & Variable Tokens */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans JP", sans-serif;
         }
 
-        [data-theme="dark"] {
-            --bg-color: #1a1a1a;
-            --primary-color: #ecf0f1;
-            --accent-color: #00bc8c;
-            --text-color: #f5f5f5;
-            --card-bg: #222222;
-            --border-color: #444444;
-            --active-tab-bg: #00bc8c;
-            --active-tab-text: #ffffff;
-            --hover-color: #2b2b2b;
+        :root {
+            --bg-primary: #f4f6f9;
+            --bg-card: #ffffff;
+            --text-main: #2d3748;
+            --text-muted: #718096;
+            --accent-color: #4a5568;
+            --border-color: #e2e8f0;
+            
+            /* Brand Colors */
+            --brand-line: #06c755;
+            --brand-twitter: #1da1f2;
+            --brand-gmail: #ea4335;
+            
+            /* UI States */
+            --state-selected: #ebf8ff;
+            --state-selected-border: #3182ce;
+            --state-danger: #e53e3e;
         }
 
         body {
-            font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', Meiryo, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            margin: 0;
-            padding: 20px;
-            transition: background-color 0.3s, color 0.3s;
+            background-color: var(--bg-primary);
+            color: var(--text-main);
+            line-height: 1.4;
+            padding-bottom: 60px; /* Space for fixed bottom bar */
         }
 
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            border-bottom: 2px solid var(--primary-color);
-            padding-bottom: 10px;
-        }
-
-        .header h1 {
-            margin: 0;
-            font-size: 24px;
-            color: var(--primary-color);
-        }
-
-        .header-controls {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .version-badge {
-            background-color: var(--primary-color);
-            color: #fff;
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 12px;
-            font-weight: bold;
-        }
-
-        .theme-toggle {
-            background: none;
-            border: 1px solid var(--border-color);
-            padding: 6px 12px;
-            border-radius: 4px;
-            cursor: pointer;
-            color: var(--text-color);
-            font-size: 14px;
-        }
-
-        .tabs {
-            display: flex;
-            gap: 5px;
-            margin-bottom: 15px;
+        /* Inline Header Layout */
+        header {
+            background-color: var(--bg-card);
+            padding: 8px 12px;
             border-bottom: 1px solid var(--border-color);
+            position: sticky;
+            top: 0;
+            z-index: 50;
         }
 
-        .tab {
-            padding: 10px 20px;
+        .header-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: relative;
+        }
+
+        .brand-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--text-main);
+            white-space: nowrap;
+            margin-right: 8px;
+        }
+
+        /* Top Navigation Tabs Header Inline */
+        .nav-inline-tabs {
+            display: flex;
+            background: #edf2f7;
+            border-radius: 6px;
+            padding: 2px;
+            margin-right: 55px; /* Leave space for version tag */
+            flex-grow: 1;
+            max-width: 220px;
+        }
+
+        .nav-tab {
+            flex: 1;
+            text-align: center;
+            padding: 4px 0;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-muted);
             cursor: pointer;
-            background-color: var(--card-bg);
-            border: 1px solid var(--border-color);
-            border-bottom: none;
-            border-radius: 4px 4px 0 0;
+            border-radius: 4px;
+            border: none;
+            background: transparent;
+        }
+
+        .nav-tab.active {
+            color: var(--text-main);
+            background-color: var(--bg-card);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .version-tag {
+            position: absolute;
+            right: 0;
+            top: 2px;
+            font-size: 10px;
             font-weight: bold;
-            transition: background-color 0.2s;
+            color: var(--text-muted);
+            background: var(--bg-primary);
+            padding: 1px 4px;
+            border-radius: 4px;
         }
 
-        .tab.active {
-            background-color: var(--active-tab-bg);
-            color: var(--active-tab-text);
-            border-color: var(--active-tab-bg);
-        }
-
-        .tab-content {
+        /* Container Layouts */
+        .view-section {
             display: none;
-            background-color: var(--card-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 0 0 4px 4px;
-            padding: 20px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            padding: 8px;
         }
 
-        .tab-content.active {
+        .view-section.active {
             display: block;
         }
 
-        .grid-container {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
+        /* Compact Integrated Utility Row Layout (Search & 50on Index Jumper) */
+        .search-index-integration-row {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+            margin-bottom: 6px;
         }
 
-        .full-width {
-            grid-column: span 2;
+        .search-box-cell {
+            flex: 1;
         }
 
-        .card {
+        .search-input {
+            width: 100%;
+            height: 34px;
+            padding: 6px 8px;
+            font-size: 11px;
             border: 1px solid var(--border-color);
             border-radius: 6px;
-            padding: 15px;
-            margin-bottom: 15px;
+            outline: none;
+            background-color: var(--bg-card);
         }
 
-        .card-title {
-            font-size: 16px;
-            font-weight: bold;
-            margin-top: 0;
-            margin-bottom: 15px;
-            border-left: 4px solid var(--accent-color);
-            padding-left: 8px;
+        .search-input:focus {
+            border-color: var(--state-selected-border);
         }
 
-        .form-group {
-            margin-bottom: 15px;
+        .index-nav-cell {
+            flex-shrink: 0;
+            width: 155px;
         }
 
-        .form-group label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
-            font-size: 14px;
-        }
-
-        .form-control {
-            width: 100%;
-            padding: 8px;
+        .index-nav-container {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 2px;
+            background-color: var(--bg-card);
+            padding: 2px;
+            border-radius: 6px;
             border: 1px solid var(--border-color);
-            border-radius: 4px;
-            box-sizing: border-box;
-            background-color: var(--card-bg);
-            color: var(--text-color);
         }
 
-        textarea.form-control {
-            resize: vertical;
-            font-family: monospace;
-            font-size: 12px;
-        }
-
-        .btn {
-            background-color: #fff;
-            color: #333;
+        .index-btn {
+            background-color: var(--bg-primary);
             border: 1px solid var(--border-color);
-            padding: 8px 16px;
-            border-radius: 4px;
+            border-radius: 3px;
+            font-size: 10px;
+            font-weight: 600;
+            height: 14px;
+            line-height: 12px;
+            text-align: center;
+            color: var(--text-main);
             cursor: pointer;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        .index-btn:active {
+            background-color: #e2e8f0;
+        }
+
+        /* Stats Bar */
+        .stats-bar {
+            font-size: 11px;
+            color: var(--text-muted);
+            padding: 2px 4px;
+            margin-bottom: 4px;
             font-weight: bold;
-            transition: background-color 0.2s;
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
         }
 
-        .btn:hover {
-            background-color: var(--hover-color);
-        }
-
-        .btn-primary {
-            background-color: var(--accent-color);
-            color: #fff;
-            border-color: var(--accent-color);
-        }
-
-        .btn-primary:hover {
-            opacity: 0.9;
-        }
-
-        .btn-danger {
-            background-color: #e74c3c;
-            color: #fff;
-            border-color: #e74c3c;
-        }
-
-        .btn-block {
-            display: flex;
+        /* Excel-like Table Layout Specifications */
+        .table-scroll-container {
             width: 100%;
-            justify-content: center;
-        }
-
-        .btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        .table-responsive {
-            overflow-x: auto;
-            max-height: 500px;
+            max-height: 320px; /* Expanded for more list visibility */
             overflow-y: auto;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            background-color: var(--bg-card);
+            margin-bottom: 8px;
+            -webkit-overflow-scrolling: touch;
+            position: relative;
         }
 
-        table {
+        .excel-table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 14px;
-        }
-
-        th, td {
-            border: 1px solid var(--border-color);
-            padding: 8px 12px;
+            font-size: 11px;
             text-align: left;
+            table-layout: fixed;
         }
 
-        th {
-            background-color: var(--bg-color);
+        .excel-table th, .excel-table td {
+            padding: 5px 3px;
+            border-right: 1px solid var(--border-color);
+            border-bottom: 1px solid var(--border-color);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            vertical-align: middle;
+        }
+
+        .excel-table th:last-child, .excel-table td:last-child {
+            border-right: none;
+        }
+
+        /* Interactive Sorting Headers & Sticky Fixed Position */
+        .excel-table th {
+            background-color: #edf2f7;
+            color: var(--text-main);
+            font-weight: 700;
+            cursor: pointer;
             position: sticky;
             top: 0;
             z-index: 10;
+            user-select: none;
+            -webkit-user-select: none;
+            box-shadow: inset 0 -1px 0 var(--border-color);
         }
 
-        tr:nth-child(even) {
-            background-color: var(--hover-color);
+        .excel-table th:active {
+            background-color: #e2e8f0;
         }
 
-        tr.selected {
-            background-color: rgba(24, 188, 156, 0.2) !important;
-        }
-
-        .search-container {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 15px;
-        }
-
-        .action-panel {
-            margin-top: 15px;
-            padding: 15px;
-            background-color: var(--bg-color);
-            border-radius: 6px;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            align-items: center;
-        }
-
-        .status-badge {
+        .sort-indicator {
             display: inline-block;
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-size: 12px;
-            font-weight: bold;
+            margin-left: 1px;
+            font-size: 8px;
+            color: var(--state-selected-border);
         }
 
-        .status-ok { background-color: #2ecc71; color: #fff; }
-        .status-ng { background-color: #e74c3c; color: #fff; }
-        .status-pending { background-color: #f1c40f; color: #333; }
+        /* Highly Compact Columns Width Configuration */
+        .col-xlink   { width: 22px; text-align: center; font-size: 10px; }
+        .col-artist { width: 95px; }
+        .col-charge { width: 45px; font-size: 9px; color: #4a5568; }
+        .col-flag   { width: 45px; text-align: center; }
+        .col-yomi   { width: 32px; text-align: center; font-size: 9px; color: #4a5568; }
+        .col-date   { width: 36px; text-align: center; font-size: 9px; }
+        .col-meth   { width: 38px; text-align: center; font-size: 9px; }
 
-        .template-item {
+        /* Performance View Grid Specifications */
+        .col-perf-artist   { width: 100px; }
+        .col-perf-flag     { width: 45px; text-align: center; }
+        .col-perf-yomi     { width: 35px; text-align: center; }
+        .col-perf-req      { width: 80px; color: #4a5568; cursor: pointer; }
+        .col-perf-progress { width: 75px; text-align: center; }
+
+        /* Performance View Grid Specifications (Compact) */
+        .perf-table {
+            font-size: 9px !important;
+        }
+        .perf-table th, .perf-table td {
+            padding: 2px 3px !important;
+        }
+        .col-perf-no       { width: 25px; text-align: center; }
+        .col-perf-count    { width: 40px; text-align: center; font-size: 8px; }
+
+        /* Inline Dropdown Editor styling inside grid cell */
+        .cell-select-editor {
+            width: 100%;
+            font-size: 11px;
+            padding: 1px 0;
+            border: 1px solid transparent;
+            background: transparent;
+            color: var(--text-main);
+            outline: none;
+            cursor: pointer;
+            text-align: center;
+            text-align-last: center;
+            border-radius: 3px;
+        }
+
+        .cell-select-editor:focus {
+            background-color: #ffffff;
+            border-color: var(--state-selected-border);
+            box-shadow: 0 0 2px rgba(49, 130, 206, 0.3);
+        }
+
+        /* Excel-like Row States Mapping Selector rules */
+        .excel-table tr.table-row-item {
+            cursor: pointer;
+        }
+
+        .excel-table tr.table-row-item:hover {
+            background-color: #f7fafc;
+        }
+
+        .excel-table tr.table-row-item.selected {
+            background-color: var(--state-selected);
+        }
+
+        .excel-table tr.table-row-item.selected td {
+            font-weight: 600;
+        }
+
+        /* Template Row Specifics */
+        .template-row-item {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 6px;
+            margin-bottom: 2px;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .template-row-item.selected {
+            background-color: var(--state-selected);
+            border-color: var(--state-selected-border);
+        }
+
+        .template-title {
+            font-size: 12px;
+            font-weight: 700;
+            padding-right: 50px;
+        }
+
+        .template-snippet {
+            font-size: 10px;
+            color: var(--text-muted);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-top: 1px;
+            padding-right: 50px;
+        }
+
+        .btn-preview-mini {
+            position: absolute;
+            right: 4px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 10px;
+            background: #edf2f7;
+            border: 1px solid #cbd5e0;
+            border-radius: 4px;
+            padding: 2px 6px;
+            cursor: pointer;
+        }
+
+        /* Settings Tab Configuration */
+        .settings-group {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 10px;
+            margin-bottom: 8px;
+        }
+
+        .settings-label {
+            font-size: 12px;
+            font-weight: 700;
+            margin-bottom: 4px;
+            color: var(--text-main);
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 8px;
-            border-bottom: 1px solid var(--border-color);
+        }
+
+        .settings-desc {
+            font-size: 10px;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+            display: block;
+        }
+
+        .paste-textarea {
+            width: 100%;
+            height: 90px;
+            font-size: 11px;
+            font-family: monospace;
+            padding: 6px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            resize: none;
+            outline: none;
+        }
+
+        .paste-textarea:focus {
+            border-color: var(--state-selected-border);
+        }
+
+        /* Dynamic Template Form List UI Styles */
+        .template-builder-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 4px;
+        }
+
+        .template-builder-card {
+            background: #f8fafc;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 6px;
+            position: relative;
+        }
+
+        .template-card-header {
+            display: flex;
+            gap: 4px;
+            margin-bottom: 4px;
+        }
+
+        .template-input-title {
+            flex-grow: 1;
+            font-size: 11px;
+            padding: 4px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            outline: none;
+            font-weight: bold;
+        }
+
+        .template-input-body {
+            width: 100%;
+            height: 60px;
+            font-size: 11px;
+            padding: 4px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            resize: vertical;
+            outline: none;
+        }
+
+        .btn-mini-danger {
+            background-color: #fffafb;
+            color: var(--state-danger);
+            border: 1px solid #fed7d7;
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .btn-mini-add {
+            background-color: #ebf8ff;
+            color: var(--state-selected-border);
+            border: 1px solid #bee3f8;
+            font-size: 10px;
+            padding: 3px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .btn-action {
+            width: 100%;
+            padding: 10px;
+            font-size: 13px;
+            font-weight: 700;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            text-align: center;
+        }
+
+        .btn-save {
+            background-color: var(--state-selected-border);
+            color: white;
+        }
+
+        .btn-export {
+            background-color: #2b6cb0;
+            color: white;
+            margin-bottom: 6px;
+        }
+
+        .btn-clear {
+            background-color: #edf2f7;
+            color: #4a5568;
+            font-size: 11px;
+            padding: 4px;
+            margin-top: 6px;
+        }
+
+        /* Fixed Bottom Control Bar */
+        .bottom-control-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background-color: var(--bg-card);
+            border-top: 1px solid var(--border-color);
+            padding: 4px;
+            z-index: 100;
+            display: table;
+            width: 100%;
+        }
+
+        .action-cell {
+            display: table-cell;
+            width: 33.333%;
+            padding: 0 3px;
+        }
+
+        .dispatch-btn {
+            width: 100%;
+            padding: 6px 2px;
+            font-size: 11px;
+            font-weight: bold;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            text-align: center;
+            opacity: 0.25;
+            pointer-events: none;
+        }
+
+        .dispatch-btn.enabled {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .dispatch-btn.suggested {
+            box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.5);
+            animation: pulse 2s infinite;
+        }
+
+        .btn-line { background-color: var(--brand-line); }
+        .btn-twitter { background-color: #1a1a1a; }
+        .btn-gmail { background-color: var(--brand-gmail); }
+
+        /* Toast Alert Notification */
+        .toast {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(45, 55, 72, 0.95);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            z-index: 1000;
+            display: none;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            text-align: center;
+            white-space: pre-wrap;
+            pointer-events: none;
+        }
+
+        /* Custom Modal Dialog */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: rgba(0, 0, 0, 0.4);
+            z-index: 500;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal-container {
+            background-color: var(--bg-card);
+            border-radius: 8px;
+            width: 100%;
+            max-width: 290px;
+            padding: 16px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            transform: scale(0.9);
+            transition: transform 0.2s ease;
+        }
+
+        .modal-overlay.active .modal-container {
+            transform: scale(1);
+        }
+
+        .modal-title {
+            font-size: 13px;
+            font-weight: bold;
+            color: var(--text-main);
+            margin-bottom: 6px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-body {
+            font-size: 12px;
+            color: #4a5568;
+            margin-bottom: 14px;
+            line-height: 1.4;
+        }
+
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+        }
+
+        .btn-modal {
+            padding: 6px 12px;
+            font-size: 11px;
+            font-weight: bold;
+            border-radius: 4px;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-modal-cancel {
+            background-color: #edf2f7;
+            color: #4a5568;
+        }
+
+        .btn-modal-confirm {
+            background-color: var(--state-danger);
+            color: white;
+        }
+
+        /* Artist Editor Modal Form Specification */
+        .edit-form-group {
+            margin-bottom: 8px;
+        }
+        .edit-form-label {
+            font-size: 11px;
+            font-weight: bold;
+            color: var(--text-muted);
+            margin-bottom: 2px;
+            display: block;
+        }
+        .edit-form-input {
+            width: 100%;
+            height: 30px;
+            padding: 4px 8px;
+            font-size: 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            outline: none;
+        }
+        .edit-form-input:focus {
+            border-color: var(--state-selected-border);
+        }
+        .btn-modal-save {
+            background-color: var(--state-selected-border);
+            color: white;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+            100% { transform: scale(1); }
         }
     </style>
 </head>
 <body>
 
-    <div class="header">
-        <h1>Smart Dispatcher</h1>
-        <div class="header-controls">
-            <span class="version-badge" id="versionBadge">ver.0.2.9</span>
-            <button class="theme-toggle" id="themeToggle">🌙 ダークモード</button>
+    <header>
+        <div class="header-container">
+            <div class="brand-title">Smart Dispatcher</div>
+            <div class="nav-inline-tabs">
+                <button id="tab-performers" class="nav-tab active" onclick="switchView('performers')">出演者</button>
+                <button id="tab-operation" class="nav-tab" onclick="switchView('operation')">管理表</button>
+                <button id="tab-settings" class="nav-tab" onclick="switchView('settings')">設定</button>
+            </div>
+            <div class="version-tag">ver.0.2.9</div>
         </div>
-    </div>
+    </header>
 
-    <div class="tabs">
-        <div class="tab active" onclick="switchTab('management-tab')">管理表</div>
-        <div class="tab" onclick="switchTab('performers-tab')">出演者</div>
-        <div class="tab" onclick="switchTab('contacts-tab')">連絡先マスタ</div>
-        <div class="tab" onclick="switchTab('settings-tab')">設定</div>
-    </div>
-
-    <div id="management-tab" class="tab-content active">
-        <div class="search-container">
-            <input type="text" id="masterSearch" class="form-control" placeholder="キーワードで検索（アーティスト、ヨミ、要望など）..." oninput="filterMasterTable()">
-            <button class="btn" onclick="clearMasterSearch()">クリア</button>
-        </div>
-        <div class="table-responsive">
-            <table id="masterTable">
+    <div id="view-performers" class="view-section active">
+        <div id="performers-stats-panel" class="stats-bar">出演者数：0組   合計ヨミ：0人</div>
+        <div class="table-scroll-container" style="max-height: calc(100vh - 110px);">
+            <table class="excel-table perf-table">
                 <thead>
                     <tr>
-                        <th>No</th>
-                        <th>アーティスト名</th>
-                        <th>ヨミ</th>
-                        <th>Twitter</th>
-                        <th>LINE</th>
-                        <th>Mail</th>
-                        <th>出演回数</th>
-                        <th>出演flag</th>
-                        <th>要望</th>
-                        <th>進捗</th>
-                        <th>備考1</th>
-                        <th>備考2</th>
+                        <th class="col-perf-no">No</th>
+                        <th class="col-perf-artist">アーティスト</th>
+                        <th class="col-perf-count">出演<br>回数</th>
+                        <th class="col-perf-flag">出演</th>
+                        <th class="col-perf-yomi">ヨミ</th>
+                        <th class="col-perf-req">要望</th>
+                        <th class="col-perf-progress">進捗</th>
                     </tr>
                 </thead>
-                <tbody id="masterTableBody">
-                    </tbody>
+                <tbody id="performers-table-body-target">
+                </tbody>
             </table>
-        </div>
-        <div class="action-panel" id="masterActionPanel">
-            <strong>選択中: </strong><span id="selectedMasterName">なし</span>
-            <button class="btn" id="btnMasterX" onclick="openX()" disabled>𝕏 起動</button>
-            <button class="btn" id="btnMasterLine" onclick="openLine()" disabled>LINE 起動</button>
-            <button class="btn" id="btnMasterMail" onclick="openMail()" disabled>メール作成</button>
-            <button class="btn" onclick="copyRowData('master')">行データコピー</button>
-            <button class="btn" onclick="openTemplateModal('master')">文面生成</button>
         </div>
     </div>
 
-    <div id="performers-tab" class="tab-content">
-        <div class="search-container">
-            <input type="text" id="performerSearch" class="form-control" placeholder="出演者を検索..." oninput="filterPerformerTable()">
-            <button class="btn" onclick="clearPerformerSearch()">クリア</button>
+    <div id="view-operation" class="view-section">
+        
+        <div class="search-index-integration-row">
+            <div class="search-box-cell">
+                <input type="text" id="search-bar" class="search-input" placeholder="アーティスト名・フリガナで絞り込み..." oninput="filterArtists()">
+            </div>
+            <div class="index-nav-cell">
+                <div class="index-nav-container" style="grid-template-columns: repeat(5, 1fr);">
+                    <div class="index-btn" onclick="executeKanaSortAndJump('a')">あ</div>
+                    <div class="index-btn" onclick="executeKanaSortAndJump('ka')">か</div>
+                    <div class="index-btn" onclick="executeKanaSortAndJump('sa')">さ</div>
+                    <div class="index-btn" onclick="executeKanaSortAndJump('ta')">た</div>
+                    <div class="index-btn" onclick="executeKanaSortAndJump('na')">な</div>
+                    <div class="index-btn" onclick="executeKanaSortAndJump('ha')">は</div>
+                    <div class="index-btn" onclick="executeKanaSortAndJump('ma')">ま</div>
+                    <div class="index-btn" onclick="executeKanaSortAndJump('ya')">や</div>
+                    <div class="index-btn" onclick="executeKanaSortAndJump('ra')">ら</div>
+                    <div class="index-btn" onclick="executeKanaSortAndJump('wa')">わ</div>
+                </div>
+            </div>
         </div>
-        <div class="table-responsive">
-            <table id="performerTable">
+
+        <div id="stats-panel" class="stats-bar">出演者数：0組   合計ヨミ：0人</div>
+
+        <div class="table-scroll-container">
+            <table class="excel-table">
                 <thead>
                     <tr>
-                        <th>No</th>
-                        <th>アーティスト</th>
-                        <th>出演回数</th>
-                        <th>出演flag</th>
-                        <th>ヨミ</th>
-                        <th>要望</th>
-                        <th>進捗</th>
+                        <th class="col-xlink">𝕏</th>
+                        <th class="col-artist" onclick="toggleSortPipeline('50on')">アーティスト<span id="indicator-50on" class="sort-indicator">▲</span></th>
+                        <th class="col-charge" onclick="toggleSortPipeline('charge')">担当<span id="indicator-charge" class="sort-indicator"></span></th>
+                        <th class="col-flag" onclick="toggleSortPipeline('flag')">出演<span id="indicator-flag" class="sort-indicator"></span></th>
+                        <th class="col-yomi" onclick="toggleSortPipeline('yomi')">ヨミ<span id="indicator-yomi" class="sort-indicator"></span></th>
+                        <th class="col-date" onclick="toggleSortPipeline('date')">日付<span id="indicator-date" class="sort-indicator"></span></th>
+                        <th class="col-meth" onclick="toggleSortPipeline('meth')">推奨<span id="indicator-meth" class="sort-indicator"></span></th>
                     </tr>
                 </thead>
-                <tbody id="performerTableBody">
-                    </tbody>
+                <tbody id="artist-table-body-target">
+                </tbody>
             </table>
         </div>
-        <div class="action-panel" id="performerActionPanel">
-            <strong>選択中: </strong><span id="selectedPerformerName">なし</span>
-            <button class="btn" id="btnPerformerX" onclick="openX()" disabled>𝕏 起動</button>
-            <button class="btn" id="btnPerformerLine" onclick="openLine()" disabled>LINE 起動</button>
-            <button class="btn" id="btnPerformerMail" onclick="openMail()" disabled>メール作成</button>
-            <button class="btn" onclick="copyRowData('performer')">行データコピー</button>
-            <button class="btn" onclick="openTemplateModal('performer')">文面生成</button>
+
+        <div class="preview-title" style="font-size:10px; color:#718096; margin-bottom:4px;">テンプレート</div>
+        <div id="template-list-target" style="max-height: 120px; overflow-y: auto;">
+        </div>
+
+    </div>
+
+    <div id="view-settings" class="view-section">
+
+        <div class="settings-group">
+            <div class="settings-label">
+                <span>■ テンプレート登録管理</span>
+                <button type="button" class="btn-mini-add" onclick="createNewTemplateRowInForm()">＋ テンプレートを追加</button>
+            </div>
+            <span class="settings-desc">テンプレート名 and 本文を個別に設定・追加できます。</span>
+            <div id="template-builder-root-container" class="template-builder-list">
+            </div>
+        </div>
+
+        <div class="settings-group">
+            <label class="settings-label">■ 連絡先リスト</label>
+            <textarea id="import-artists-raw" class="paste-textarea" placeholder="【連絡先】No&#9;アーティスト名&#9;Twitter&#9;LINE&#9;Mail... （11列のTSVデータを貼り付けてください）"></textarea>
+            <button class="btn-action btn-export" onclick="exportArtistsToClipboard()" style="margin-top: 6px;">リストデータ書き出し</button>
+        </div>
+
+        <div class="settings-group">
+            <label class="settings-label">■ 出演者リスト</label>
+            <textarea id="import-performers-raw" class="paste-textarea" placeholder="【出演者】No&#9;アーティスト&#9;出演回数&#9;出演flag&#9;ヨミ&#9;要望&#9;進捗 （7列のTSVデータを貼り付けてください）"></textarea>
+            <button class="btn-action btn-export" onclick="exportPerformersToClipboard()" style="margin-top: 6px;">リストデータ書き出し</button>
+        </div>
+
+        <button class="btn-action btn-save" onclick="processAndSaveRawData()">データを反映して保存</button>
+
+    </div>
+
+    <div class="bottom-control-bar" style="display: none;">
+        <div class="action-cell">
+            <button id="action-trigger-twitter" class="dispatch-btn btn-twitter" onclick="executeExternalDispatch('twitter')">X<br>起動</button>
+        </div>
+        <div class="action-cell">
+            <button id="action-trigger-line" class="dispatch-btn btn-line" onclick="executeExternalDispatch('line')">LINE<br>起動</button>
+        </div>
+        <div class="action-cell">
+            <button id="action-trigger-gmail" class="dispatch-btn btn-gmail" onclick="executeExternalDispatch('gmail')">Gmail<br>下書き</button>
         </div>
     </div>
 
-    <div id="contacts-tab" class="tab-content">
-        <div class="search-container">
-            <input type="text" id="contactSearch" class="form-control" placeholder="連絡先を検索..." oninput="filterContactTable()">
-            <button class="btn" onclick="clearContactSearch()">クリア</button>
-        </div>
-        <div class="table-responsive">
-            <table id="contactTable">
-                <thead>
-                    <tr>
-                        <th>No</th>
-                        <th>アーティスト名</th>
-                        <th>Twitter</th>
-                        <th>LINE</th>
-                        <th>Mail</th>
-                        <th>ヨミ</th>
-                        <th>備考1</th>
-                        <th>備考2</th>
-                    </tr>
-                </thead>
-                <tbody id="contactTableBody">
-                    </tbody>
-            </table>
-        </div>
-        <div class="action-panel" id="contactActionPanel">
-            <strong>選択中: </strong><span id="selectedContactName">なし</span>
-            <button class="btn" id="btnContactX" onclick="openX()" disabled>𝕏 起動</button>
-            <button class="btn" id="btnContactLine" onclick="openLine()" disabled>LINE 起動</button>
-            <button class="btn" id="btnContactMail" onclick="openMail()" disabled>メール作成</button>
-            <button class="btn" onclick="copyRowData('contact')">行データコピー</button>
-            <button class="btn" onclick="openTemplateModal('contact')">文面生成</button>
+    <div id="global-modal-overlay" class="modal-overlay">
+        <div class="modal-container">
+            <div id="modal-title-node" class="modal-title">確認</div>
+            <div id="modal-body-node" class="modal-body">本当に実行しますか？</div>
+            <div class="modal-footer">
+                <button type="button" class="btn-modal btn-modal-cancel" onclick="closeConfirmationModal()">キャンセル</button>
+                <button type="button" id="modal-confirm-btn" class="btn-modal btn-modal-confirm">実行</button>
+            </div>
         </div>
     </div>
 
-    <div id="settings-tab" class="tab-content">
-        <div class="grid-container">
-            <div class="full-width">
-                <div class="card">
-                    <div class="card-title">テンプレート登録管理</div>
-                    <div class="form-group">
-                        <label for="templateName">テンプレート名</label>
-                        <input type="text" id="templateName" class="form-control" placeholder="例: 出演打診メール">
-                    </div>
-                    <div class="form-group">
-                        <label for="templateContent">本文テンプレート</label>
-                        <textarea id="templateContent" class="form-control" rows="6" placeholder="利用可能変数: {アーティスト名}, {要望}, {進捗}, {備考1}, {備考2}"></textarea>
-                    </div>
-                    <button class="btn btn-primary" onclick="saveTemplate()">テンプレート追加/保存</button>
-                    
-                    <div style="margin-top: 15px;">
-                        <strong>登録済みテンプレート一覧</strong>
-                        <div id="templateList" style="margin-top: 5px; border: 1px solid var(--border-color); border-radius: 4px; max-height: 150px; overflow-y: auto;">
-                            </div>
-                    </div>
+    <div id="preview-modal-overlay" class="modal-overlay">
+        <div class="modal-container" style="max-width: 340px;">
+            <div class="modal-title">プレビュー <button style="background:none; border:none; cursor:pointer;" onclick="closePreviewModal()">✕</button></div>
+            <div id="preview-modal-body" class="modal-body" style="text-align: left; white-space: pre-wrap; word-break: break-all; max-height: 300px; overflow-y: auto; background: #f7fafc; padding: 10px; border-radius: 4px;"></div>
+        </div>
+    </div>
+
+    <div id="req-editor-modal-overlay" class="modal-overlay">
+        <div class="modal-container" style="max-width: 300px;">
+            <div class="modal-title">要望の編集</div>
+            <div class="modal-body" style="margin-bottom: 10px;">
+                <input type="hidden" id="edit-req-artist-uid">
+                <textarea id="edit-req-textarea" class="paste-textarea" style="height: 120px;" placeholder="要望を入力してください"></textarea>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-modal btn-modal-cancel" onclick="closeReqEditorModal()">閉じる</button>
+                <button type="button" class="btn-modal btn-modal-save" onclick="saveReqEditorModalData()">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="artist-editor-modal-overlay" class="modal-overlay">
+        <div class="modal-container" style="max-width: 310px;">
+            <div class="modal-title" id="edit-modal-header-title">アーティスト情報の編集</div>
+            <div class="modal-body" style="margin-bottom: 10px;">
+                <input type="hidden" id="edit-artist-uid">
+                <div class="edit-form-group">
+                    <label class="edit-form-label">アーティスト名</label>
+                    <input type="text" id="edit-artist-name" class="edit-form-input">
                 </div>
-
-                <div class="card">
-                    <div class="card-title">連絡先リスト</div>
-                    <div class="form-group">
-                        <textarea id="rawContactInput" class="form-control" rows="6" placeholder="【連絡先】No	アーティスト名	Twitter	LINE	Mail... （11列のTSVデータを貼り付けてください）"></textarea>
-                    </div>
-                    <button class="btn" onclick="exportListData('contact')">リストデータ書き出し</button>
+                <div class="edit-form-group">
+                    <label class="edit-form-label">フリガナ（furigana）</label>
+                    <input type="text" id="edit-artist-furi" class="edit-form-input" placeholder="あいうえお順判定用のひらがな/かたかな">
                 </div>
-
-                <div class="card">
-                    <div class="card-title">出演者リスト</div>
-                    <div class="form-group">
-                        <textarea id="rawPerformerInput" class="form-control" rows="6" placeholder="【出演者】No	アーティスト	出演回数	出演flag	ヨミ	要望	進捗 （7列のTSVデータを貼り付けてください）"></textarea>
-                    </div>
-                    <button class="btn" onclick="exportListData('performer')">リストデータ書き出し</button>
+                <div class="edit-form-group">
+                    <label class="edit-form-label">担当</label>
+                    <input type="text" id="edit-artist-charge" class="edit-form-input">
                 </div>
-
-                <button class="btn btn-primary btn-block" style="padding: 12px;" onclick="saveAllSettings()">データを反映して保存</button>
+                <div class="edit-form-group">
+                    <label class="edit-form-label">ヨミ</label>
+                    <input type="number" id="edit-artist-yomi" class="edit-form-input">
+                </div>
+                <div class="edit-form-group">
+                    <label class="edit-form-label">推奨</label>
+                    <select id="edit-artist-meth" class="edit-form-input" style="padding: 4px 6px;">
+                        <option value=""> </option>
+                        <option value="✉️">✉️</option>
+                        <option value="𝕏">𝕏</option>
+                        <option value="l">l</option>
+                        <option value="🗒">🗒</option>
+                    </select>
+                </div>
+                <div class="edit-form-group">
+                    <label class="edit-form-label">LINE ID</label>
+                    <input type="text" id="edit-artist-line" class="edit-form-input" placeholder="空欄時はボタン無効">
+                </div>
+                <div class="edit-form-group">
+                    <label class="edit-form-label">Twitter ID (@除く/URL可)</label>
+                    <input type="text" id="edit-artist-twitter" class="edit-form-input" placeholder="空欄時はボタン無効">
+                </div>
+                <div class="edit-form-group">
+                    <label class="edit-form-label">Gmail（メールアドレス）</label>
+                    <input type="text" id="edit-artist-mail" class="edit-form-input" placeholder="空欄時はボタン無効">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-modal btn-modal-cancel" onclick="closeArtistEditorModal()">閉じる</button>
+                <button type="button" class="btn-modal btn-modal-save" onclick="saveArtistEditorModalData()">変更を保存</button>
             </div>
         </div>
     </div>
 
-    <div id="templateModal" style="display: none; position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:1000; justify-content: center; align-items: center;">
-        <div style="background: var(--card-bg); padding: 20px; border-radius: 6px; width: 80%; max-width: 600px; border: 1px solid var(--border-color);">
-            <h3>文面生成・送信</h3>
-            <div class="form-group">
-                <label for="modalTemplateSelect">テンプレート選択</label>
-                <select id="modalTemplateSelect" class="form-control" onchange="generateModalText()"></select>
-            </div>
-            <div class="form-group">
-                <label for="modalOutputText">生成されたテキスト</label>
-                <textarea id="modalOutputText" class="form-control" rows="10"></textarea>
-            </div>
-            <div style="display: flex; justify-content: space-between;">
-                <button class="btn btn-primary" onclick="copyModalText()">テキストをコピー</button>
-                <button class="btn" onclick="closeTemplateModal()">閉じる</button>
-            </div>
-        </div>
-    </div>
+    <div id="toast-message-banner" class="toast"></div>
 
     <script>
-        // --- データモデル ---
-        let state = {
-            master: [],      // 管理表（結合データ）
-            performers: [],  // 出演者リスト単体
-            contacts: [],    // 連絡先リスト単体
-            templates: {},   // テンプレート
-            selectedTab: 'management-tab',
-            selectedRows: {
-                master: null,
-                performer: null,
-                contact: null
-            },
-            theme: 'light'
+        let appState = {
+            artists: [],
+            templates: [],
+            selectedArtistId: null, 
+            selectedTemplateIndex: null,
+            currentSortKey: '50on', 
+            isAscending: true       
         };
 
-        // --- 初期化 ---
-        window.onload = function() {
-            loadFromStorage();
-            initTheme();
-            renderAll();
-        };
-
-        function loadFromStorage() {
-            const savedTheme = localStorage.getItem('sd_theme');
-            if (savedTheme) state.theme = savedTheme;
-
-            const savedTemplates = localStorage.getItem('sd_templates');
-            if (savedTemplates) {
-                state.templates = JSON.parse(savedTemplates);
-            } else {
-                state.templates = {
-                    "【サンプル】出演打診": "{アーティスト名}様\n\nいつもお世話になっております。\n本日はイベント出演のご相談でご連絡いたしました。\nご要望にありました「{要望}」の件、調整可能です。\nご検討よろしくお願いいたします。"
-                };
-            }
-
-            // 連絡先マスタ読み込み
-            const savedContacts = localStorage.getItem('sd_raw_contacts');
-            if (savedContacts) {
-                document.getElementById('rawContactInput').value = savedContacts;
-                state.contacts = parseTSV(savedContacts, 11);
-            }
-
-            // 出演者リスト読み込み
-            const savedPerformers = localStorage.getItem('sd_raw_performers');
-            if (savedPerformers) {
-                document.getElementById('rawPerformerInput').value = savedPerformers;
-                state.performers = parseTSV(savedPerformers, 7);
-            }
-
-            // 管理表データの結合
-            buildMasterData();
-        }
-
-        function buildMasterData() {
-            state.master = [];
-            // 出演者リストをベースに、連絡先マスタをマージ
-            state.performers.forEach(p => {
-                // 名前で結合を試みる
-                const c = state.contacts.find(con => con.col2 === p.col2) || {};
-                
-                state.master.push({
-                    no: p.col1 || '',
-                    name: p.col2 || '',
-                    yomi: p.col5 || c.col6 || '',
-                    twitter: c.col3 || '',
-                    line: c.col4 || '',
-                    mail: c.col5 || '',
-                    count: p.col3 || '',
-                    flag: p.col4 || '',
-                    request: p.col6 || '',
-                    progress: p.col7 || '',
-                    note1: c.col7 || '',
-                    note2: c.col8 || ''
-                });
-            });
-        }
-
-        function parseTSV(text, expectedCols) {
-            if (!text.trim()) return [];
-            const lines = text.split('\n');
-            return lines.map(line => {
-                const cols = line.split('\t');
-                const rowObj = {};
-                for (let i = 0; i < expectedCols; i++) {
-                    rowObj[`col${i+1}`] = cols[i] ? cols[i].trim() : '';
-                }
-                return rowObj;
-            });
-        }
-
-        // --- テーマ切り替え ---
-        function initTheme() {
-            document.documentElement.setAttribute('data-theme', state.theme);
-            const btn = document.getElementById('themeToggle');
-            if (state.theme === 'dark') {
-                btn.innerText = '☀️ ライトモード';
-            } else {
-                btn.innerText = '🌙 ダークモード';
-            }
-        }
-
-        document.getElementById('themeToggle').addEventListener('click', () => {
-            if (state.theme === 'light') {
-                state.theme = 'dark';
-            } else {
-                state.theme = 'light';
-            }
-            localStorage.setItem('sd_theme', state.theme);
-            initTheme();
+        window.addEventListener('DOMContentLoaded', () => {
+            loadPersistedData();
+            executeSortPipeline(); 
+            renderTemplatesGrid();
+            syncFormStateFromTemplatesArray();
         });
 
-        // --- タブ切り替え ---
-        function switchTab(tabId) {
-            state.selectedTab = tabId;
-            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-
-            const tabIndex = ['management-tab', 'performers-tab', 'contacts-tab', 'settings-tab'].indexOf(tabId);
-            if (tabIndex !== -1) {
-                document.querySelectorAll('.tab')[tabIndex].classList.add('active');
+        function switchView(targetTabName) {
+            document.querySelectorAll('.nav-tab').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+            document.getElementById(`tab-${targetTabName}`).classList.add('active');
+            document.getElementById(`view-${targetTabName}`).classList.add('active');
+            const bottomBar = document.querySelector('.bottom-control-bar');
+            if (bottomBar) {
+                if (targetTabName === 'operation' || targetTabName === 'performers') {
+                    bottomBar.style.display = 'table';
+                } else {
+                    bottomBar.style.display = 'none';
+                }
             }
-            document.getElementById(tabId).classList.add('active');
+            if (targetTabName === 'performers') renderPerformersGrid();
+            if (targetTabName === 'settings') syncFormStateFromTemplatesArray();
+            
+            recalculateControls();
         }
 
-        // --- 描画処理 ---
-        function renderAll() {
-            renderMasterTable();
-            renderPerformerTable();
-            renderContactTable();
-            renderTemplateList();
+        function loadPersistedData() {
+            try {
+                const savedArtists = localStorage.getItem('sd_matrix_artists');
+                const savedTemplates = localStorage.getItem('sd_matrix_templates');
+                if (savedArtists) appState.artists = JSON.parse(savedArtists);
+                if (savedTemplates) appState.templates = JSON.parse(savedTemplates);
+                appState.artists.forEach((item, idx) => {
+                    if (!item.uid) item.uid = "art_" + Date.now() + "_" + idx;
+                    if (!item.furigana) item.furigana = ""; /* 安全対策：フリガナの未定義をガード */
+                    if (!item.req) item.req = "";
+                    if (!item.progress) item.progress = "";
+                    if (!item.count) item.count = "";
+                });
+                const rawArtistsInput = localStorage.getItem('sd_raw_artists_input');
+                if (rawArtistsInput) document.getElementById('import-artists-raw').value = rawArtistsInput;
+                
+                const rawPerformersInput = localStorage.getItem('sd_raw_performers_input');
+                if (rawPerformersInput) document.getElementById('import-performers-raw').value = rawPerformersInput;
+            } catch (e) { console.error(e); }
         }
 
-        function renderMasterTable(data = state.master) {
-            const tbody = document.getElementById('masterTableBody');
-            tbody.innerHTML = '';
-            data.forEach((row, index) => {
-                const tr = document.createElement('tr');
-                tr.onclick = () => selectRow('master', index, row);
-                if (state.selectedRows.master === index) tr.classList.add('selected');
-
-                tr.innerHTML = `
-                    <td>${escapeHtml(row.no)}</td>
-                    <td>${escapeHtml(row.name)}</td>
-                    <td>${escapeHtml(row.yomi)}</td>
-                    <td>${escapeHtml(row.twitter)}</td>
-                    <td>${escapeHtml(row.line)}</td>
-                    <td>${escapeHtml(row.mail)}</td>
-                    <td>${escapeHtml(row.count)}</td>
-                    <td><span class="status-badge ${row.flag === '◯' || row.flag === '1' ? 'status-ok' : 'status-pending'}">${escapeHtml(row.flag)}</span></td>
-                    <td>${escapeHtml(row.request)}</td>
-                    <td>${escapeHtml(row.progress)}</td>
-                    <td>${escapeHtml(row.note1)}</td>
-                    <td>${escapeHtml(row.note2)}</td>
-                `;
-                tbody.appendChild(tr);
-            });
-            updateActionPanel('master');
+        function createNewTemplateRowInForm(titleValue = '', bodyValue = '') {
+            const container = document.getElementById('template-builder-root-container');
+            const elementId = "tpl_row_" + Date.now() + "_" + Math.random().toString(36).substr(2, 5);
+            const card = document.createElement('div');
+            card.className = 'template-builder-card';
+            card.id = elementId;
+            card.innerHTML = `
+                <div class="template-card-header">
+                    <input type="text" class="template-input-title" placeholder="テンプレート名" value="${escapeHtml(titleValue)}">
+                    <button type="button" class="btn-mini-danger" onclick="document.getElementById('${elementId}').remove()">削除</button>
+                </div>
+                <textarea class="template-input-body" placeholder="本文">${escapeHtml(bodyValue)}</textarea>
+            `;
+            container.appendChild(card);
         }
 
-        function renderPerformerTable(data = state.performers) {
-            const tbody = document.getElementById('performerTableBody');
-            tbody.innerHTML = '';
-            data.forEach((row, index) => {
-                const tr = document.createElement('tr');
-                tr.onclick = () => selectRow('performer', index, row);
-                if (state.selectedRows.performer === index) tr.classList.add('selected');
-
-                tr.innerHTML = `
-                    <td>${escapeHtml(row.col1)}</td>
-                    <td>${escapeHtml(row.col2)}</td>
-                    <td>${escapeHtml(row.col3)}</td>
-                    <td><span class="status-badge ${row.col4 === '◯' || row.col4 === '1' ? 'status-ok' : 'status-pending'}">${escapeHtml(row.col4)}</span></td>
-                    <td>${escapeHtml(row.col5)}</td>
-                    <td>${escapeHtml(row.col6)}</td>
-                    <td>${escapeHtml(row.col7)}</td>
-                `;
-                tbody.appendChild(tr);
-            });
-            updateActionPanel('performer');
-        }
-
-        function renderContactTable(data = state.contacts) {
-            const tbody = document.getElementById('contactTableBody');
-            tbody.innerHTML = '';
-            data.forEach((row, index) => {
-                const tr = document.createElement('tr');
-                tr.onclick = () => selectRow('contact', index, row);
-                if (state.selectedRows.contact === index) tr.classList.add('selected');
-
-                tr.innerHTML = `
-                    <td>${escapeHtml(row.col1)}</td>
-                    <td>${escapeHtml(row.col2)}</td>
-                    <td>${escapeHtml(row.col3)}</td>
-                    <td>${escapeHtml(row.col4)}</td>
-                    <td>${escapeHtml(row.col5)}</td>
-                    <td>${escapeHtml(row.col6)}</td>
-                    <td>${escapeHtml(row.col7)}</td>
-                    <td>${escapeHtml(row.col8)}</td>
-                `;
-                tbody.appendChild(tr);
-            });
-            updateActionPanel('contact');
-        }
-
-        function renderTemplateList() {
-            const container = document.getElementById('templateList');
+        function syncFormStateFromTemplatesArray() {
+            const container = document.getElementById('template-builder-root-container');
             container.innerHTML = '';
-            Object.keys(state.templates).forEach(name => {
+            if (appState.templates.length > 0) {
+                appState.templates.forEach(tpl => createNewTemplateRowInForm(tpl.title, tpl.body));
+            } else {
+                createNewTemplateRowInForm('', '');
+            }
+        }
+
+        function processAndSaveRawData() {
+            const rawArtistsText = document.getElementById('import-artists-raw').value.trim();
+            const rawPerformersText = document.getElementById('import-performers-raw').value.trim();
+            
+            let baseArtists = [];
+            
+            if (rawArtistsText) {
+                const lines = rawArtistsText.split('\n');
+                lines.forEach((line, index) => {
+                    const cols = line.split('\t');
+                    if (cols.length >= 3 && !cols[0].includes('No')) {
+                        let existingByNo = appState.artists.find(a => a.no === cols[0] && a.no !== "");
+                        baseArtists.push({
+                            uid: existingByNo ? existingByNo.uid : ("art_" + Date.now() + "_" + index),
+                            no: cols[0], furigana: cols[1] || "", artist: cols[2], charge: cols[3], 
+                            mail: cols[4], twitterId: cols[5], lineId: cols[6], meth: cols[7], 
+                            flag: cols[8], date: cols[9], yomi: cols[10], 
+                            req: existingByNo ? existingByNo.req : "", 
+                            progress: existingByNo ? existingByNo.progress : "", 
+                            count: existingByNo ? existingByNo.count : ""
+                        });
+                    }
+                });
+            } else {
+                baseArtists = [...appState.artists];
+            }
+
+            if (rawPerformersText) {
+                baseArtists.forEach(a => {
+                    if(a.flag === '🙆🏼‍♀️') {
+                        a.flag = '-';
+                        a.count = '';
+                        a.req = '';
+                        a.progress = '';
+                        a.yomi = '';
+                    }
+                });
+
+                const pLines = rawPerformersText.split('\n');
+                pLines.forEach((line, index) => {
+                    const cols = line.split('\t');
+                    if (cols.length >= 2 && !cols[0].includes('No')) {
+                        const pNo = cols[0];
+                        const pArtist = cols[1];
+                        const pCount = cols[2] || "";
+                        const pFlag = cols[3] || "";
+                        const pYomi = cols[4] || "";
+                        const pReq = cols[5] || "";
+                        const pProgress = cols[6] || "";
+
+                        let target = baseArtists.find(a => a.no === pNo) || baseArtists.find(a => a.artist === pArtist);
+                        if (target) {
+                            target.count = pCount;
+                            target.flag = pFlag;
+                            target.yomi = pYomi;
+                            target.req = pReq;
+                            target.progress = pProgress;
+                        } else {
+                            baseArtists.push({
+                                uid: "art_perf_" + Date.now() + "_" + index,
+                                no: pNo, furigana: "", artist: pArtist, charge: "", 
+                                mail: "", twitterId: "", lineId: "", meth: "", 
+                                flag: pFlag, date: "", yomi: pYomi, req: pReq, progress: pProgress, count: pCount
+                            });
+                        }
+                    }
+                });
+                localStorage.setItem('sd_raw_performers_input', rawPerformersText);
+            }
+
+            appState.artists = baseArtists;
+            
+            const formCards = document.querySelectorAll('.template-builder-card');
+            appState.templates = Array.from(formCards).map(c => ({
+                title: c.querySelector('.template-input-title').value,
+                body: c.querySelector('.template-input-body').value
+            }));
+            
+            localStorage.setItem('sd_matrix_artists', JSON.stringify(appState.artists));
+            localStorage.setItem('sd_matrix_templates', JSON.stringify(appState.templates));
+            localStorage.setItem('sd_raw_artists_input', rawArtistsText);
+            
+            executeSortPipeline();
+            renderTemplatesGrid();
+            switchView('performers');
+            showToastBanner("保存しました");
+        }
+
+        function exportArtistsToClipboard() {
+            if (!appState.artists || appState.artists.length === 0) {
+                showToastBanner("エクスポートするデータがありません", 1000);
+                return;
+            }
+            const sorted = [...appState.artists].sort((a, b) => {
+                return parseInt(a.no || 0, 10) - parseInt(b.no || 0, 10);
+            });
+            let tsvLines = [];
+            sorted.forEach(item => {
+                const rowCols = [
+                    item.no || '',
+                    item.furigana || '',
+                    item.artist || '',
+                    item.charge || '',
+                    item.mail || '',
+                    item.twitterId || '',
+                    item.lineId || '',
+                    item.meth || '',
+                    item.flag || '',
+                    item.date || '',
+                    item.yomi || ''
+                ];
+                tsvLines.push(rowCols.join('\t'));
+            });
+            const tsvText = tsvLines.join('\n');
+            navigator.clipboard.writeText(tsvText).then(() => {
+                showToastBanner("アプリのデータ " + sorted.length + " 件をクリップボードにコピーしました", 1000);
+            }).catch(err => {
+                console.error(err);
+                showToastBanner("コピーに失敗しました", 1000);
+            });
+        }
+
+        function exportPerformersToClipboard() {
+            const performers = appState.artists.filter(a => a.flag === '🙆🏼‍♀️');
+            if (performers.length === 0) {
+                showToastBanner("エクスポートするデータがありません", 1000);
+                return;
+            }
+            const sorted = [...performers].sort((a, b) => {
+                return parseInt(a.no || 0, 10) - parseInt(b.no || 0, 10);
+            });
+            let tsvLines = [];
+            sorted.forEach(item => {
+                const rowCols = [
+                    item.no || '',
+                    item.artist || '',
+                    item.count || '',
+                    item.flag || '',
+                    item.yomi || '',
+                    item.req || '',
+                    item.progress || ''
+                ];
+                tsvLines.push(rowCols.join('\t'));
+            });
+            const tsvText = tsvLines.join('\n');
+            navigator.clipboard.writeText(tsvText).then(() => {
+                showToastBanner("出演者データ " + sorted.length + " 件をクリップボードにコピーしました", 1000);
+            }).catch(err => {
+                console.error(err);
+                showToastBanner("コピーに失敗しました", 1000);
+            });
+        }
+
+        function triggerAppResetWithModal() {
+            document.getElementById('modal-title-node').innerText = "リセット";
+            document.getElementById('modal-body-node').innerHTML = "全データを消去しますか？";
+            document.getElementById('modal-confirm-btn').onclick = () => { localStorage.clear(); location.reload(); };
+            document.getElementById('global-modal-overlay').classList.add('active');
+        }
+
+        function closeConfirmationModal() { document.getElementById('global-modal-overlay').classList.remove('active'); }
+
+        function openArtistEditorModal(uid) {
+            const art = appState.artists.find(a => a.uid === uid);
+            document.getElementById('edit-artist-uid').value = uid;
+            document.getElementById('edit-artist-name').value = art.artist;
+            document.getElementById('edit-artist-furi').value = art.furigana || '';
+            document.getElementById('edit-artist-charge').value = art.charge;
+            document.getElementById('edit-artist-yomi').value = art.yomi;
+            document.getElementById('edit-artist-meth').value = art.meth || '';
+            document.getElementById('edit-artist-line').value = art.lineId;
+            document.getElementById('edit-artist-twitter').value = art.twitterId;
+            document.getElementById('edit-artist-mail').value = art.mail;
+            document.getElementById('artist-editor-modal-overlay').classList.add('active');
+        }
+
+        function closeArtistEditorModal() { document.getElementById('artist-editor-modal-overlay').classList.remove('active'); }
+
+        function saveArtistEditorModalData() {
+            const uid = document.getElementById('edit-artist-uid').value;
+            const art = appState.artists.find(a => a.uid === uid);
+            art.artist = document.getElementById('edit-artist-name').value;
+            art.furigana = document.getElementById('edit-artist-furi').value;
+            art.charge = document.getElementById('edit-artist-charge').value;
+            art.yomi = document.getElementById('edit-artist-yomi').value;
+            art.meth = document.getElementById('edit-artist-meth').value;
+            art.lineId = document.getElementById('edit-artist-line').value;
+            art.twitterId = document.getElementById('edit-artist-twitter').value;
+            art.mail = document.getElementById('edit-artist-mail').value;
+            localStorage.setItem('sd_matrix_artists', JSON.stringify(appState.artists));
+            renderArtistsGrid();
+            closeArtistEditorModal();
+        }
+
+        function openReqEditorModal(uid) {
+            const art = appState.artists.find(a => a.uid === uid);
+            document.getElementById('edit-req-artist-uid').value = uid;
+            document.getElementById('edit-req-textarea').value = art.req || '';
+            document.getElementById('req-editor-modal-overlay').classList.add('active');
+        }
+
+        function closeReqEditorModal() { document.getElementById('req-editor-modal-overlay').classList.remove('active'); }
+
+        function saveReqEditorModalData() {
+            const uid = document.getElementById('edit-req-artist-uid').value;
+            const art = appState.artists.find(a => a.uid === uid);
+            art.req = document.getElementById('edit-req-textarea').value;
+            localStorage.setItem('sd_matrix_artists', JSON.stringify(appState.artists));
+            renderPerformersGrid();
+            closeReqEditorModal();
+        }
+
+        function toggleSortPipeline(key) {
+            if (appState.currentSortKey === key) appState.isAscending = !appState.isAscending;
+            else { appState.currentSortKey = key; appState.isAscending = true; }
+            executeSortPipeline();
+        }
+
+        function executeSortPipeline() {
+            const key = appState.currentSortKey;
+            const asc = appState.isAscending ? 1 : -1;
+            appState.artists.sort((a, b) => {
+                let valA = a[key] || '', valB = b[key] || '';
+                return valA.localeCompare(valB, 'ja') * asc;
+            });
+            updateHeaderIndicators();
+            renderArtistsGrid();
+        }
+
+        function updateHeaderIndicators() {
+            ['50on', 'charge', 'flag', 'yomi', 'date', 'meth'].forEach(k => {
+                const el = document.getElementById(`indicator-${k}`);
+                if (el) el.innerText = appState.currentSortKey === k ? (appState.isAscending ? "▲" : "▼") : "";
+            });
+        }
+
+        function renderPerformersGrid() {
+            const container = document.getElementById('performers-table-body-target');
+            container.innerHTML = '';
+            const performers = appState.artists.filter(a => a.flag === '🙆🏼‍♀️');
+            
+            let totalCount = performers.length;
+            let totalYomi = 0;
+            
+            performers.forEach((item, index) => {
+                if (item.count === '2') {
+                    totalCount += 1;
+                }
+                totalYomi += parseInt(item.yomi || 0, 10);
+
+                const row = document.createElement('tr');
+                row.className = 'table-row-item';
+                
+                row.onclick = (e) => {
+                    if (e.target.tagName === 'SELECT') return;
+                    appState.selectedArtistId = item.uid;
+                    renderPerformersGrid();
+                    recalculateControls();
+                };
+
+                if (appState.selectedArtistId === item.uid) row.classList.add('selected');
+                
+                let countHtml = `<select class="cell-select-editor" style="font-size: 9px;" onchange="updatePerformerCount('${item.uid}', this.value)">`;
+                ["", "1", "2"].forEach(opt => {
+                    const isSel = (item.count || "") === opt ? "selected" : "";
+                    countHtml += `<option value="${escapeHtml(opt)}" ${isSel}>${escapeHtml(opt || " ")}</option>`;
+                });
+                countHtml += `</select>`;
+
+                let progressHtml = `<select class="cell-select-editor" style="font-size: 9px;" onchange="updatePerformerProgress('${item.uid}', this.value)">`;
+                const progressOptions = ["", "タイテ", "開催告知", "予約連絡"];
+                progressOptions.forEach(opt => {
+                    const isSel = (item.progress || "") === opt ? "selected" : "";
+                    progressHtml += `<option value="${escapeHtml(opt)}" ${isSel}>${escapeHtml(opt || " ")}</option>`;
+                });
+                progressHtml += `</select>`;
+
+                row.innerHTML = `
+                    <td class="col-perf-no">${index + 1}</td>
+                    <td class="col-perf-artist">${escapeHtml(item.artist)}</td>
+                    <td class="col-perf-count" onclick="event.stopPropagation()">${countHtml}</td>
+                    <td class="col-perf-flag">${escapeHtml(item.flag)}</td>
+                    <td class="col-perf-yomi">${escapeHtml(item.yomi)}</td>
+                    <td class="col-perf-req" onclick="openReqEditorModal('${item.uid}')">${escapeHtml(item.req || "")}</td>
+                    <td class="col-perf-progress" onclick="event.stopPropagation()">${progressHtml}</td>
+                `;
+                container.appendChild(row);
+            });
+            const statsPanel = document.getElementById('performers-stats-panel');
+            if (statsPanel) {
+                statsPanel.innerText = `出演者数：${totalCount}組   合計ヨミ：${totalYomi}人`;
+            }
+        }
+
+        function updatePerformerProgress(uid, val) {
+            const art = appState.artists.find(a => a.uid === uid);
+            art.progress = val;
+            localStorage.setItem('sd_matrix_artists', JSON.stringify(appState.artists));
+        }
+
+        function updatePerformerCount(uid, val) {
+            const art = appState.artists.find(a => a.uid === uid);
+            art.count = val;
+            localStorage.setItem('sd_matrix_artists', JSON.stringify(appState.artists));
+            renderPerformersGrid();
+        }
+
+        function renderArtistsGrid() {
+            const container = document.getElementById('artist-table-body-target');
+            container.innerHTML = '';
+            let totalYomi = 0, totalCount = 0;
+            
+            const today = new Date();
+            const dateOptions = [];
+            for (let i = -2; i <= 2; i++) {
+                const d = new Date(today);
+                d.setDate(today.getDate() + i);
+                const m = d.getMonth() + 1;
+                const dateStr = m + '/' + d.getDate();
+                dateOptions.push(dateStr);
+            }
+            
+            appState.artists.forEach(item => {
+                if (item.flag === '🙆🏼‍♀️') {
+                    totalCount++;
+                    totalYomi += parseInt(item.yomi || 0);
+                }
+                const row = document.createElement('tr');
+                row.className = 'table-row-item';
+                row.dataset.uid = item.uid;
+                
+                row.onclick = (e) => {
+                    if (e.target.tagName === 'SELECT') return;
+                    appState.selectedArtistId = item.uid;
+                    renderArtistsGrid();
+                    recalculateControls();
+                };
+
+                if (appState.selectedArtistId === item.uid) row.classList.add('selected');
+                
+                let isDateEmpty = !item.date || item.date.trim() === "";
+                let currentValueHasMatch = dateOptions.includes(item.date);
+                let dateSelectHtml = `<select class="cell-select-editor" style="font-size: 9px;" onchange="updateArtistDate('${item.uid}', this.value)">`;
+                
+                const isBlankSelected = isDateEmpty ? 'selected' : '';
+                dateSelectHtml += `<option value="" ${isBlankSelected}></option>`;
+                
+                if (!isDateEmpty && !currentValueHasMatch) {
+                    dateSelectHtml += `<option value="${escapeHtml(item.date)}" selected>${escapeHtml(item.date)}</option>`;
+                }
+                dateOptions.forEach(dOption => {
+                    const isSelected = (!isDateEmpty && item.date === dOption) ? 'selected' : '';
+                    dateSelectHtml += `<option value="${dOption}" ${isSelected}>${dOption}</option>`;
+                });
+                dateSelectHtml += `</select>`;
+                
+                let xlinkTd = '';
+                const hasTwitter = item.twitterId && item.twitterId.trim() !== "";
+                if (hasTwitter) {
+                    xlinkTd = `<td class="col-xlink" onclick="launchTwitterProfileApp('${escapeHtml(item.twitterId)}', event)">🐦</td>`;
+                } else {
+                    xlinkTd = `<td class="col-xlink" style="background-color: #edf2f7;" onclick="event.stopPropagation()"></td>`;
+                }
+                
+                row.innerHTML = `
+                    ${xlinkTd}
+                    <td class="col-artist" onclick="copyArtistName('${escapeHtml(item.artist)}', event)">${escapeHtml(item.artist)}</td>
+                    <td class="col-charge" onclick="openArtistEditorModal('${item.uid}')">${escapeHtml(item.charge)}</td>
+                    <td class="col-flag" onclick="event.stopPropagation()">
+                        <select class="cell-select-editor" style="font-size: 9px;" onchange="updateFlag('${item.uid}', this.value)">
+                            <option value="-" ${item.flag === '-' ? 'selected' : ''}>-</option>
+                            <option value="🚩" ${item.flag === '🚩' ? 'selected' : ''}>🚩</option>
+                            <option value="🙆🏼‍♀️" ${item.flag === '🙆🏼‍♀️' ? 'selected' : ''}>🙆🏼‍♀️</option>
+                            <option value="📤" ${item.flag === '📤' ? 'selected' : ''}>📤</option>
+                            <option value="🤦‍♂️" ${item.flag === '🤦‍♂️' ? 'selected' : ''}>🤦‍♂️</option>
+                            <option value="🙅‍♀️" ${item.flag === '🙅‍♀️' ? 'selected' : ''}>🙅‍♀️</option>
+                        </select>
+                    </td>
+                    <td class="col-yomi" onclick="openArtistEditorModal('${item.uid}')">${escapeHtml(item.yomi)}</td>
+                    <td class="col-date" onclick="event.stopPropagation()">${dateSelectHtml}</td>
+                    <td class="col-meth">${escapeHtml(item.meth)}</td>
+                `;
+                container.appendChild(row);
+            });
+            document.getElementById('stats-panel').innerText = `出演者数：${totalCount}組   合計ヨミ：${totalYomi}人`;
+        }
+
+        function extractTwitterScreenName(input) {
+            let clean = input.trim();
+            if (clean.startsWith('http://') || clean.startsWith('https://')) {
+                try {
+                    const url = new URL(clean);
+                    const pathParts = url.pathname.split('/').filter(p => p);
+                    if (pathParts.length > 0) return pathParts[0];
+                } catch (e) { console.error(e); }
+            }
+            return clean.replace(/^@/, '');
+        }
+
+        function launchTwitterProfileApp(twitterId, event) {
+            if (event) event.stopPropagation();
+            const screenName = extractTwitterScreenName(twitterId);
+            if (screenName) {
+                window.location.href = `twitter://user?screen_name=${screenName}`;
+            }
+        }
+
+        function copyArtistName(name, event) {
+            event.stopPropagation();
+            navigator.clipboard.writeText(name).then(() => {
+                showToastBanner(name + " をコピーしました", 1000);
+            });
+        }
+
+        function updateFlag(uid, val) {
+            const art = appState.artists.find(a => a.uid === uid);
+            art.flag = val;
+            localStorage.setItem('sd_matrix_artists', JSON.stringify(appState.artists));
+            renderArtistsGrid();
+        }
+
+        function updateArtistDate(uid, val) {
+            const art = appState.artists.find(a => a.uid === uid);
+            art.date = val;
+            localStorage.setItem('sd_matrix_artists', JSON.stringify(appState.artists));
+            renderArtistsGrid();
+        }
+
+        function renderTemplatesGrid() {
+            const container = document.getElementById('template-list-target');
+            container.innerHTML = '';
+            appState.templates.forEach((t, i) => {
                 const div = document.createElement('div');
-                div.className = 'template-item';
+                div.className = 'template-row-item';
+                if (appState.selectedTemplateIndex === i) div.classList.add('selected');
+                div.onclick = () => { appState.selectedTemplateIndex = i; renderTemplatesGrid(); recalculateControls(); };
                 div.innerHTML = `
-                    <span>${escapeHtml(name)}</span>
-                    <div>
-                        <button class="btn" style="padding:2px 6px; font-size:12px;" onclick="loadTemplateToForm('${escapeHtml(name)}')">編集</button>
-                        <button class="btn btn-danger" style="padding:2px 6px; font-size:12px;" onclick="deleteTemplate('${escapeHtml(name)}')">削除</button>
-                    </div>
+                    <div class="template-title">${escapeHtml(t.title)}</div>
+                    <div class="template-snippet">${escapeHtml(t.body)}</div>
+                    <button class="btn-preview-mini" onclick="event.stopPropagation(); openPreviewModal(${i})">プレビュー</button>
                 `;
                 container.appendChild(div);
             });
         }
 
-        // --- 行選択とアクションパネル制御 ---
-        function selectRow(type, index, rowData) {
-            if (state.selectedRows[type] === index) {
-                state.selectedRows[type] = null;
-            } else {
-                state.selectedRows[type] = index;
-            }
-
-            if (type === 'master') renderMasterTable();
-            if (type === 'performer') renderPerformerTable();
-            if (type === 'contact') renderContactTable();
+        function openPreviewModal(index) {
+            if (!appState.selectedArtistId) { showToastBanner("アーティストを選択してください", 1000); return; }
+            const art = appState.artists.find(a => a.uid === appState.selectedArtistId);
+            const tpl = appState.templates[index];
+            const previewText = `${art.artist}\n${art.charge}\n${tpl.body}`;
+            document.getElementById('preview-modal-body').innerText = previewText;
+            document.getElementById('preview-modal-overlay').classList.add('active');
         }
 
-        function updateActionPanel(type) {
-            const index = state.selectedRows[type];
-            const nameSpan = document.getElementById(`selected${type.charAt(0).toUpperCase() + type.slice(1)}Name`);
-            const btnX = document.getElementById(`btn${type.charAt(0).toUpperCase() + type.slice(1)}X`);
-            const btnLine = document.getElementById(`btn${type.charAt(0).toUpperCase() + type.slice(1)}Line`);
-            const btnMail = document.getElementById(`btn${type.charAt(0).toUpperCase() + type.slice(1)}Mail`);
+        function closePreviewModal() { document.getElementById('preview-modal-overlay').classList.remove('active'); }
 
-            if (index === null || index === undefined) {
-                if (nameSpan) nameSpan.innerText = 'なし';
-                if (btnX) btnX.disabled = true;
-                if (btnLine) btnLine.disabled = true;
-                if (btnMail) btnMail.disabled = true;
+        function recalculateControls() {
+            const btns = document.querySelectorAll('.dispatch-btn');
+            btns.forEach(b => b.classList.remove('enabled'));
+            
+            // 出演者タブにて行を選択した際の「外部連動ボタン（X起動等）」の連動制限（非活性化：disabled）
+            if (document.getElementById('tab-performers').classList.contains('active')) {
                 return;
             }
 
-            let name = '', twitter = '', line = '', mail = '';
-
-            if (type === 'master') {
-                const data = state.master[index];
-                name = data.name; twitter = data.twitter; line = data.line; mail = data.mail;
-                if (nameSpan) nameSpan.innerText = name;
-                if (btnX) btnX.disabled = !twitter;
-                if (btnLine) btnLine.disabled = !line;
-                if (btnMail) btnMail.disabled = !mail;
-            } else if (type === 'performer') {
-                const data = state.performers[index];
-                name = data.col2;
-                if (nameSpan) nameSpan.innerText = name;
-                // 出演者データ参照時は連動ボタンを常に非活性化（Bパターン）
-                if (btnX) btnX.disabled = true;
-                if (btnLine) btnLine.disabled = true;
-                if (btnMail) btnMail.disabled = true;
-            } else if (type === 'contact') {
-                const data = state.contacts[index];
-                name = data.col2; twitter = data.col3; line = data.col4; mail = data.col5;
-                if (nameSpan) nameSpan.innerText = name;
-                if (btnX) btnX.disabled = !twitter;
-                if (btnLine) btnLine.disabled = !line;
-                if (btnMail) btnMail.disabled = !mail;
+            if (appState.selectedArtistId && appState.selectedTemplateIndex !== null) {
+                const art = appState.artists.find(a => a.uid === appState.selectedArtistId);
+                if (art && art.lineId) document.getElementById('action-trigger-line').classList.add('enabled');
+                if (art && art.twitterId) document.getElementById('action-trigger-twitter').classList.add('enabled');
+                if (art && art.mail) document.getElementById('action-trigger-gmail').classList.add('enabled');
             }
         }
 
-        // --- 外部サービス連携ロジック ---
-        function openX() {
-            const type = state.selectedTab.replace('-tab', '');
-            const index = state.selectedRows[type === 'management' ? 'master' : type === 'contacts' ? 'contact' : 'performer'];
-            let username = '';
-            if (type === 'management') username = state.master[index].twitter;
-            if (type === 'contacts') username = state.contacts[index].col3;
+        function executeExternalDispatch(platform) {
+            const art = appState.artists.find(a => a.uid === appState.selectedArtistId);
+            const tpl = appState.templates[appState.selectedTemplateIndex];
+            const msg = `${art.artist}\n${art.charge}\n${tpl.body}`;
             
-            if (username) {
-                const cleanName = username.replace('@', '');
-                window.open(`https://x.com/${cleanName}`, '_blank');
-            }
-        }
-
-        function openLine() {
-            const type = state.selectedTab.replace('-tab', '');
-            const index = state.selectedRows[type === 'management' ? 'master' : type === 'contacts' ? 'contact' : 'performer'];
-            let lineId = '';
-            if (type === 'management') lineId = state.master[index].line;
-            if (type === 'contacts') lineId = state.contacts[index].col4;
-
-            if (lineId) {
-                window.open(`https://line.me/R/ti/p/~${lineId}`, '_blank');
-            }
-        }
-
-        function openMail() {
-            const type = state.selectedTab.replace('-tab', '');
-            const index = state.selectedRows[type === 'management' ? 'master' : type === 'contacts' ? 'contact' : 'performer'];
-            let mailAddr = '';
-            if (type === 'management') mailAddr = state.master[index].mail;
-            if (type === 'contacts') mailAddr = state.contacts[index].col5;
-
-            if (mailAddr) {
-                window.location.href = `mailto:${mailAddr}`;
-            }
-        }
-
-        function copyRowData(type) {
-            const index = state.selectedRows[type];
-            if (index === null) return;
-            let text = '';
-            if (type === 'master') {
-                const r = state.master[index];
-                text = `${r.no}\t${r.name}\t${r.yomi}\t${r.twitter}\t${r.line}\t${r.mail}\t${r.count}\t${r.flag}\t${r.request}\t${r.progress}\t${r.note1}\t${r.note2}`;
-            } else if (type === 'performer') {
-                const r = state.performers[index];
-                text = `${r.col1}\t${r.col2}\t${r.col3}\t${r.col4}\t${r.col5}\t${r.col6}\t${r.col7}`;
-            } else if (type === 'contact') {
-                const r = state.contacts[index];
-                text = `${r.col1}\t${r.col2}\t${r.col3}\t${r.col4}\t${r.col5}\t${r.col6}\t${r.col7}\t${r.col8}`;
-            }
-            navigator.clipboard.writeText(text);
-            alert('クリップボードに行データをコピーしました。');
-        }
-
-        // --- 検索フィルタ機能 ---
-        function filterMasterTable() {
-            const q = document.getElementById('masterSearch').value.toLowerCase();
-            const filtered = state.master.filter(r => 
-                r.name.toLowerCase().includes(q) || 
-                r.yomi.toLowerCase().includes(q) || 
-                r.request.toLowerCase().includes(q) || 
-                r.progress.toLowerCase().includes(q) ||
-                r.note1.toLowerCase().includes(q) ||
-                r.note2.toLowerCase().includes(q)
-            );
-            renderMasterTable(filtered);
-        }
-        function clearMasterSearch() { document.getElementById('masterSearch').value = ''; renderMasterTable(); }
-
-        function filterPerformerTable() {
-            const q = document.getElementById('performerSearch').value.toLowerCase();
-            const filtered = state.performers.filter(r => 
-                r.col2.toLowerCase().includes(q) || r.col5.toLowerCase().includes(q) || r.col6.toLowerCase().includes(q)
-            );
-            renderPerformerTable(filtered);
-        }
-        function clearPerformerSearch() { document.getElementById('performerSearch').value = ''; renderPerformerTable(); }
-
-        function filterContactTable() {
-            const q = document.getElementById('contactSearch').value.toLowerCase();
-            const filtered = state.contacts.filter(r => 
-                r.col2.toLowerCase().includes(q) || r.col6.toLowerCase().includes(q)
-            );
-            renderContactTable(filtered);
-        }
-        function clearContactSearch() { document.getElementById('contactSearch').value = ''; renderContactTable(); }
-
-
-        // --- 設定・マスタ管理ロジック ---
-        function saveTemplate() {
-            const name = document.getElementById('templateName').value.trim();
-            const content = document.getElementById('templateContent').value;
-            if (!name) return alert('テンプレート名を入力してください。');
-            state.templates[name] = content;
-            localStorage.setItem('sd_templates', JSON.stringify(state.templates));
-            renderTemplateList();
-            document.getElementById('templateName').value = '';
-            document.getElementById('templateContent').value = '';
-            alert('テンプレートを保存しました。');
-        }
-
-        function loadTemplateToForm(name) {
-            document.getElementById('templateName').value = name;
-            document.getElementById('templateContent').value = state.templates[name] || '';
-        }
-
-        function deleteTemplate(name) {
-            if (confirm(`テンプレート「${name}」を削除しますか？`)) {
-                delete state.templates[name];
-                localStorage.setItem('sd_templates', JSON.stringify(state.templates));
-                renderTemplateList();
-            }
-        }
-
-        function exportListData(type) {
-            let text = '';
-            if (type === 'contact') {
-                text = document.getElementById('rawContactInput').value;
-            } else if (type === 'performer') {
-                // 出演者タブの表示そのままの7列構成のTSV形式を出力
-                text = state.performers.map(r => 
-                    `${r.col1}\t${r.col2}\t${r.col3}\t${r.col4}\t${r.col5}\t${r.col6}\t${r.col7}`
-                ).join('\n');
-            }
-            navigator.clipboard.writeText(text);
-            alert(`${type === 'contact' ? '連絡先' : '出演者'}リストのTSVデータをクリップボードに書き出しました。`);
-        }
-
-        function saveAllSettings() {
-            const rawContact = document.getElementById('rawContactInput').value;
-            const rawPerformer = document.getElementById('rawPerformerInput').value;
-
-            // 各データをローカルストレージへ完全に置き換えて（上書き）保存
-            localStorage.setItem('sd_raw_contacts', rawContact);
-            localStorage.setItem('sd_raw_performers', rawPerformer);
-
-            state.contacts = parseTSV(rawContact, 11);
-            state.performers = parseTSV(rawPerformer, 7);
-
-            buildMasterData();
-            renderAll();
-            
-            // 選択状態のクリア
-            state.selectedRows = { master: null, performer: null, contact: null };
-            updateActionPanel('master');
-            updateActionPanel('performer');
-            updateActionPanel('contact');
-
-            alert('すべての設定データを反映して保存しました。');
-        }
-
-        // --- 文面生成モーダル制御 ---
-        let currentModalTarget = { type: null, index: null };
-
-        function openTemplateModal(type) {
-            const index = state.selectedRows[type === 'master' ? 'master' : type === 'contact' ? 'contact' : 'performer'];
-            if (index === null || index === undefined) return alert('行を選択してください。');
-
-            currentModalTarget = { type, index };
-            
-            const select = document.getElementById('modalTemplateSelect');
-            select.innerHTML = '<option value="">-- テンプレートを選択してください --</option>';
-            Object.keys(state.templates).forEach(name => {
-                const opt = document.createElement('option');
-                opt.value = name;
-                opt.innerText = name;
-                select.appendChild(opt);
+            navigator.clipboard.writeText(msg).then(() => {
+                showToastBanner(`コピーしました！\n\n${msg}`, 1000);
+                if (platform === 'line') window.location.href = `https://line.me/R/ti/p/@${art.lineId}`;
+                if (platform === 'twitter') launchTwitterProfileApp(art.twitterId, null);
+                if (platform === 'gmail') window.location.href = `googlegmail:///co?to=${art.mail}&subject=${tpl.title}&body=${encodeURIComponent(msg)}`;
             });
-
-            document.getElementById('modalOutputText').value = '';
-            document.getElementById('templateModal').style.display = 'flex';
         }
 
-        function closeTemplateModal() {
-            document.getElementById('templateModal').style.display = 'none';
+        function showToastBanner(msg, duration = 3000) {
+            const t = document.getElementById('toast-message-banner');
+            t.innerText = msg;
+            t.style.display = 'block';
+            setTimeout(() => t.style.display = 'none', duration);
         }
 
-        function generateModalText() {
-            const select = document.getElementById('modalTemplateSelect');
-            const templateName = select.value;
-            if (!templateName) {
-                document.getElementById('modalOutputText').value = '';
-                return;
-            }
-
-            let template = state.templates[templateName] || '';
-            const { type, index } = currentModalTarget;
-
-            let replaceMap = {};
-            if (type === 'master') {
-                const r = state.master[index];
-                replaceMap = { '{アーティスト名}': r.name, '{要望}': r.request, '{進捗}': r.progress, '{備考1}': r.note1, '{備考2}': r.note2 };
-            } else if (type === 'performer') {
-                const r = state.performers[index];
-                replaceMap = { '{アーティスト名}': r.col2, '{要望}': r.col6, '{進捗}': r.col7, '{備考1}': '', '{備考2}': '' };
-            } else if (type === 'contact') {
-                const r = state.contacts[index];
-                replaceMap = { '{アーティスト名}': r.col2, '{要望}': '', '{進捗}': '', '{備考1}': r.col7, '{備考2}': r.col8 };
-            }
-
-            Object.keys(replaceMap).forEach(key => {
-                template = template.replaceAll(key, replaceMap[key] || '');
+        function executeKanaSortAndJump(k) {
+            const kanaMap = {
+                'a': ['あ', 'い', 'う', 'え', 'お'],
+                'ka': ['か', 'き', 'く', 'け', 'こ', 'が', 'ぎ', 'ぐ', 'げ', 'ご'],
+                'sa': ['さ', 'し', 'す', 'せ', 'そ', 'ざ', 'じ', 'ず', 'ぜ', 'ぞ'],
+                'ta': ['た', 'ち', 'つ', 'て', 'と', 'だ', 'ぢ', 'づ', 'で', 'ど'],
+                'na': ['な', 'に', 'ぬ', 'ね', 'の'],
+                'ha': ['は', 'ひ', 'ふ', 'へ', 'ほ', 'ば', 'び', 'ぶ', 'べ', 'ぼ', 'ぱ', 'ぴ', 'ぷ', 'ぺ', 'ぽ'],
+                'ma': ['ま', 'み', 'む', 'め', 'も'],
+                'ya': ['や', 'ゆ', 'よ'],
+                'ra': ['ら', 'り', 'る', 'れ', 'ろ'],
+                'wa': ['わ', 'を', 'ん']
+            };
+            const targets = kanaMap[k];
+            appState.artists.sort((a, b) => {
+                /* 安全対策：未定義データや空欄時でも1文字目を安全に取得 */
+                const fA = (a.furigana && a.furigana.length > 0) ? a.furigana[0] : '';
+                const fB = (b.furigana && b.furigana.length > 0) ? b.furigana[0] : '';
+                const isTargetA = targets.includes(fA) ? 0 : 1;
+                const isTargetB = targets.includes(fB) ? 0 : 1;
+                if (isTargetA !== isTargetB) return isTargetA - isTargetB;
+                return (a.furigana || '').localeCompare(b.furigana || '', 'ja');
             });
-
-            document.getElementById('modalOutputText').value = template;
+            renderArtistsGrid();
+            const targetEl = document.querySelector(`tr[data-uid]`);
+            if (targetEl) targetEl.scrollIntoView({ behavior: 'smooth' });
         }
 
-        function copyModalText() {
-            const text = document.getElementById('modalOutputText').value;
-            navigator.clipboard.writeText(text);
-            alert('生成されたテキストをコピーしました。');
+        function filterArtists() {
+            const q = document.getElementById('search-bar').value.toLowerCase();
+            document.querySelectorAll('.table-row-item').forEach(r => {
+                if(r.closest('#artist-table-body-target')) {
+                    r.style.display = r.innerText.toLowerCase().includes(q) ? '' : 'none';
+                }
+            });
         }
 
-        // ユーティリティ
-        function escapeHtml(str) {
-            if (!str) return '';
-            return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+        function escapeHtml(s) {
+            return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
         }
     </script>
 </body>
