@@ -683,7 +683,7 @@
                 <button id="tab-operation" class="nav-tab" onclick="switchView('operation')">管理表</button>
                 <button id="tab-settings" class="nav-tab" onclick="switchView('settings')">設定</button>
             </div>
-            <div class="version-tag">ver.0.2.10</div>
+            <div class="version-tag">ver.0.2.11</div>
         </div>
     </header>
 
@@ -885,6 +885,7 @@
     <script>
         let appState = {
             artists: [],
+            performers: [],
             templates: [],
             selectedArtistId: null, 
             selectedTemplateIndex: null,
@@ -921,12 +922,20 @@
         function loadPersistedData() {
             try {
                 const savedArtists = localStorage.getItem('sd_matrix_artists');
+                const savedPerformers = localStorage.getItem('sd_matrix_performers');
                 const savedTemplates = localStorage.getItem('sd_matrix_templates');
+                
                 if (savedArtists) appState.artists = JSON.parse(savedArtists);
+                if (savedPerformers) appState.performers = JSON.parse(savedPerformers);
                 if (savedTemplates) appState.templates = JSON.parse(savedTemplates);
+                
                 appState.artists.forEach((item, idx) => {
                     if (!item.uid) item.uid = "art_" + Date.now() + "_" + idx;
-                    if (!item.furigana) item.furigana = ""; /* 安全対策：フリガナの未定義をガード */
+                    if (!item.furigana) item.furigana = ""; 
+                });
+                
+                appState.performers.forEach((item, idx) => {
+                    if (!item.uid) item.uid = "perf_" + Date.now() + "_" + idx;
                     if (!item.req) item.req = "";
                     if (!item.progress) item.progress = "";
                     if (!item.count) item.count = "";
@@ -989,10 +998,7 @@
                         uid: existingByNo ? existingByNo.uid : ("art_" + Date.now() + "_" + index),
                         no: cols[0], furigana: cols[1] || "", artist: cols[2], charge: cols[3], 
                         mail: cols[4], twitterId: cols[5], lineId: cols[6], meth: cols[7], 
-                        flag: cols[8] || "", date: cols[9] || "", yomi: cols[10] || "", 
-                        req: existingByNo ? existingByNo.req : "", 
-                        progress: existingByNo ? existingByNo.progress : "", 
-                        count: existingByNo ? existingByNo.count : ""
+                        flag: cols[8] || "", date: cols[9] || "", yomi: cols[10] || ""
                     });
                 }
             });
@@ -1016,52 +1022,32 @@
                 return;
             }
 
-            appState.artists.forEach(a => {
-                if(a.flag === '🙆🏼‍♀️') {
-                    a.flag = '-';
-                    a.count = '';
-                    a.req = '';
-                    a.progress = '';
-                    a.yomi = '';
-                }
-            });
-
+            let newPerformers = [];
             const pLines = rawText.split('\n');
             pLines.forEach((line, index) => {
                 const cols = line.split('\t');
                 if (cols.length >= 2 && !cols[0].includes('No')) {
-                    const pNo = cols[0];
-                    const pArtist = cols[1];
-                    const pCount = cols[2] || "";
-                    const pFlag = cols[3] || "";
-                    const pYomi = cols[4] || "";
-                    const pReq = cols[5] || "";
-                    const pProgress = cols[6] || "";
-
-                    let target = appState.artists.find(a => a.no === pNo) || appState.artists.find(a => a.artist === pArtist);
-                    if (target) {
-                        target.count = pCount;
-                        target.flag = pFlag;
-                        target.yomi = pYomi;
-                        target.req = pReq;
-                        target.progress = pProgress;
-                    } else {
-                        appState.artists.push({
-                            uid: "art_perf_" + Date.now() + "_" + index,
-                            no: pNo, furigana: "", artist: pArtist, charge: "", 
-                            mail: "", twitterId: "", lineId: "", meth: "", 
-                            flag: pFlag, date: "", yomi: pYomi, req: pReq, progress: pProgress, count: pCount
-                        });
-                    }
+                    let existingByNo = appState.performers.find(p => p.no === cols[0] && p.no !== "");
+                    newPerformers.push({
+                        uid: existingByNo ? existingByNo.uid : ("perf_" + Date.now() + "_" + index),
+                        no: cols[0] || "", 
+                        artist: cols[1] || "", 
+                        count: cols[2] || "", 
+                        flag: cols[3] || "", 
+                        yomi: cols[4] || "", 
+                        req: cols[5] || "", 
+                        progress: cols[6] || ""
+                    });
                 }
             });
             
-            localStorage.setItem('sd_matrix_artists', JSON.stringify(appState.artists));
+            appState.performers = newPerformers;
+            localStorage.setItem('sd_matrix_performers', JSON.stringify(appState.performers));
             
             document.getElementById('import-performers-raw').value = '';
             localStorage.removeItem('sd_raw_performers_input');
 
-            executeSortPipeline();
+            renderPerformersGrid();
             switchView('performers');
             showToastBanner("出演者リストを反映しました");
         }
@@ -1101,12 +1087,11 @@
         }
 
         function exportPerformersToClipboard() {
-            const performers = appState.artists.filter(a => a.flag === '🙆🏼‍♀️');
-            if (performers.length === 0) {
+            if (!appState.performers || appState.performers.length === 0) {
                 showToastBanner("エクスポートするデータがありません", 1000);
                 return;
             }
-            const sorted = [...performers].sort((a, b) => {
+            const sorted = [...appState.performers].sort((a, b) => {
                 return parseInt(a.no || 0, 10) - parseInt(b.no || 0, 10);
             });
             let tsvLines = [];
@@ -1173,9 +1158,10 @@
         }
 
         function openReqEditorModal(uid) {
-            const art = appState.artists.find(a => a.uid === uid);
+            const perf = appState.performers.find(a => a.uid === uid);
+            if (!perf) return;
             document.getElementById('edit-req-artist-uid').value = uid;
-            document.getElementById('edit-req-textarea').value = art.req || '';
+            document.getElementById('edit-req-textarea').value = perf.req || '';
             document.getElementById('req-editor-modal-overlay').classList.add('active');
         }
 
@@ -1183,10 +1169,12 @@
 
         function saveReqEditorModalData() {
             const uid = document.getElementById('edit-req-artist-uid').value;
-            const art = appState.artists.find(a => a.uid === uid);
-            art.req = document.getElementById('edit-req-textarea').value;
-            localStorage.setItem('sd_matrix_artists', JSON.stringify(appState.artists));
-            renderPerformersGrid();
+            const perf = appState.performers.find(a => a.uid === uid);
+            if (perf) {
+                perf.req = document.getElementById('edit-req-textarea').value;
+                localStorage.setItem('sd_matrix_performers', JSON.stringify(appState.performers));
+                renderPerformersGrid();
+            }
             closeReqEditorModal();
         }
 
@@ -1217,7 +1205,7 @@
         function renderPerformersGrid() {
             const container = document.getElementById('performers-table-body-target');
             container.innerHTML = '';
-            const performers = appState.artists.filter(a => a.flag === '🙆🏼‍♀️');
+            const performers = appState.performers;
             
             let totalCount = performers.length;
             let totalYomi = 0;
@@ -1273,15 +1261,15 @@
         }
 
         function updatePerformerProgress(uid, val) {
-            const art = appState.artists.find(a => a.uid === uid);
-            art.progress = val;
-            localStorage.setItem('sd_matrix_artists', JSON.stringify(appState.artists));
+            const perf = appState.performers.find(a => a.uid === uid);
+            if(perf) perf.progress = val;
+            localStorage.setItem('sd_matrix_performers', JSON.stringify(appState.performers));
         }
 
         function updatePerformerCount(uid, val) {
-            const art = appState.artists.find(a => a.uid === uid);
-            art.count = val;
-            localStorage.setItem('sd_matrix_artists', JSON.stringify(appState.artists));
+            const perf = appState.performers.find(a => a.uid === uid);
+            if(perf) perf.count = val;
+            localStorage.setItem('sd_matrix_performers', JSON.stringify(appState.performers));
             renderPerformersGrid();
         }
 
