@@ -683,7 +683,7 @@
                 <button id="tab-operation" class="nav-tab" onclick="switchView('operation')">管理表</button>
                 <button id="tab-settings" class="nav-tab" onclick="switchView('settings')">設定</button>
             </div>
-            <div class="version-tag">ver.0.2.12</div>
+            <div class="version-tag">ver.0.2.13</div>
         </div>
     </header>
 
@@ -730,7 +730,9 @@
             </div>
         </div>
 
-        <div id="stats-panel" class="stats-bar">出演者数：0組   合計ヨミ：0人</div>
+        <div id="stats-panel" class="stats-bar" style="text-align: right; padding: 2px 0;">
+            <button type="button" class="btn-mini-danger" style="font-size: 10px; padding: 3px 8px;" onclick="confirmClearFlagAndDate()">出演 日付をクリア</button>
+        </div>
 
         <div class="table-scroll-container">
             <table class="excel-table">
@@ -778,13 +780,6 @@
             <textarea id="import-artists-raw" class="paste-textarea" placeholder="【連絡先】No&#9;アーティスト名&#9;Twitter&#9;LINE&#9;Mail... （11列のTSVデータを貼り付けてください）"></textarea>
             <button class="btn-action btn-export" onclick="exportArtistsToClipboard()" style="margin-top: 6px;">リストデータ書き出し<br><span style="font-size:9px;font-weight:normal;opacity:0.85;">現在のアプリ上の情報をエクスポート</span></button>
             <button class="btn-action btn-save" onclick="importContactList()" style="margin-top: 6px;">連絡先リストを反映して保存<br><span style="font-size:9px;font-weight:normal;opacity:0.85;">インポート</span></button>
-        </div>
-
-        <div class="settings-group">
-            <label class="settings-label">■ 出演者リスト</label>
-            <textarea id="import-performers-raw" class="paste-textarea" placeholder="【出演者】No&#9;アーティスト&#9;出演回数&#9;出演flag&#9;ヨミ&#9;要望&#9;進捗 （7列のTSVデータを貼り付けてください）"></textarea>
-            <button class="btn-action btn-export" onclick="exportPerformersToClipboard()" style="margin-top: 6px;">リストデータ書き出し<br><span style="font-size:9px;font-weight:normal;opacity:0.85;">現在のアプリ上の情報をエクスポート</span></button>
-            <button class="btn-action btn-save" onclick="importPerformerList()" style="margin-top: 6px;">出演者リストを反映して保存<br><span style="font-size:9px;font-weight:normal;opacity:0.85;">インポート</span></button>
         </div>
 
     </div>
@@ -853,6 +848,27 @@
                 <div class="edit-form-group">
                     <label class="edit-form-label">ヨミ</label>
                     <input type="number" id="edit-artist-yomi" class="edit-form-input">
+                </div>
+                <div class="edit-form-group">
+                    <label class="edit-form-label">出演回数</label>
+                    <select id="edit-artist-count" class="edit-form-input" style="padding: 4px 6px;">
+                        <option value=""> </option>
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                    </select>
+                </div>
+                <div class="edit-form-group">
+                    <label class="edit-form-label">要望</label>
+                    <textarea id="edit-artist-req" class="paste-textarea" style="height: 60px;" placeholder="要望"></textarea>
+                </div>
+                <div class="edit-form-group">
+                    <label class="edit-form-label">進捗</label>
+                    <select id="edit-artist-progress" class="edit-form-input" style="padding: 4px 6px;">
+                        <option value=""> </option>
+                        <option value="タイテ">タイテ</option>
+                        <option value="開催告知">開催告知</option>
+                        <option value="予約連絡">予約連絡</option>
+                    </select>
                 </div>
                 <div class="edit-form-group">
                     <label class="edit-form-label">推奨</label>
@@ -935,7 +951,10 @@
                 
                 appState.artists.forEach((item, idx) => {
                     if (!item.uid) item.uid = "art_" + Date.now() + "_" + idx;
-                    if (!item.furigana) item.furigana = ""; 
+                    if (!item.furigana) item.furigana = "";
+                    if (!item.count) item.count = "";
+                    if (!item.req) item.req = "";
+                    if (!item.progress) item.progress = "";
                 });
                 
                 appState.performers.forEach((item, idx) => {
@@ -1002,7 +1021,10 @@
                         uid: existingByNo ? existingByNo.uid : ("art_" + Date.now() + "_" + index),
                         no: cols[0], furigana: cols[1] || "", artist: cols[2], charge: cols[3], 
                         mail: cols[4], twitterId: cols[5], lineId: cols[6], meth: cols[7], 
-                        flag: cols[8] || "", date: cols[9] || "", yomi: cols[10] || ""
+                        flag: cols[8] || "", date: cols[9] || "", yomi: cols[10] || "",
+                        count: existingByNo ? (existingByNo.count || "") : "",
+                        req: existingByNo ? (existingByNo.req || "") : "",
+                        progress: existingByNo ? (existingByNo.progress || "") : ""
                     });
                 }
             });
@@ -1016,44 +1038,6 @@
             executeSortPipeline();
             switchView('operation');
             showToastBanner("連絡先リストを反映しました");
-        }
-
-        function importPerformerList() {
-            saveTemplatesOnly();
-            const rawText = document.getElementById('import-performers-raw').value.trim();
-            if (!rawText) {
-                showToastBanner("出演者データが入力されていません");
-                return;
-            }
-
-            let newPerformers = [];
-            const pLines = rawText.split('\n');
-            pLines.forEach((line, index) => {
-                const cols = line.split('\t');
-                if (cols.length >= 2 && !cols[0].includes('No')) {
-                    let existingByNo = appState.performers.find(p => p.no === cols[0] && p.no !== "");
-                    newPerformers.push({
-                        uid: existingByNo ? existingByNo.uid : ("perf_" + Date.now() + "_" + index),
-                        no: cols[0] || "", 
-                        artist: cols[1] || "", 
-                        count: cols[2] || "", 
-                        flag: cols[3] || "", 
-                        yomi: cols[4] || "", 
-                        req: cols[5] || "", 
-                        progress: cols[6] || ""
-                    });
-                }
-            });
-            
-            appState.performers = newPerformers;
-            localStorage.setItem('sd_matrix_performers', JSON.stringify(appState.performers));
-            
-            document.getElementById('import-performers-raw').value = '';
-            localStorage.removeItem('sd_raw_performers_input');
-
-            renderPerformersGrid();
-            switchView('performers');
-            showToastBanner("出演者リストを反映しました");
         }
 
         function exportArtistsToClipboard() {
@@ -1090,36 +1074,6 @@
             });
         }
 
-        function exportPerformersToClipboard() {
-            if (!appState.performers || appState.performers.length === 0) {
-                showToastBanner("エクスポートするデータがありません", 1000);
-                return;
-            }
-            const sorted = [...appState.performers].sort((a, b) => {
-                return parseInt(a.no || 0, 10) - parseInt(b.no || 0, 10);
-            });
-            let tsvLines = [];
-            sorted.forEach(item => {
-                const rowCols = [
-                    item.no || '',
-                    item.artist || '',
-                    item.count || '',
-                    item.flag || '',
-                    item.yomi || '',
-                    item.req || '',
-                    item.progress || ''
-                ];
-                tsvLines.push(rowCols.join('\t'));
-            });
-            const tsvText = tsvLines.join('\n');
-            navigator.clipboard.writeText(tsvText).then(() => {
-                showToastBanner("出演者データ " + sorted.length + " 件をクリップボードにコピーしました", 1000);
-            }).catch(err => {
-                console.error(err);
-                showToastBanner("コピーに失敗しました", 1000);
-            });
-        }
-
         function triggerAppResetWithModal() {
             document.getElementById('modal-title-node').innerText = "リセット";
             document.getElementById('modal-body-node').innerHTML = "全データを消去しますか？";
@@ -1129,6 +1083,25 @@
 
         function closeConfirmationModal() { document.getElementById('global-modal-overlay').classList.remove('active'); }
 
+        function confirmClearFlagAndDate() {
+            document.getElementById('modal-title-node').innerText = "確認";
+            document.getElementById('modal-body-node').innerText = "出演列、日付列をクリアしますか？";
+            document.getElementById('modal-confirm-btn').innerText = "はい";
+            document.getElementById('modal-confirm-btn').onclick = () => {
+                appState.artists.forEach(a => {
+                    a.flag = '-';
+                    a.date = '';
+                });
+                localStorage.setItem('sd_matrix_artists', JSON.stringify(appState.artists));
+                renderArtistsGrid();
+                if (document.getElementById('tab-performers').classList.contains('active')) {
+                    renderPerformersGrid();
+                }
+                closeConfirmationModal();
+            };
+            document.getElementById('global-modal-overlay').classList.add('active');
+        }
+
         function openArtistEditorModal(uid) {
             const art = appState.artists.find(a => a.uid === uid);
             document.getElementById('edit-modal-header-title').innerText = 'アーティスト情報の編集';
@@ -1137,6 +1110,9 @@
             document.getElementById('edit-artist-furi').value = art.furigana || '';
             document.getElementById('edit-artist-charge').value = art.charge;
             document.getElementById('edit-artist-yomi').value = art.yomi;
+            document.getElementById('edit-artist-count').value = art.count || '';
+            document.getElementById('edit-artist-req').value = art.req || '';
+            document.getElementById('edit-artist-progress').value = art.progress || '';
             document.getElementById('edit-artist-meth').value = art.meth || '';
             document.getElementById('edit-artist-line').value = art.lineId;
             document.getElementById('edit-artist-twitter').value = art.twitterId;
@@ -1151,6 +1127,9 @@
             document.getElementById('edit-artist-furi').value = '';
             document.getElementById('edit-artist-charge').value = '';
             document.getElementById('edit-artist-yomi').value = '';
+            document.getElementById('edit-artist-count').value = '';
+            document.getElementById('edit-artist-req').value = '';
+            document.getElementById('edit-artist-progress').value = '';
             document.getElementById('edit-artist-meth').value = '';
             document.getElementById('edit-artist-line').value = '';
             document.getElementById('edit-artist-twitter').value = '';
@@ -1181,7 +1160,10 @@
                     meth: document.getElementById('edit-artist-meth').value,
                     flag: "",
                     date: "",
-                    yomi: document.getElementById('edit-artist-yomi').value
+                    yomi: document.getElementById('edit-artist-yomi').value,
+                    count: document.getElementById('edit-artist-count').value,
+                    req: document.getElementById('edit-artist-req').value,
+                    progress: document.getElementById('edit-artist-progress').value
                 };
                 appState.artists.push(newArtist);
             } else {
@@ -1191,6 +1173,9 @@
                     art.furigana = document.getElementById('edit-artist-furi').value;
                     art.charge = document.getElementById('edit-artist-charge').value;
                     art.yomi = document.getElementById('edit-artist-yomi').value;
+                    art.count = document.getElementById('edit-artist-count').value;
+                    art.req = document.getElementById('edit-artist-req').value;
+                    art.progress = document.getElementById('edit-artist-progress').value;
                     art.meth = document.getElementById('edit-artist-meth').value;
                     art.lineId = document.getElementById('edit-artist-line').value;
                     art.twitterId = document.getElementById('edit-artist-twitter').value;
@@ -1199,14 +1184,17 @@
             }
             localStorage.setItem('sd_matrix_artists', JSON.stringify(appState.artists));
             renderArtistsGrid();
+            if (document.getElementById('tab-performers').classList.contains('active')) {
+                renderPerformersGrid();
+            }
             closeArtistEditorModal();
         }
 
         function openReqEditorModal(uid) {
-            const perf = appState.performers.find(a => a.uid === uid);
-            if (!perf) return;
+            const art = appState.artists.find(a => a.uid === uid);
+            if (!art) return;
             document.getElementById('edit-req-artist-uid').value = uid;
-            document.getElementById('edit-req-textarea').value = perf.req || '';
+            document.getElementById('edit-req-textarea').value = art.req || '';
             document.getElementById('req-editor-modal-overlay').classList.add('active');
         }
 
@@ -1214,10 +1202,10 @@
 
         function saveReqEditorModalData() {
             const uid = document.getElementById('edit-req-artist-uid').value;
-            const perf = appState.performers.find(a => a.uid === uid);
-            if (perf) {
-                perf.req = document.getElementById('edit-req-textarea').value;
-                localStorage.setItem('sd_matrix_performers', JSON.stringify(appState.performers));
+            const art = appState.artists.find(a => a.uid === uid);
+            if (art) {
+                art.req = document.getElementById('edit-req-textarea').value;
+                localStorage.setItem('sd_matrix_artists', JSON.stringify(appState.artists));
                 renderPerformersGrid();
             }
             closeReqEditorModal();
@@ -1233,7 +1221,14 @@
             const key = appState.currentSortKey;
             const asc = appState.isAscending ? 1 : -1;
             appState.artists.sort((a, b) => {
-                let valA = a[key] || '', valB = b[key] || '';
+                let valA, valB;
+                if (key === '50on') {
+                    valA = a.furigana || '';
+                    valB = b.furigana || '';
+                } else {
+                    valA = a[key] || '';
+                    valB = b[key] || '';
+                }
                 return valA.localeCompare(valB, 'ja') * asc;
             });
             updateHeaderIndicators();
@@ -1250,7 +1245,7 @@
         function renderPerformersGrid() {
             const container = document.getElementById('performers-table-body-target');
             container.innerHTML = '';
-            const performers = appState.performers;
+            const performers = appState.artists.filter(a => a.flag === '🙆🏻‍♀️');
             
             let totalCount = performers.length;
             let totalYomi = 0;
@@ -1306,22 +1301,25 @@
         }
 
         function updatePerformerProgress(uid, val) {
-            const perf = appState.performers.find(a => a.uid === uid);
-            if(perf) perf.progress = val;
-            localStorage.setItem('sd_matrix_performers', JSON.stringify(appState.performers));
+            const art = appState.artists.find(a => a.uid === uid);
+            if (art) {
+                art.progress = val;
+                localStorage.setItem('sd_matrix_artists', JSON.stringify(appState.artists));
+            }
         }
 
         function updatePerformerCount(uid, val) {
-            const perf = appState.performers.find(a => a.uid === uid);
-            if(perf) perf.count = val;
-            localStorage.setItem('sd_matrix_performers', JSON.stringify(appState.performers));
-            renderPerformersGrid();
+            const art = appState.artists.find(a => a.uid === uid);
+            if (art) {
+                art.count = val;
+                localStorage.setItem('sd_matrix_artists', JSON.stringify(appState.artists));
+                renderPerformersGrid();
+            }
         }
 
         function renderArtistsGrid() {
             const container = document.getElementById('artist-table-body-target');
             container.innerHTML = '';
-            let totalYomi = 0, totalCount = 0;
             
             const today = new Date();
             const dateOptions = [];
@@ -1334,10 +1332,6 @@
             }
             
             appState.artists.forEach(item => {
-                if (item.flag === '🙆🏻‍♀️') {
-                    totalCount++;
-                    totalYomi += parseInt(item.yomi || 0);
-                }
                 const row = document.createElement('tr');
                 row.className = 'table-row-item';
                 row.dataset.uid = item.uid;
@@ -1395,7 +1389,6 @@
                 `;
                 container.appendChild(row);
             });
-            document.getElementById('stats-panel').innerText = `出演者数：${totalCount}組   合計ヨミ：${totalYomi}人`;
         }
 
         function extractTwitterScreenName(input) {
@@ -1430,6 +1423,9 @@
             art.flag = val;
             localStorage.setItem('sd_matrix_artists', JSON.stringify(appState.artists));
             renderArtistsGrid();
+            if (document.getElementById('tab-performers').classList.contains('active')) {
+                renderPerformersGrid();
+            }
         }
 
         function updateArtistDate(uid, val) {
