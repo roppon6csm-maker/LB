@@ -683,7 +683,7 @@
                 <button id="tab-operation" class="nav-tab" onclick="switchView('operation')">管理表</button>
                 <button id="tab-settings" class="nav-tab" onclick="switchView('settings')">設定</button>
             </div>
-            <div class="version-tag">ver.0.2.11</div>
+            <div class="version-tag">ver.0.2.12</div>
         </div>
     </header>
 
@@ -750,6 +750,10 @@
             </table>
         </div>
 
+        <div style="text-align: right; margin: 4px 0 6px 0;">
+            <button type="button" class="btn-mini-add" onclick="openArtistAddModal()" style="font-size: 13px; padding: 3px 10px;">➕</button>
+        </div>
+
         <div class="preview-title" style="font-size:10px; color:#718096; margin-bottom:4px;">テンプレート</div>
         <div id="template-list-target" style="max-height: 120px; overflow-y: auto;">
         </div>
@@ -772,15 +776,15 @@
         <div class="settings-group">
             <label class="settings-label">■ 連絡先リスト</label>
             <textarea id="import-artists-raw" class="paste-textarea" placeholder="【連絡先】No&#9;アーティスト名&#9;Twitter&#9;LINE&#9;Mail... （11列のTSVデータを貼り付けてください）"></textarea>
-            <button class="btn-action btn-export" onclick="exportArtistsToClipboard()" style="margin-top: 6px;">リストデータ書き出し</button>
-            <button class="btn-action btn-save" onclick="importContactList()" style="margin-top: 6px;">連絡先リストを反映して保存</button>
+            <button class="btn-action btn-export" onclick="exportArtistsToClipboard()" style="margin-top: 6px;">リストデータ書き出し<br><span style="font-size:9px;font-weight:normal;opacity:0.85;">現在のアプリ上の情報をエクスポート</span></button>
+            <button class="btn-action btn-save" onclick="importContactList()" style="margin-top: 6px;">連絡先リストを反映して保存<br><span style="font-size:9px;font-weight:normal;opacity:0.85;">インポート</span></button>
         </div>
 
         <div class="settings-group">
             <label class="settings-label">■ 出演者リスト</label>
             <textarea id="import-performers-raw" class="paste-textarea" placeholder="【出演者】No&#9;アーティスト&#9;出演回数&#9;出演flag&#9;ヨミ&#9;要望&#9;進捗 （7列のTSVデータを貼り付けてください）"></textarea>
-            <button class="btn-action btn-export" onclick="exportPerformersToClipboard()" style="margin-top: 6px;">リストデータ書き出し</button>
-            <button class="btn-action btn-save" onclick="importPerformerList()" style="margin-top: 6px;">出演者リストを反映して保存</button>
+            <button class="btn-action btn-export" onclick="exportPerformersToClipboard()" style="margin-top: 6px;">リストデータ書き出し<br><span style="font-size:9px;font-weight:normal;opacity:0.85;">現在のアプリ上の情報をエクスポート</span></button>
+            <button class="btn-action btn-save" onclick="importPerformerList()" style="margin-top: 6px;">出演者リストを反映して保存<br><span style="font-size:9px;font-weight:normal;opacity:0.85;">インポート</span></button>
         </div>
 
     </div>
@@ -1127,6 +1131,7 @@
 
         function openArtistEditorModal(uid) {
             const art = appState.artists.find(a => a.uid === uid);
+            document.getElementById('edit-modal-header-title').innerText = 'アーティスト情報の編集';
             document.getElementById('edit-artist-uid').value = uid;
             document.getElementById('edit-artist-name').value = art.artist;
             document.getElementById('edit-artist-furi').value = art.furigana || '';
@@ -1139,19 +1144,59 @@
             document.getElementById('artist-editor-modal-overlay').classList.add('active');
         }
 
+        function openArtistAddModal() {
+            document.getElementById('edit-modal-header-title').innerText = 'アーティスト情報の追加';
+            document.getElementById('edit-artist-uid').value = '';
+            document.getElementById('edit-artist-name').value = '';
+            document.getElementById('edit-artist-furi').value = '';
+            document.getElementById('edit-artist-charge').value = '';
+            document.getElementById('edit-artist-yomi').value = '';
+            document.getElementById('edit-artist-meth').value = '';
+            document.getElementById('edit-artist-line').value = '';
+            document.getElementById('edit-artist-twitter').value = '';
+            document.getElementById('edit-artist-mail').value = '';
+            document.getElementById('artist-editor-modal-overlay').classList.add('active');
+        }
+
         function closeArtistEditorModal() { document.getElementById('artist-editor-modal-overlay').classList.remove('active'); }
 
         function saveArtistEditorModalData() {
             const uid = document.getElementById('edit-artist-uid').value;
-            const art = appState.artists.find(a => a.uid === uid);
-            art.artist = document.getElementById('edit-artist-name').value;
-            art.furigana = document.getElementById('edit-artist-furi').value;
-            art.charge = document.getElementById('edit-artist-charge').value;
-            art.yomi = document.getElementById('edit-artist-yomi').value;
-            art.meth = document.getElementById('edit-artist-meth').value;
-            art.lineId = document.getElementById('edit-artist-line').value;
-            art.twitterId = document.getElementById('edit-artist-twitter').value;
-            art.mail = document.getElementById('edit-artist-mail').value;
+            if (!uid) {
+                // 新規追加モード
+                let maxNo = 0;
+                appState.artists.forEach(a => {
+                    const n = parseInt(a.no || 0, 10);
+                    if (!isNaN(n) && n > maxNo) maxNo = n;
+                });
+                const newArtist = {
+                    uid: "art_" + Date.now() + "_" + Math.random().toString(36).substr(2, 5),
+                    no: String(maxNo + 1),
+                    furigana: document.getElementById('edit-artist-furi').value,
+                    artist: document.getElementById('edit-artist-name').value,
+                    charge: document.getElementById('edit-artist-charge').value,
+                    mail: document.getElementById('edit-artist-mail').value,
+                    twitterId: document.getElementById('edit-artist-twitter').value,
+                    lineId: document.getElementById('edit-artist-line').value,
+                    meth: document.getElementById('edit-artist-meth').value,
+                    flag: "",
+                    date: "",
+                    yomi: document.getElementById('edit-artist-yomi').value
+                };
+                appState.artists.push(newArtist);
+            } else {
+                const art = appState.artists.find(a => a.uid === uid);
+                if (art) {
+                    art.artist = document.getElementById('edit-artist-name').value;
+                    art.furigana = document.getElementById('edit-artist-furi').value;
+                    art.charge = document.getElementById('edit-artist-charge').value;
+                    art.yomi = document.getElementById('edit-artist-yomi').value;
+                    art.meth = document.getElementById('edit-artist-meth').value;
+                    art.lineId = document.getElementById('edit-artist-line').value;
+                    art.twitterId = document.getElementById('edit-artist-twitter').value;
+                    art.mail = document.getElementById('edit-artist-mail').value;
+                }
+            }
             localStorage.setItem('sd_matrix_artists', JSON.stringify(appState.artists));
             renderArtistsGrid();
             closeArtistEditorModal();
@@ -1289,7 +1334,7 @@
             }
             
             appState.artists.forEach(item => {
-                if (item.flag === '🙆🏼‍♀️') {
+                if (item.flag === '🙆🏻‍♀️') {
                     totalCount++;
                     totalYomi += parseInt(item.yomi || 0);
                 }
@@ -1338,7 +1383,7 @@
                         <select class="cell-select-editor" style="font-size: 9px;" onchange="updateFlag('${item.uid}', this.value)">
                             <option value="-" ${item.flag === '-' ? 'selected' : ''}>-</option>
                             <option value="🚩" ${item.flag === '🚩' ? 'selected' : ''}>🚩</option>
-                            <option value="🙆🏼‍♀️" ${item.flag === '🙆🏼‍♀️' ? 'selected' : ''}>🙆🏼‍♀️</option>
+                            <option value="🙆🏻‍♀️" ${item.flag === '🙆🏻‍♀️' ? 'selected' : ''}>🙆🏻‍♀️</option>
                             <option value="📤" ${item.flag === '📤' ? 'selected' : ''}>📤</option>
                             <option value="🤦‍♂️" ${item.flag === '🤦‍♂️' ? 'selected' : ''}>🤦‍♂️</option>
                             <option value="🙅‍♀️" ${item.flag === '🙅‍♀️' ? 'selected' : ''}>🙅‍♀️</option>
