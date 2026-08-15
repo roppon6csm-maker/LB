@@ -257,6 +257,7 @@
         .col-meth   { width: 38px; text-align: center; font-size: 9px; }
 
         /* Performance View Grid Specifications */
+        .col-perf-move    { width: 22px; text-align: center; }
         .col-perf-artist   { width: 100px; }
         .col-perf-flag     { width: 45px; text-align: center; }
         .col-perf-yomi     { width: 35px; text-align: center; }
@@ -272,6 +273,21 @@
         }
         .col-perf-no       { width: 25px; text-align: center; }
         .col-perf-count    { width: 40px; text-align: center; font-size: 8px; }
+
+        .move-btn {
+            display: block;
+            width: 100%;
+            background: none;
+            border: none;
+            font-size: 10px;
+            line-height: 1.1;
+            padding: 0;
+            cursor: pointer;
+            color: var(--text-muted);
+        }
+        .move-btn:active {
+            color: var(--state-selected-border);
+        }
 
         /* Inline Dropdown Editor styling inside grid cell */
         .cell-select-editor {
@@ -666,6 +682,19 @@
             color: white;
         }
 
+        .preview-copy-btn {
+            position: absolute;
+            top: 6px;
+            right: 6px;
+            font-size: 10px;
+            background: #edf2f7;
+            border: 1px solid #cbd5e0;
+            border-radius: 4px;
+            padding: 2px 6px;
+            cursor: pointer;
+            z-index: 2;
+        }
+
         @keyframes pulse {
             0% { transform: scale(1); }
             50% { transform: scale(1.02); }
@@ -683,7 +712,7 @@
                 <button id="tab-operation" class="nav-tab" onclick="switchView('operation')">管理表</button>
                 <button id="tab-settings" class="nav-tab" onclick="switchView('settings')">設定</button>
             </div>
-            <div class="version-tag">ver.0.2.13</div>
+            <div class="version-tag">ver.0.2.14</div>
         </div>
     </header>
 
@@ -693,6 +722,7 @@
             <table class="excel-table perf-table">
                 <thead>
                     <tr>
+                        <th class="col-perf-move"></th>
                         <th class="col-perf-no">No</th>
                         <th class="col-perf-artist">アーティスト</th>
                         <th class="col-perf-count">出演<br>回数</th>
@@ -810,7 +840,10 @@
     <div id="preview-modal-overlay" class="modal-overlay">
         <div class="modal-container" style="max-width: 340px;">
             <div class="modal-title">プレビュー <button style="background:none; border:none; cursor:pointer;" onclick="closePreviewModal()">✕</button></div>
-            <div id="preview-modal-body" class="modal-body" style="text-align: left; white-space: pre-wrap; word-break: break-all; max-height: 300px; overflow-y: auto; background: #f7fafc; padding: 10px; border-radius: 4px;"></div>
+            <div style="position: relative;">
+                <button type="button" class="preview-copy-btn" onclick="copyPreviewText()">コピー</button>
+                <div id="preview-modal-body" class="modal-body" style="text-align: left; white-space: pre-wrap; word-break: break-all; max-height: 300px; overflow-y: auto; background: #f7fafc; padding: 10px; border-radius: 4px; margin-bottom: 0;"></div>
+            </div>
         </div>
     </div>
 
@@ -1260,7 +1293,7 @@
                 row.className = 'table-row-item';
                 
                 row.onclick = (e) => {
-                    if (e.target.tagName === 'SELECT') return;
+                    if (e.target.tagName === 'SELECT' || e.target.tagName === 'BUTTON' || e.target.classList.contains('move-btn')) return;
                     appState.selectedArtistId = item.uid;
                     renderPerformersGrid();
                     recalculateControls();
@@ -1283,7 +1316,13 @@
                 });
                 progressHtml += `</select>`;
 
+                const moveHtml = `
+                    <button type="button" class="move-btn" onclick="event.stopPropagation(); movePerformerUp('${item.uid}')">⬆️</button>
+                    <button type="button" class="move-btn" onclick="event.stopPropagation(); movePerformerDown('${item.uid}')">⬇️</button>
+                `;
+
                 row.innerHTML = `
+                    <td class="col-perf-move" onclick="event.stopPropagation()">${moveHtml}</td>
                     <td class="col-perf-no">${index + 1}</td>
                     <td class="col-perf-artist">${escapeHtml(item.artist)}</td>
                     <td class="col-perf-count" onclick="event.stopPropagation()">${countHtml}</td>
@@ -1298,6 +1337,32 @@
             if (statsPanel) {
                 statsPanel.innerText = `出演者数：${totalCount}組   合計ヨミ：${totalYomi}人`;
             }
+        }
+
+        function movePerformerUp(uid) {
+            const flagged = appState.artists.filter(a => a.flag === '🙆🏻‍♀️');
+            const idx = flagged.findIndex(a => a.uid === uid);
+            if (idx <= 0) return;
+            const prevUid = flagged[idx - 1].uid;
+            const i1 = appState.artists.findIndex(a => a.uid === uid);
+            const i2 = appState.artists.findIndex(a => a.uid === prevUid);
+            if (i1 === -1 || i2 === -1) return;
+            [appState.artists[i1], appState.artists[i2]] = [appState.artists[i2], appState.artists[i1]];
+            localStorage.setItem('sd_matrix_artists', JSON.stringify(appState.artists));
+            renderPerformersGrid();
+        }
+
+        function movePerformerDown(uid) {
+            const flagged = appState.artists.filter(a => a.flag === '🙆🏻‍♀️');
+            const idx = flagged.findIndex(a => a.uid === uid);
+            if (idx < 0 || idx >= flagged.length - 1) return;
+            const nextUid = flagged[idx + 1].uid;
+            const i1 = appState.artists.findIndex(a => a.uid === uid);
+            const i2 = appState.artists.findIndex(a => a.uid === nextUid);
+            if (i1 === -1 || i2 === -1) return;
+            [appState.artists[i1], appState.artists[i2]] = [appState.artists[i2], appState.artists[i1]];
+            localStorage.setItem('sd_matrix_artists', JSON.stringify(appState.artists));
+            renderPerformersGrid();
         }
 
         function updatePerformerProgress(uid, val) {
@@ -1462,6 +1527,15 @@
         }
 
         function closePreviewModal() { document.getElementById('preview-modal-overlay').classList.remove('active'); }
+
+        function copyPreviewText() {
+            const text = document.getElementById('preview-modal-body').innerText;
+            navigator.clipboard.writeText(text).then(() => {
+                showToastBanner("コピーしました", 1000);
+            }).catch(() => {
+                showToastBanner("コピーに失敗しました", 1000);
+            });
+        }
 
         function recalculateControls() {
             const btns = document.querySelectorAll('.dispatch-btn');
