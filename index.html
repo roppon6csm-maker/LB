@@ -712,7 +712,7 @@
                 <button id="tab-operation" class="nav-tab" onclick="switchView('operation')">管理表</button>
                 <button id="tab-settings" class="nav-tab" onclick="switchView('settings')">設定</button>
             </div>
-            <div class="version-tag">ver.0.2.14</div>
+            <div class="version-tag">ver.0.2.15</div>
         </div>
     </header>
 
@@ -951,6 +951,7 @@
             executeSortPipeline(); 
             renderTemplatesGrid();
             syncFormStateFromTemplatesArray();
+            renderPerformersGrid();
         });
 
         function switchView(targetTabName) {
@@ -982,12 +983,23 @@
                 if (savedPerformers) appState.performers = JSON.parse(savedPerformers);
                 if (savedTemplates) appState.templates = JSON.parse(savedTemplates);
                 
+                let maxOrder = 0;
                 appState.artists.forEach((item, idx) => {
                     if (!item.uid) item.uid = "art_" + Date.now() + "_" + idx;
                     if (!item.furigana) item.furigana = "";
                     if (!item.count) item.count = "";
                     if (!item.req) item.req = "";
                     if (!item.progress) item.progress = "";
+                    if (typeof item.perfOrder === 'number' && item.perfOrder > maxOrder) {
+                        maxOrder = item.perfOrder;
+                    }
+                });
+
+                // フラグが 🙆‍♀️ で順序番号が無いものに番号を振る
+                appState.artists.forEach(item => {
+                    if (item.flag === '🙆🏻‍♀️' && (item.perfOrder === undefined || item.perfOrder === null)) {
+                        item.perfOrder = ++maxOrder;
+                    }
                 });
                 
                 appState.performers.forEach((item, idx) => {
@@ -1057,7 +1069,8 @@
                         flag: cols[8] || "", date: cols[9] || "", yomi: cols[10] || "",
                         count: existingByNo ? (existingByNo.count || "") : "",
                         req: existingByNo ? (existingByNo.req || "") : "",
-                        progress: existingByNo ? (existingByNo.progress || "") : ""
+                        progress: existingByNo ? (existingByNo.progress || "") : "",
+                        perfOrder: existingByNo ? existingByNo.perfOrder : undefined
                     });
                 }
             });
@@ -1278,7 +1291,9 @@
         function renderPerformersGrid() {
             const container = document.getElementById('performers-table-body-target');
             container.innerHTML = '';
-            const performers = appState.artists.filter(a => a.flag === '🙆🏻‍♀️');
+            const performers = appState.artists
+                .filter(a => a.flag === '🙆🏻‍♀️')
+                .sort((a, b) => (a.perfOrder || 0) - (b.perfOrder || 0));
             
             let totalCount = performers.length;
             let totalYomi = 0;
@@ -1340,27 +1355,27 @@
         }
 
         function movePerformerUp(uid) {
-            const flagged = appState.artists.filter(a => a.flag === '🙆🏻‍♀️');
+            const flagged = appState.artists
+                .filter(a => a.flag === '🙆🏻‍♀️')
+                .sort((a, b) => (a.perfOrder || 0) - (b.perfOrder || 0));
             const idx = flagged.findIndex(a => a.uid === uid);
             if (idx <= 0) return;
-            const prevUid = flagged[idx - 1].uid;
-            const i1 = appState.artists.findIndex(a => a.uid === uid);
-            const i2 = appState.artists.findIndex(a => a.uid === prevUid);
-            if (i1 === -1 || i2 === -1) return;
-            [appState.artists[i1], appState.artists[i2]] = [appState.artists[i2], appState.artists[i1]];
+            const tmp = flagged[idx].perfOrder;
+            flagged[idx].perfOrder = flagged[idx - 1].perfOrder;
+            flagged[idx - 1].perfOrder = tmp;
             localStorage.setItem('sd_matrix_artists', JSON.stringify(appState.artists));
             renderPerformersGrid();
         }
 
         function movePerformerDown(uid) {
-            const flagged = appState.artists.filter(a => a.flag === '🙆🏻‍♀️');
+            const flagged = appState.artists
+                .filter(a => a.flag === '🙆🏻‍♀️')
+                .sort((a, b) => (a.perfOrder || 0) - (b.perfOrder || 0));
             const idx = flagged.findIndex(a => a.uid === uid);
             if (idx < 0 || idx >= flagged.length - 1) return;
-            const nextUid = flagged[idx + 1].uid;
-            const i1 = appState.artists.findIndex(a => a.uid === uid);
-            const i2 = appState.artists.findIndex(a => a.uid === nextUid);
-            if (i1 === -1 || i2 === -1) return;
-            [appState.artists[i1], appState.artists[i2]] = [appState.artists[i2], appState.artists[i1]];
+            const tmp = flagged[idx].perfOrder;
+            flagged[idx].perfOrder = flagged[idx + 1].perfOrder;
+            flagged[idx + 1].perfOrder = tmp;
             localStorage.setItem('sd_matrix_artists', JSON.stringify(appState.artists));
             renderPerformersGrid();
         }
@@ -1486,6 +1501,14 @@
         function updateFlag(uid, val) {
             const art = appState.artists.find(a => a.uid === uid);
             art.flag = val;
+            // 新たに 🙆‍♀️ になった場合、順序番号が無ければ付与
+            if (val === '🙆🏻‍♀️' && (art.perfOrder === undefined || art.perfOrder === null)) {
+                let maxOrder = 0;
+                appState.artists.forEach(a => {
+                    if (typeof a.perfOrder === 'number' && a.perfOrder > maxOrder) maxOrder = a.perfOrder;
+                });
+                art.perfOrder = maxOrder + 1;
+            }
             localStorage.setItem('sd_matrix_artists', JSON.stringify(appState.artists));
             renderArtistsGrid();
             if (document.getElementById('tab-performers').classList.contains('active')) {
